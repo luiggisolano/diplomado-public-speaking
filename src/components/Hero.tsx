@@ -88,14 +88,14 @@ export default function Hero() {
       <div className="relative z-10 flex w-full max-w-4xl flex-col items-center">
         <p
           data-hero="pretitle"
-          className="mb-8 flex items-center gap-4 text-[0.7rem] font-medium uppercase tracking-[0.28em] text-gold opacity-0 sm:text-xs"
+          className="mb-8 flex items-center gap-4 text-[0.7rem] font-medium uppercase tracking-[0.28em] text-coral opacity-0 sm:text-xs"
         >
-          <span className="hidden h-px w-8 bg-gold/50 sm:inline-block" />
+          <span className="hidden h-px w-8 bg-coral/50 sm:inline-block" />
           {HERO.preTitle}
-          <span className="hidden h-px w-8 bg-gold/50 sm:inline-block" />
+          <span className="hidden h-px w-8 bg-coral/50 sm:inline-block" />
         </p>
 
-        <h1 className="font-display text-[2.6rem] font-medium leading-[1.08] tracking-[-0.01em] text-bone sm:text-6xl lg:text-[4.6rem]">
+        <h1 className="font-display text-[2.6rem] font-semibold leading-[1.04] tracking-[-0.02em] text-bone sm:text-6xl lg:text-[4.6rem]">
           <span className="mask-line">
             <span data-hero="line" className="inline-block">
               {HERO.titleLineOne}
@@ -104,7 +104,7 @@ export default function Hero() {
           <span className="mask-line">
             <span data-hero="line" className="inline-block">
               {HERO.titleLineTwo}{" "}
-              <em className="bg-gradient-to-r from-gold-bright to-gold bg-clip-text not-italic text-transparent">
+              <em className="bg-gradient-to-r from-coral-bright to-coral bg-clip-text not-italic text-transparent">
                 {HERO.titleAccent}
               </em>
             </span>
@@ -124,7 +124,7 @@ export default function Hero() {
         >
           <a
             href="#inscripcion"
-            className="group relative inline-flex items-center gap-3 rounded-full bg-gradient-to-b from-gold-bright to-gold px-9 py-4 text-sm font-semibold tracking-wide text-obsidian transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-12px_rgba(194,161,91,0.6)]"
+            className="group relative inline-flex items-center gap-3 rounded-full bg-gradient-to-b from-coral-bright to-coral px-9 py-4 text-sm font-semibold tracking-wide text-oxblood-deep transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-12px_rgba(232,117,90,0.65)]"
           >
             {HERO.cta}
             <span className="transition-transform duration-300 group-hover:translate-x-1">
@@ -149,7 +149,7 @@ export default function Hero() {
               className="flex items-center gap-3 opacity-0"
             >
               {index > 0 && (
-                <span className="h-1 w-1 rounded-full bg-gold/60" aria-hidden />
+                <span className="h-1 w-1 rounded-full bg-coral/60" aria-hidden />
               )}
               {item}
             </li>
@@ -165,7 +165,7 @@ export default function Hero() {
         <span className="text-[0.6rem] uppercase tracking-[0.3em] text-bone-faint">
           Descubre
         </span>
-        <span className="h-9 w-px animate-pulse bg-gradient-to-b from-gold/70 to-transparent" />
+        <span className="h-9 w-px animate-pulse bg-gradient-to-b from-coral/70 to-transparent" />
       </div>
     </section>
   );
@@ -179,26 +179,26 @@ export default function Hero() {
 function HeroBackdrop() {
   return (
     <div className="absolute inset-0 z-0" aria-hidden>
-      <div className="absolute inset-0 bg-obsidian" />
+      <div className="absolute inset-0 bg-oxblood" />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% -10%, rgba(194,161,91,0.22), transparent 55%)",
+            "radial-gradient(120% 80% at 50% -12%, rgba(232,117,90,0.30), transparent 55%)",
         }}
       />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(60% 50% at 50% 8%, rgba(220,193,135,0.16), transparent 70%)",
+            "radial-gradient(55% 45% at 50% 6%, rgba(244,147,124,0.20), transparent 70%)",
         }}
       />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, transparent 35%, rgba(10,10,11,0.7) 78%, #0a0a0b 100%)",
+            "linear-gradient(180deg, transparent 35%, rgba(29,9,12,0.72) 78%, #1d090c 100%)",
         }}
       />
     </div>
