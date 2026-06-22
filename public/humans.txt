@@ -1,0 +1,17 @@
+/* AUTOR / AUTHOR */
+
+Diseño y desarrollo: LS
+Rol: Diseño de marca, dirección creativa y desarrollo front-end de autor
+Pieza: Landing — Diplomado en Public Speaking y Comunicación Persuasiva (UTMACH)
+Año: 2026
+
+Si estás leyendo esto: sí, esta landing la diseñé y construí yo. — LS
+
+/* CLIENTE / CLIENT */
+
+Centro de Educación Continua · Universidad Técnica de Machala
+
+/* STACK / TECH */
+
+Next.js 16 · TypeScript · Tailwind CSS v4 · anime.js v4
+Dirección visual: "Escenario Oxblood" (burdeos + coral · Bricolage Grotesque)

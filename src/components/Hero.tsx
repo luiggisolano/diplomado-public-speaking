@@ -2,14 +2,20 @@
 
 import { useEffect, useRef } from "react";
 import { createTimeline, stagger } from "animejs";
-import { HERO } from "@/lib/content";
+import { LineIcon } from "@/components/LineIcon";
+import { DotGrid } from "@/components/motion/DotGrid";
+import { MicrophoneMotif } from "@/components/motion/MicrophoneMotif";
+import { CountUp } from "@/components/motion/CountUp";
+import { HERO, PRIMARY_CTA_HREF } from "@/lib/content";
 
 /*
-  Bloque 1 — Hero. Pantalla completa cinematográfica. El fondo simula un orador a
-  contraluz mediante capas de gradiente radial (cono de spotlight + viñeta) y una
-  textura de grano. La entrada se orquesta con una timeline de anime.js: las líneas
-  del título se revelan enmascaradas, el resto entra escalonado. Respeta
-  prefers-reduced-motion mostrando todo sin animación.
+  Bloque 1 — Hero. Composición asimétrica académico-futurista: a la izquierda, eyebrow
+  técnica en mono, titular en serif Spectral con la línea de cierre en ámbar institucional,
+  subtítulo, CTA azul y la fila de datos animados (CountUp). A la derecha, el panel-instrumento
+  con la grilla de partículas (firma animejs.com) y el emblema de micrófono que traza su
+  silueta y emite ondas. Sobre todo, el plano blueprint y los halos del hero-field. La entrada
+  se orquesta con una timeline de anime.js (líneas enmascaradas + escalonado). Respeta
+  prefers-reduced-motion mostrando el contenido completo.
 */
 
 const MOUNT_DELAY_MS = 150;
@@ -63,14 +69,19 @@ export default function Hero() {
         "-=850",
       )
       .add(
-        '[data-hero="trust"]',
-        { opacity: [0, 1], translateY: [12, 0], delay: stagger(60) },
-        "-=750",
+        '[data-hero="stat"]',
+        { opacity: [0, 1], translateY: [16, 0], delay: stagger(90) },
+        "-=800",
       )
       .add(
-        '[data-hero="cue"]',
-        { opacity: [0, 0.7], duration: 900 },
-        "-=500",
+        '[data-hero="panel"]',
+        { opacity: [0, 1], scale: [0.94, 1], duration: 1300 },
+        "-=1200",
+      )
+      .add(
+        '[data-hero="trust"]',
+        { opacity: [0, 1], translateY: [12, 0], delay: stagger(60) },
+        "-=700",
       );
 
     return () => {
@@ -81,67 +92,106 @@ export default function Hero() {
   return (
     <section
       ref={rootRef}
-      className="grain relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-6 py-24 text-center"
+      id="top"
+      className="grain relative flex min-h-[100dvh] flex-col justify-center overflow-hidden px-6 pb-16 pt-32"
     >
       <HeroBackdrop />
 
-      <div className="relative z-10 flex w-full max-w-4xl flex-col items-center">
-        <p
-          data-hero="pretitle"
-          className="mb-8 flex items-center gap-4 text-[0.7rem] font-medium uppercase tracking-[0.28em] text-coral opacity-0 sm:text-xs"
-        >
-          <span className="hidden h-px w-8 bg-coral/50 sm:inline-block" />
-          {HERO.preTitle}
-          <span className="hidden h-px w-8 bg-coral/50 sm:inline-block" />
-        </p>
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="flex flex-col">
+          <p
+            data-hero="pretitle"
+            className="tech-label mb-7 flex items-center gap-3 opacity-0"
+          >
+            <span className="inline-block h-px w-8 bg-blue-bright/50" />
+            {HERO.preTitle}
+          </p>
 
-        <h1 className="font-display text-[2.6rem] font-semibold leading-[1.04] tracking-[-0.02em] text-bone sm:text-6xl lg:text-[4.6rem]">
-          <span className="mask-line">
-            <span data-hero="line" className="inline-block">
-              {HERO.titleLineOne}
+          <h1 className="font-serif text-[length:var(--text-display)] font-semibold leading-[1.04] tracking-[-0.02em] text-paper">
+            <span className="mask-line">
+              <span data-hero="line" className="inline-block">
+                {HERO.titleLineOne}
+              </span>
             </span>
-          </span>
-          <span className="mask-line">
-            <span data-hero="line" className="inline-block">
-              {HERO.titleLineTwo}{" "}
-              <em className="bg-gradient-to-r from-coral-bright to-coral bg-clip-text not-italic text-transparent">
-                {HERO.titleAccent}
-              </em>
+            <span className="mask-line">
+              <span data-hero="line" className="inline-block">
+                {HERO.titleLineTwo}{" "}
+                <em className="serif-accent serif-accent--italic font-normal text-gold">
+                  {HERO.titleAccent}
+                </em>
+              </span>
             </span>
-          </span>
-        </h1>
+          </h1>
 
-        <p
-          data-hero="subtitle"
-          className="mt-8 max-w-2xl text-base leading-relaxed text-bone-dim opacity-0 sm:text-lg"
-        >
-          {HERO.subtitle}
-        </p>
+          <p
+            data-hero="subtitle"
+            className="mt-7 max-w-xl text-base leading-relaxed text-mist opacity-0 sm:text-lg"
+          >
+            {HERO.subtitle}
+          </p>
+
+          <div
+            data-hero="cta"
+            className="mt-10 flex flex-col items-start gap-5 opacity-0 sm:flex-row sm:items-center sm:gap-7"
+          >
+            <a
+              href={PRIMARY_CTA_HREF}
+              className="group relative inline-flex items-center gap-3 rounded-full bg-gradient-to-b from-blue-bright to-blue px-9 py-4 text-sm font-semibold tracking-wide text-paper transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-12px_rgba(77,147,245,0.6)]"
+            >
+              {HERO.cta}
+              <LineIcon
+                name="arrow-right"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                strokeWidth={1.8}
+              />
+            </a>
+            <p className="max-w-[17rem] text-xs leading-relaxed text-mist-dim">
+              {HERO.microcopy}
+            </p>
+          </div>
+
+          <dl className="mt-12 grid max-w-xl grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-4">
+            {HERO.stats.map((stat) => (
+              <div
+                key={stat.label}
+                data-hero="stat"
+                className="flex flex-col gap-1 border-l border-line pl-4 opacity-0"
+              >
+                <dt className="text-3xl font-semibold text-blue-bright sm:text-4xl">
+                  <CountUp to={stat.value} suffix={stat.suffix} />
+                </dt>
+                <dd className="text-[0.7rem] uppercase tracking-[0.14em] text-mist-dim">
+                  {stat.label}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
 
         <div
-          data-hero="cta"
-          className="mt-11 flex flex-col items-center gap-4 opacity-0"
+          data-hero="panel"
+          className="relative hidden aspect-square w-full opacity-0 lg:block"
         >
-          <a
-            href="#inscripcion"
-            className="group relative inline-flex items-center gap-3 rounded-full bg-gradient-to-b from-coral-bright to-coral px-9 py-4 text-sm font-semibold tracking-wide text-oxblood-deep transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-12px_rgba(232,117,90,0.65)]"
-          >
-            {HERO.cta}
-            <span className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
-          </a>
-          <p className="max-w-md text-xs leading-relaxed text-bone-faint">
-            {HERO.microcopy}
-          </p>
+          <div className="card-tech absolute inset-0 overflow-hidden rounded-2xl">
+            <DotGrid
+              columns={16}
+              rows={16}
+              className="absolute inset-0 p-6 opacity-70"
+            />
+            <div className="spotlight absolute -right-10 -top-10 h-48 w-48" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <MicrophoneMotif className="h-[62%] w-auto drop-shadow-[0_0_30px_rgba(77,147,245,0.35)]" />
+            </div>
+            <p className="tech-label absolute bottom-5 left-6 text-[0.6rem] opacity-80">
+              CEC · UTMACH / 2026
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="relative z-10 mt-16 w-full max-w-4xl border-t border-line pt-7">
-        <p className="mb-4 text-[0.62rem] uppercase tracking-[0.24em] text-bone-faint">
-          Aval institucional
-        </p>
-        <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-bone-dim sm:text-sm">
+      <div className="relative z-10 mx-auto mt-14 w-full max-w-6xl border-t border-line pt-7">
+        <p className="tech-label mb-4 text-[0.6rem]">Aval institucional</p>
+        <ul className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-mist sm:text-sm">
           {HERO.trust.map((item, index) => (
             <li
               key={item}
@@ -149,56 +199,32 @@ export default function Hero() {
               className="flex items-center gap-3 opacity-0"
             >
               {index > 0 && (
-                <span className="h-1 w-1 rounded-full bg-coral/60" aria-hidden />
+                <span className="h-1 w-1 rounded-full bg-gold/70" aria-hidden />
               )}
               {item}
             </li>
           ))}
         </ul>
       </div>
-
-      <div
-        data-hero="cue"
-        className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 opacity-0"
-        aria-hidden
-      >
-        <span className="text-[0.6rem] uppercase tracking-[0.3em] text-bone-faint">
-          Descubre
-        </span>
-        <span className="h-9 w-px animate-pulse bg-gradient-to-b from-coral/70 to-transparent" />
-      </div>
     </section>
   );
 }
 
 /*
-  Capa de fondo. Spotlight cálido desde arriba, halo dorado tenue y viñeta inferior
-  para fijar el texto. Lista para reemplazar por la fotografía real del orador:
-  basta con sobreponer una <Image> y bajar la opacidad de los gradientes.
+  Capa de fondo del hero. El plano blueprint (retícula técnica) sobre los halos del
+  hero-field arma la atmósfera de aula futura. La viñeta inferior fija el texto sobre el
+  navy. Todo es decorativo (aria-hidden).
 */
 function HeroBackdrop() {
   return (
     <div className="absolute inset-0 z-0" aria-hidden>
-      <div className="absolute inset-0 bg-oxblood" />
+      <div className="hero-field absolute inset-0" />
+      <div className="blueprint absolute inset-0" />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% -12%, rgba(232,117,90,0.30), transparent 55%)",
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(55% 45% at 50% 6%, rgba(244,147,124,0.20), transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, transparent 35%, rgba(29,9,12,0.72) 78%, #1d090c 100%)",
+            "linear-gradient(180deg, transparent 55%, rgba(7,17,42,0.7) 85%, var(--color-abyss) 100%)",
         }}
       />
     </div>

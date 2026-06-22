@@ -2,27 +2,55 @@
 
 /*
   Design System — Diplomado Public Speaking UTMACH
-  Dirección visual: "Escenario Oxblood". Telón de teatro. Fondo burdeos profundo,
-  blanco hueso, acento coral cálido (sin dorado). Display grotesca contemporánea
-  (Bricolage) + sans humanista (Inter). Motion con anime.js respeta prefers-reduced-motion.
+  Dirección visual: "Aula Futura". Registro académico + futurista con la identidad
+  institucional de la Universidad Técnica de Machala: azul institucional (#204e99),
+  azul eléctrico (#2964c4) y acento ámbar/dorado (#ffa902) sobre un lienzo navy
+  profundo. Tipografía académica (serif Spectral para titulares y énfasis) combinada
+  con mono técnica (IBM Plex Mono) para códigos, créditos y datos, y sans humanista
+  (Inter) para cuerpo. Lenguaje de movimiento inspirado en animejs.com: grilla de
+  partículas con stagger, revelados escalonados, motivo de micrófono con ondas y
+  contadores animados. Todo respeta prefers-reduced-motion.
 */
 
 @theme {
-  --color-oxblood: #2a0e12;
-  --color-oxblood-deep: #1d090c;
-  --color-oxblood-raised: #3a1419;
-  --color-bone: #efe7da;
-  --color-bone-dim: #c9bdb0;
-  --color-bone-faint: #8a7d74;
-  --color-coral: #e8755a;
-  --color-coral-bright: #f4937c;
-  --color-coral-deep: #c5553c;
-  --color-line: #4a2228;
+  --color-abyss: #050b1a;
+  --color-navy: #0a1733;
+  --color-navy-deep: #07112a;
+  --color-navy-raised: #112247;
+  --color-utmach: #204e99;
+  --color-blue: #2964c4;
+  --color-blue-bright: #4d93f5;
+  --color-blue-glow: #6aa8ff;
+  --color-gold: #ffa902;
+  --color-gold-soft: #ffc24d;
+  --color-gold-deep: #d98a00;
+  --color-paper: #eef3fb;
+  --color-mist: #aebcd4;
+  --color-mist-dim: #8497ba;
+  --color-line: rgba(174, 188, 212, 0.14);
+  --color-line-strong: rgba(77, 147, 245, 0.38);
 
-  --font-display: var(--font-bricolage), "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-spectral), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), "SFMono-Regular", ui-monospace, monospace;
 
-  --shadow-glow-coral: 0 0 80px -20px rgba(232, 117, 90, 0.5);
+  --text-eyebrow: 0.72rem;
+  --text-section: clamp(2.25rem, 1.3rem + 3.9vw, 4rem);
+  --text-display: clamp(2.6rem, 1.1rem + 6vw, 5.25rem);
+
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4.5rem;
+  --space-section: clamp(5rem, 3rem + 7vw, 8.5rem);
+
+  --shadow-glow-blue: 0 0 80px -16px rgba(77, 147, 245, 0.55);
+  --shadow-glow-gold: 0 0 70px -18px rgba(255, 169, 2, 0.5);
+  --shadow-card-rest: 0 1px 0 0 rgba(174, 188, 212, 0.04);
+  --shadow-card-lift: 0 28px 64px -30px rgba(3, 8, 22, 0.95);
 
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -42,21 +70,182 @@ html {
 }
 
 body {
-  background-color: var(--color-oxblood);
-  color: var(--color-bone);
+  background-color: var(--color-abyss);
+  color: var(--color-paper);
   font-family: var(--font-sans);
   margin: 0;
   overflow-x: hidden;
 }
 
 ::selection {
-  background: var(--color-coral);
-  color: var(--color-oxblood-deep);
+  background: var(--color-blue);
+  color: var(--color-paper);
 }
 
 /*
-  Primitivas de revelado para anime.js. El estado inicial vive en CSS para evitar
-  el flash de contenido sin animar antes de que el script tome control.
+  Foco visible accesible. Anillo azul-brillante con desplazamiento, legible sobre
+  cualquier fondo navy. Regla base de seguridad para todo interactivo nativo más una
+  utilidad .focus-ring para componentes que lo declaren de forma explícita.
+*/
+:where(a, button, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-blue-bright);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-blue-bright);
+  outline-offset: 2px;
+}
+
+/*
+  Énfasis en serif. Reservado para palabras-acento dentro de un titular, con la
+  gravedad académica del Spectral. Cursiva opcional vía .serif-accent--italic.
+*/
+.serif-accent {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.serif-accent--italic {
+  font-style: italic;
+}
+
+/*
+  Etiqueta técnica. Mono en mayúsculas con tracking amplio, registro de catálogo
+  académico / panel de instrumentos. Se usa para eyebrows, códigos y datos.
+*/
+.tech-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--color-blue-bright);
+}
+
+.mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/*
+  Ritmo de fondo: las secciones alternan entre dos profundidades de navy para marcar
+  el pulso vertical de la página.
+*/
+.stage-a {
+  background-color: var(--color-abyss);
+}
+
+.stage-b {
+  background-color: var(--color-navy-deep);
+}
+
+/*
+  Plano blueprint. Retícula técnica tenue (papel milimetrado de ingeniería) que aporta
+  el registro académico-futurista. Capa decorativa de fondo posicionada por el componente.
+*/
+.blueprint {
+  background-image:
+    linear-gradient(var(--color-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: center;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 0%, transparent 78%);
+}
+
+/*
+  Tarjeta técnica. Sustituye el rectángulo redondeado genérico por un panel navy con
+  borde-hairline azul, realce de fondo, marca de esquina y elevación al hover hacia el
+  abismo con halo azul. La marca de esquina se dibuja con ::before (esquina sup-izq).
+*/
+.card-tech {
+  position: relative;
+  border: 1px solid var(--color-line);
+  background-color: color-mix(in oklch, var(--color-navy-raised) 60%, transparent);
+  box-shadow: var(--shadow-card-rest);
+  transition:
+    border-color 0.4s var(--ease-out-soft),
+    transform 0.4s var(--ease-out-soft),
+    box-shadow 0.4s var(--ease-out-soft);
+}
+
+.card-tech::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 18px;
+  height: 18px;
+  border-top: 2px solid color-mix(in oklch, var(--color-blue-bright) 60%, transparent);
+  border-left: 2px solid color-mix(in oklch, var(--color-blue-bright) 60%, transparent);
+  opacity: 0.55;
+  transition: opacity 0.4s var(--ease-out-soft);
+}
+
+.card-tech:hover {
+  border-color: var(--color-line-strong);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card-lift), var(--shadow-glow-blue);
+}
+
+.card-tech:hover::before {
+  opacity: 1;
+}
+
+/*
+  Halo radial frío. Cono de luz de "auditorio futurista"; se posiciona desde el
+  componente con utilidades. Variante dorada para los acentos institucionales.
+*/
+.spotlight {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(70px);
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--color-blue-bright) 30%, transparent),
+    transparent 70%
+  );
+}
+
+.spotlight--gold {
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--color-gold) 26%, transparent),
+    transparent 70%
+  );
+}
+
+/*
+  Fondo del hero. Apila el degradado de profundidad navy con dos halos (azul frío
+  arriba-izquierda, ámbar cálido abajo-derecha) para sostener la atmósfera de escenario
+  académico-futurista detrás de la grilla de partículas y el motivo de micrófono.
+*/
+.hero-field {
+  background-image:
+    radial-gradient(
+      68% 55% at 22% 6%,
+      color-mix(in oklch, var(--color-blue-bright) 22%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      80% 65% at 84% 88%,
+      color-mix(in oklch, var(--color-gold) 14%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 90% at 50% 120%,
+      var(--color-navy-deep),
+      transparent 55%
+    );
+}
+
+/*
+  Primitivas de revelado para anime.js. El estado inicial vive en CSS para evitar el
+  flash de contenido sin animar antes de que el script tome control.
 */
 .reveal-init {
   opacity: 0;
@@ -84,6 +273,9 @@ body {
     opacity: 1 !important;
     transform: none !important;
   }
+  .card-tech:hover {
+    transform: none;
+  }
 }
 
 /* Grano cinematográfico sutil sobre fondos oscuros. */
@@ -92,7 +284,7 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.05;
   z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
