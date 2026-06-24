@@ -1,0 +1,567 @@
+/*
+  sintesis.css — Variante "La Síntesis"
+  Combinación curada de las tres variantes experimentales: el fondo vocal de La Voz,
+  el haz de luz dorado de El Escenario, la tipografía cinética de La Palabra y la onda
+  scroll-driven como hilo conductor entre secciones.
+
+  REGLA DE AISLAMIENTO: todas las clases llevan prefijo .syn- para no contaminar
+  globals.css ni colisionar con las otras variantes (voz / escenario / palabra).
+
+  Paleta única: navy #0a1733 / azul #204e99 / dorado #ffa902.
+  Sistema de movimiento coherente: un solo lenguaje visual, cada efecto en su momento.
+*/
+
+/* ─── Contenedor global ─────────────────────────────────────────────────── */
+.syn-stage {
+  position: relative;
+  background-color: var(--color-abyss);
+  overflow-x: hidden;
+}
+
+/* ─── HERO: fondo atmosférico vocal ──────────────────────────────────────── */
+.syn-hero {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(6rem, 10vh, 10rem) 1.5rem clamp(2rem, 5vh, 4rem);
+  overflow: hidden;
+}
+
+.syn-hero-bg {
+  background-image:
+    radial-gradient(
+      70% 55% at 50% -8%,
+      color-mix(in oklch, var(--color-utmach) 32%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      80% 55% at 50% 115%,
+      color-mix(in oklch, var(--color-gold) 10%, transparent),
+      transparent 65%
+    );
+}
+
+/* Grilla blueprint decorativa (reutilizada de globals) */
+.syn-blueprint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(77, 147, 245, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 147, 245, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─── Haz de luz dorado desde el techo (solo en hero) ────────────────────── */
+.syn-ceiling-beam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 0;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  box-shadow: 0 0 80px 20px rgba(255, 169, 2, 0.15);
+  pointer-events: none;
+  z-index: 2;
+  transition: height 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.syn-ceiling-beam--expanded {
+  height: 60%;
+}
+
+.syn-beam-cone {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  height: 500px;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 50% 100% at 50% 0%,
+    rgba(255, 169, 2, 0.09) 0%,
+    rgba(255, 169, 2, 0.03) 55%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 1.2s ease 0.4s;
+}
+
+.syn-beam-cone--visible {
+  opacity: 1;
+}
+
+/* ─── Tipografía de display (titular del hero) ──────────────────────────── */
+.syn-hero-display {
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-style: italic;
+  font-size: clamp(3rem, 1.6rem + 6vw, 6rem);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--color-paper);
+}
+
+.syn-hero-display--sans {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -0.04em;
+}
+
+.syn-hero-accent {
+  color: var(--color-gold);
+  display: block;
+}
+
+/* ─── Kicker mono ────────────────────────────────────────────────────────── */
+.syn-kicker {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--color-blue-bright);
+  opacity: 0.85;
+  margin-bottom: 2rem;
+}
+
+/* ─── Stats (misma clase de La Voz, prefijada .syn) ─────────────────────── */
+.syn-stat {
+  border-bottom: 2px solid color-mix(in oklch, var(--color-gold) 30%, transparent);
+  transition: border-color 0.3s ease;
+}
+
+.syn-stat:hover {
+  border-color: var(--color-gold);
+}
+
+/* ─── Sección genérica ──────────────────────────────────────────────────── */
+.syn-section {
+  position: relative;
+  padding: clamp(4.5rem, 3rem + 6vw, 8rem) clamp(1.5rem, 5vw, 5rem);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.syn-section--full {
+  max-width: none;
+}
+
+.syn-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--color-blue-bright);
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.syn-section-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(1.9rem, 1.1rem + 3.4vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+  margin: 0 0 1.5rem;
+}
+
+/* ─── MÓDULOS: spotlight localizado (confinado a la sección) ─────────────── */
+
+/*
+  El spotlight de módulos está CONFINADO: overlay solo dentro de .syn-modules-wrap.
+  position:relative + overflow:hidden en el contenedor crea el límite.
+  El contenido FUERA de esta sección nunca queda oscurecido.
+
+  Por defecto (sin JS) las tarjetas son visibles.
+  JS añade .syn-modules-wrap--active para activar la penumbra interna.
+*/
+
+.syn-modules-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.syn-modules-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  /* penumbra suave, nunca negro total */
+  background-color: rgba(5, 11, 26, 0.72);
+  -webkit-mask-image: radial-gradient(
+    circle var(--syn-spot-radius, 320px) at var(--syn-mx, 50%) var(--syn-my, 50%),
+    transparent 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.45) 72%,
+    rgba(0, 0, 0, 0.78) 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--syn-spot-radius, 320px) at var(--syn-mx, 50%) var(--syn-my, 50%),
+    transparent 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.45) 72%,
+    rgba(0, 0, 0, 0.78) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* JS activa el overlay cuando hay puntero fino */
+.syn-modules-wrap--active .syn-modules-overlay {
+  opacity: 1;
+}
+
+/* En touch/coarse: sin overlay, tarjetas se iluminan por IntersectionObserver */
+@media (pointer: coarse) {
+  .syn-modules-overlay {
+    display: none !important;
+  }
+}
+
+.syn-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5px;
+  background-color: var(--color-line);
+  border: 1px solid var(--color-line);
+  position: relative;
+  z-index: 3;
+}
+
+.syn-module-card {
+  position: relative;
+  background-color: var(--color-abyss);
+  padding: 2.5rem 2rem;
+  overflow: hidden;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Línea superior dorada al iluminar */
+.syn-module-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Halo interno dorado (hover hover) */
+.syn-module-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 200px at var(--syn-card-mx, 50%) var(--syn-card-my, 50%),
+    rgba(255, 169, 2, 0.07) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.syn-module-card:hover,
+.syn-module-card--lit {
+  background-color: var(--color-navy);
+}
+
+.syn-module-card:hover::before,
+.syn-module-card--lit::before {
+  opacity: 1;
+}
+
+.syn-module-card:hover::after,
+.syn-module-card--lit::after {
+  opacity: 1;
+}
+
+.syn-module-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  opacity: 0.55;
+  display: block;
+  margin-bottom: 0.75rem;
+  transition: opacity 0.3s ease;
+}
+
+.syn-module-card:hover .syn-module-num,
+.syn-module-card--lit .syn-module-num {
+  opacity: 1;
+}
+
+.syn-module-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-paper);
+  margin: 0 0 0.5rem;
+  line-height: 1.3;
+}
+
+.syn-module-line {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--color-mist-dim);
+  margin: 0;
+  transition: color 0.35s ease;
+}
+
+.syn-module-card:hover .syn-module-line,
+.syn-module-card--lit .syn-module-line {
+  color: var(--color-mist);
+}
+
+.syn-beam-indicator {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  border-radius: 2px;
+  opacity: 0;
+  transition:
+    height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s ease;
+}
+
+.syn-module-card:hover .syn-beam-indicator,
+.syn-module-card--lit .syn-beam-indicator {
+  height: 60%;
+  opacity: 0.6;
+}
+
+/* ─── TRANSFORMACIÓN: contraste tipográfico antes/después ─────────────────── */
+.syn-before-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(0.9rem, 0.78rem + 0.45vw, 1.05rem);
+  color: var(--color-mist);
+  line-height: 1.65;
+  text-decoration: line-through;
+  text-decoration-color: rgba(174, 188, 212, 0.35);
+  list-style: none;
+  padding: 0;
+}
+
+.syn-after-text {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(0.9rem, 0.78rem + 0.45vw, 1.05rem);
+  color: var(--color-paper);
+  line-height: 1.65;
+  list-style: none;
+  padding: 0;
+  position: relative;
+  padding-left: 1.2rem;
+}
+
+.syn-after-text::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gold);
+}
+
+.syn-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.1rem, 0.9rem + 0.8vw, 1.5rem);
+  color: var(--color-paper);
+  line-height: 1.55;
+  border-left: 3px solid var(--color-gold);
+  padding: 1rem 1.5rem;
+  margin: 3rem 0 0;
+  background: rgba(255, 169, 2, 0.04);
+}
+
+/* ─── CTA panel de inscripción ────────────────────────────────────────────── */
+.syn-cta-panel {
+  position: relative;
+  background: color-mix(in oklch, var(--color-navy-raised) 70%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-gold) 22%, transparent);
+  border-radius: 1.25rem;
+}
+
+.syn-cta-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--color-gold) 16%, transparent),
+    transparent 50%,
+    color-mix(in oklch, var(--color-utmach) 12%, transparent)
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── FAQ accordion ─────────────────────────────────────────────────────── */
+.syn-faq-item {
+  border-bottom: 1px solid var(--color-line);
+  transition: border-color 0.25s ease;
+}
+
+.syn-faq-item[data-open="true"] {
+  border-color: var(--color-line-strong);
+}
+
+.syn-faq-answer {
+  overflow: hidden;
+  transition: max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Pillar cards (metodología) ─────────────────────────────────────────── */
+.syn-pillar {
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-navy-deep);
+  position: relative;
+  transition: border-color 0.3s ease;
+}
+
+.syn-pillar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 2px;
+  background: var(--color-gold);
+  opacity: 0.55;
+}
+
+.syn-pillar:hover {
+  border-color: var(--color-line-strong);
+}
+
+.syn-pillar:hover::before {
+  opacity: 1;
+}
+
+/* ─── Firma LS ─────────────────────────────────────────────────────────────── */
+.syn-author-footer {
+  background: color-mix(in oklch, var(--color-abyss) 80%, var(--color-navy-deep) 20%);
+  border-top: 1px solid var(--color-line);
+}
+
+/* ─── Reveal de entrada (genérico) ──────────────────────────────────────── */
+.syn-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.syn-reveal--visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─── Split words (tipografía cinética) ─────────────────────────────────── */
+.syn-word {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+.syn-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* ─── Ecualizador de barras (separador de onda) ─────────────────────────── */
+.syn-eq-bar {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  transform-origin: center bottom;
+  background: var(--color-gold);
+  will-change: transform, opacity;
+}
+
+@keyframes syn-eq-pulse {
+  0%, 100% { transform: scaleY(0.3); opacity: 0.35; }
+  50%       { transform: scaleY(1);   opacity: 0.85; }
+}
+
+.syn-eq-bar--animated {
+  animation: syn-eq-pulse 1.4s ease-in-out infinite;
+}
+
+/* ─── Urgencia cards ─────────────────────────────────────────────────────── */
+.syn-urgency-card {
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-navy-deep);
+}
+
+/* ─── Divider con gradiente ──────────────────────────────────────────────── */
+.syn-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-line-strong), transparent);
+  border: none;
+  margin: 0;
+}
+
+/* ─── Ancla de inscripción ───────────────────────────────────────────────── */
+#inscripcion-sin {
+  scroll-margin-top: 4rem;
+}
+
+/* ─── Reducción de movimiento: todo visible, sin animaciones ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .syn-eq-bar--animated {
+    animation: none;
+    transform: scaleY(0.6);
+    opacity: 0.6;
+  }
+
+  .syn-ceiling-beam {
+    transition: none;
+  }
+
+  .syn-modules-overlay {
+    display: none !important;
+  }
+
+  .syn-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .syn-module-card:hover,
+  .syn-module-card--lit {
+    background-color: var(--color-navy);
+  }
+
+  .syn-module-card--lit::before {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,826 @@
+/*
+  escenario.css — Variante "El Escenario"
+  Spotlight interactivo: la página vive en penumbra teatral y el cursor del usuario
+  actúa como reflector que ilumina el contenido por donde pasa.
+
+  REGLA DE AISLAMIENTO: todas las clases llevan prefijo .esc- para no contaminar
+  globals.css ni colisionar con las otras variantes (voz / palabra).
+
+  Accesibilidad:
+  - Estado base (sin JS): --esc-theatrical-darkness = 0 → todo iluminado a full
+  - JS activo: --esc-theatrical-darkness sube a 1 → la máscara oscurece la capa
+  - prefers-reduced-motion: spotlight estático, sin animaciones de transición
+*/
+
+/* ── Contenedor de palco teatral ────────────────────────────────────────── */
+.esc-stage {
+  position: relative;
+  background-color: var(--color-abyss);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/*
+  Capa de oscuridad teatral.
+  Por defecto opacity: 0 → todo visible. JS sube a 1 cuando está listo.
+  Usa mask-image radial que sigue a --esc-mx / --esc-my (CSS custom props
+  actualizadas vía rAF en el cliente). El contenido debajo queda atenuado
+  pero NO invisible (opacity 0.88 → legible, teatral, no negro total).
+*/
+.esc-darkness {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  background-color: rgba(5, 11, 26, 0.78);
+  -webkit-mask-image: radial-gradient(
+    circle var(--esc-radius, 300px) at var(--esc-mx, 50%) var(--esc-my, 50%),
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.4) 75%,
+    rgba(0, 0, 0, 0.82) 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--esc-radius, 300px) at var(--esc-mx, 50%) var(--esc-my, 50%),
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.4) 75%,
+    rgba(0, 0, 0, 0.82) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* JS añade .esc-darkness--active para revelar la oscuridad */
+.esc-darkness--active {
+  opacity: 1;
+}
+
+/* En dispositivos sin puntero fino: modo IntersectionObserver, sin oscuridad fija */
+@media (pointer: coarse) {
+  .esc-darkness {
+    display: none;
+  }
+}
+
+/* prefers-reduced-motion: todo visible, sin spotlight */
+@media (prefers-reduced-motion: reduce) {
+  .esc-darkness {
+    display: none !important;
+  }
+  .esc-module-card,
+  .esc-beam-indicator {
+    transition: none !important;
+  }
+}
+
+/* ── Haz de luz dorado desde el techo (hero) ────────────────────────────── */
+.esc-ceiling-beam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 0;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  box-shadow: 0 0 80px 20px rgba(255, 169, 2, 0.18);
+  pointer-events: none;
+  z-index: 2;
+  transition: height 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.esc-ceiling-beam--expanded {
+  height: 55%;
+}
+
+/* Cono del haz (blur amplio) */
+.esc-beam-cone {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 480px;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 50% 100% at 50% 0%,
+    rgba(255, 169, 2, 0.10) 0%,
+    rgba(255, 169, 2, 0.04) 55%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 1.2s ease 0.3s;
+}
+
+.esc-beam-cone--visible {
+  opacity: 1;
+}
+
+/* ── Hero section ───────────────────────────────────────────────────────── */
+.esc-hero {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(6rem, 10vh, 10rem) 1.5rem clamp(4rem, 8vh, 6rem);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.esc-hero-kicker {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--color-gold);
+  margin-bottom: 1.75rem;
+  opacity: 0.85;
+}
+
+.esc-hero-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2.6rem, 1.2rem + 6vw, 5.25rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--color-paper);
+  max-width: 14ch;
+  margin: 0 auto 1.25rem;
+}
+
+.esc-hero-accent {
+  font-style: italic;
+  color: var(--color-gold);
+}
+
+.esc-hero-sub {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.85rem + 0.6vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--color-mist);
+  max-width: 52ch;
+  margin: 0 auto 2.5rem;
+  font-weight: 400;
+}
+
+.esc-hero-microcopy {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  opacity: 0.65;
+  margin-top: 1.5rem;
+}
+
+/* ── CTA primario ───────────────────────────────────────────────────────── */
+.esc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  background-color: var(--color-gold);
+  color: var(--color-abyss);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  border: none;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease;
+}
+
+.esc-cta:hover {
+  background-color: var(--color-gold-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px -8px rgba(255, 169, 2, 0.55);
+}
+
+.esc-cta:focus-visible {
+  outline: 2px solid var(--color-blue-bright);
+  outline-offset: 3px;
+}
+
+.esc-cta--ghost {
+  background-color: transparent;
+  color: var(--color-gold);
+  border: 1px solid rgba(255, 169, 2, 0.45);
+}
+
+.esc-cta--ghost:hover {
+  background-color: rgba(255, 169, 2, 0.08);
+  border-color: var(--color-gold);
+}
+
+/* ── Stats bar ──────────────────────────────────────────────────────────── */
+.esc-stats {
+  display: flex;
+  justify-content: center;
+  gap: clamp(2rem, 6vw, 5rem);
+  padding: 4rem 1.5rem;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  background-color: var(--color-navy-deep);
+  position: relative;
+  z-index: 1;
+}
+
+.esc-stat-item {
+  text-align: center;
+}
+
+.esc-stat-value {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 1.5rem + 2.5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--color-gold);
+  line-height: 1;
+  display: block;
+}
+
+.esc-stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-mist);
+  display: block;
+  margin-top: 0.35rem;
+}
+
+/* ── Section wrapper ────────────────────────────────────────────────────── */
+.esc-section {
+  position: relative;
+  padding: clamp(5rem, 3rem + 7vw, 8.5rem) 1.5rem;
+  max-width: 1120px;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+.esc-section--full {
+  max-width: none;
+  padding-left: clamp(1.5rem, 5vw, 5rem);
+  padding-right: clamp(1.5rem, 5vw, 5rem);
+}
+
+.esc-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--color-blue-bright);
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.esc-section-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 1.2rem + 3.5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+  margin: 0 0 1.5rem;
+}
+
+.esc-body {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--color-mist);
+  max-width: 60ch;
+}
+
+/* ── Módulos: luces en el escenario ─────────────────────────────────────── */
+.esc-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5px;
+  background-color: var(--color-line);
+  border: 1px solid var(--color-line);
+}
+
+.esc-module-card {
+  position: relative;
+  background-color: var(--color-abyss);
+  padding: 2.5rem 2rem;
+  cursor: default;
+  overflow: hidden;
+  transition:
+    background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Marca lumínica en la esquina */
+.esc-module-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Halo dorado interno al iluminar (hover / iluminado por IntersectionObserver) */
+.esc-module-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 200px at var(--esc-card-mx, 50%) var(--esc-card-my, 50%),
+    rgba(255, 169, 2, 0.07) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.esc-module-card:hover,
+.esc-module-card--lit {
+  background-color: var(--color-navy);
+}
+
+.esc-module-card:hover::before,
+.esc-module-card--lit::before {
+  opacity: 1;
+}
+
+.esc-module-card:hover::after,
+.esc-module-card--lit::after {
+  opacity: 1;
+}
+
+.esc-module-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  opacity: 0.55;
+  display: block;
+  margin-bottom: 0.75rem;
+  transition: opacity 0.3s ease;
+}
+
+.esc-module-card:hover .esc-module-num,
+.esc-module-card--lit .esc-module-num {
+  opacity: 1;
+}
+
+.esc-module-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-paper);
+  margin: 0 0 0.5rem;
+  line-height: 1.3;
+}
+
+.esc-module-line {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-mist-dim);
+  margin: 0;
+  transition: color 0.35s ease;
+}
+
+.esc-module-card:hover .esc-module-line,
+.esc-module-card--lit .esc-module-line {
+  color: var(--color-mist);
+}
+
+/* ── Indicador de haz lateral (módulos) ─────────────────────────────────── */
+.esc-beam-indicator {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  border-radius: 2px;
+  opacity: 0;
+  transition:
+    height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s ease;
+}
+
+.esc-module-card:hover .esc-beam-indicator,
+.esc-module-card--lit .esc-beam-indicator {
+  height: 60%;
+  opacity: 0.6;
+}
+
+/* ── Transformación: antes / después ────────────────────────────────────── */
+.esc-transform-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background-color: var(--color-line);
+  border: 1px solid var(--color-line);
+}
+
+@media (max-width: 640px) {
+  .esc-transform-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.esc-transform-col {
+  background-color: var(--color-abyss);
+  padding: 2.5rem 2rem;
+}
+
+.esc-transform-col--after {
+  background-color: var(--color-navy-deep);
+}
+
+.esc-transform-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.esc-transform-label--before {
+  color: var(--color-mist-dim);
+}
+
+.esc-transform-label--after {
+  color: var(--color-gold);
+}
+
+.esc-transform-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.esc-transform-item {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-mist);
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.esc-transform-item--after {
+  color: var(--color-paper);
+}
+
+.esc-transform-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 0.45rem;
+  background-color: var(--color-mist-dim);
+}
+
+.esc-transform-dot--after {
+  background-color: var(--color-gold);
+}
+
+.esc-quote {
+  border-left: 2px solid var(--color-gold);
+  padding: 1.25rem 1.5rem;
+  margin: 3rem 0 0;
+  background-color: rgba(255, 169, 2, 0.04);
+}
+
+.esc-quote-text {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--color-paper);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Metodología (pillars) ──────────────────────────────────────────────── */
+.esc-pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.esc-pillar {
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-navy-deep);
+  position: relative;
+}
+
+.esc-pillar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 2px;
+  background: var(--color-gold);
+  opacity: 0.6;
+}
+
+.esc-pillar-title {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-paper);
+  margin: 1rem 0 0.5rem;
+}
+
+.esc-pillar-body {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--color-mist);
+  margin: 0;
+}
+
+/* ── Público (profiles) ─────────────────────────────────────────────────── */
+.esc-profiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.esc-profile-tag {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--color-paper);
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--color-line);
+  background-color: rgba(174, 188, 212, 0.05);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+/* ── Ficha académica (facts) ─────────────────────────────────────────────── */
+.esc-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1px;
+  background-color: var(--color-line);
+  border: 1px solid var(--color-line);
+  margin-top: 3rem;
+}
+
+.esc-fact {
+  background-color: var(--color-abyss);
+  padding: 1.5rem 1.25rem;
+}
+
+.esc-fact-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-mist-dim);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.esc-fact-value {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-paper);
+  display: block;
+}
+
+/* ── Urgencia ────────────────────────────────────────────────────────────── */
+.esc-urgency-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.esc-urgency-card {
+  padding: 2rem 1.75rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-navy-deep);
+  position: relative;
+}
+
+.esc-urgency-title {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gold);
+  margin: 0 0 0.6rem;
+}
+
+.esc-urgency-desc {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--color-mist);
+  margin: 0;
+}
+
+/* ── FAQ ─────────────────────────────────────────────────────────────────── */
+.esc-faq-list {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-line);
+}
+
+.esc-faq-item {
+  border-bottom: 1px solid var(--color-line);
+  background-color: var(--color-abyss);
+}
+
+.esc-faq-item:last-child {
+  border-bottom: none;
+}
+
+.esc-faq-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  gap: 1.5rem;
+  transition: background-color 0.25s ease;
+}
+
+.esc-faq-trigger:hover {
+  background-color: var(--color-navy);
+}
+
+.esc-faq-trigger:focus-visible {
+  outline: 2px solid var(--color-blue-bright);
+  outline-offset: -2px;
+}
+
+.esc-faq-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  color: var(--color-gold);
+  transition: transform 0.3s ease;
+}
+
+.esc-faq-item[data-open="true"] .esc-faq-icon {
+  transform: rotate(45deg);
+}
+
+.esc-faq-answer {
+  padding: 0 1.75rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-mist);
+}
+
+.esc-faq-item[data-open="true"] .esc-faq-answer {
+  max-height: 300px;
+  padding: 0 1.75rem 1.5rem;
+}
+
+/* ── Cierre / CTA final ──────────────────────────────────────────────────── */
+.esc-close-section {
+  position: relative;
+  text-align: center;
+  padding: clamp(6rem, 4rem + 8vw, 10rem) 1.5rem;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.esc-close-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 1.2rem + 3.5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+  max-width: 20ch;
+  margin: 0 auto 1.5rem;
+}
+
+.esc-close-microcopy {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  opacity: 0.6;
+  display: block;
+  margin-top: 1.75rem;
+}
+
+/* ── Firma LS ─────────────────────────────────────────────────────────────── */
+.esc-author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 2.5rem 1.5rem;
+  border-top: 1px solid var(--color-line);
+  background-color: var(--color-abyss);
+  position: relative;
+  z-index: 1;
+}
+
+.esc-author-monogram {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--color-gold);
+  letter-spacing: -0.02em;
+  opacity: 0.8;
+}
+
+.esc-author-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--color-mist-dim);
+}
+
+.esc-author-year {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: var(--color-mist-dim);
+  opacity: 0.45;
+}
+
+/* ── Divider teatral ─────────────────────────────────────────────────────── */
+.esc-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-line-strong), transparent);
+  margin: 0;
+  border: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Reveal en scroll (mobile / pointer:coarse) ──────────────────────────── */
+.esc-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.esc-reveal--visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esc-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Ancla de inscripcion ────────────────────────────────────────────────── */
+#inscripcion {
+  scroll-margin-top: 4rem;
+}

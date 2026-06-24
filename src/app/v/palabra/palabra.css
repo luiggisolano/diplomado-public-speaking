@@ -1,0 +1,424 @@
+/*
+  Estilos co-localizados de la variante "La Palabra".
+  Todas las clases llevan prefijo .pal- para no contaminar globals.css.
+  Tipografía cinética: split de texto, stagger, pesos dramáticos, índice editorial.
+*/
+
+/* ─── Texto de visualización heroico ─── */
+.pal-hero-display {
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-style: italic;
+  font-size: clamp(3.2rem, 2rem + 6.5vw, 6.5rem);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--color-paper);
+}
+
+.pal-hero-display--sans {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -0.04em;
+}
+
+/* Palabra de acento que "toma autoridad" — oro */
+.pal-accent-word {
+  color: var(--color-gold);
+  display: inline-block;
+}
+
+/* ─── Fondo del hero: lienzo minimalista tipográfico ─── */
+.pal-hero-bg {
+  background-image:
+    radial-gradient(
+      60% 45% at 15% 10%,
+      color-mix(in oklch, var(--color-blue) 18%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      70% 50% at 88% 85%,
+      color-mix(in oklch, var(--color-gold) 12%, transparent),
+      transparent 60%
+    );
+}
+
+/* ─── Split de texto: spans por carácter/palabra ─── */
+/*
+  Estado de reposo: visible. El JS de anime.js configura el estado
+  inicial (opacity 0 / translateY) en mount. Si JS falla, el texto
+  es completamente legible sin animación.
+*/
+.pal-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.pal-word {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+/* ─── Línea hairline decorativa ─── */
+.pal-rule {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--color-line);
+}
+
+.pal-rule--gold {
+  background: color-mix(in oklch, var(--color-gold) 40%, transparent);
+}
+
+/* ─── Índice editorial de módulos: numeración grande ─── */
+.pal-module-index {
+  font-family: var(--font-mono);
+  font-size: clamp(4rem, 2rem + 8vw, 8.5rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: color-mix(in oklch, var(--color-utmach) 25%, transparent);
+  user-select: none;
+  transition: color 0.35s var(--ease-out-soft);
+}
+
+.pal-module-entry:hover .pal-module-index {
+  color: color-mix(in oklch, var(--color-gold) 55%, transparent);
+}
+
+.pal-module-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 0.9rem + 2.5vw, 2.5rem);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+}
+
+.pal-module-line {
+  font-family: var(--font-sans);
+  font-size: clamp(0.9rem, 0.75rem + 0.6vw, 1.05rem);
+  font-weight: 400;
+  color: var(--color-mist);
+  line-height: 1.5;
+}
+
+.pal-module-entry {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 clamp(1rem, 2vw, 2.5rem);
+  align-items: start;
+  padding-block: clamp(1.5rem, 2.5vw, 2.5rem);
+  border-bottom: 1px solid var(--color-line);
+  cursor: default;
+  transition: background-color 0.3s var(--ease-out-soft);
+}
+
+.pal-module-entry:first-child {
+  border-top: 1px solid var(--color-line);
+}
+
+.pal-module-entry:hover {
+  background-color: color-mix(in oklch, var(--color-navy-raised) 35%, transparent);
+}
+
+/* ─── Transformación: antes/después tipográfico ─── */
+.pal-before-text {
+  font-family: var(--font-serif);
+  font-size: clamp(1rem, 0.8rem + 0.8vw, 1.2rem);
+  font-weight: 400;
+  color: var(--color-mist-dim);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklch, var(--color-mist-dim) 50%, transparent);
+  font-style: italic;
+}
+
+.pal-after-text {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.8rem + 0.8vw, 1.2rem);
+  font-weight: 600;
+  color: var(--color-paper);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Rotación de verbo en el hero ─── */
+.pal-rotating-word {
+  display: inline-block;
+  min-width: 3ch;
+  color: var(--color-gold);
+  font-style: italic;
+}
+
+/* ─── Pilares de metodología: tarjeta ligera ─── */
+.pal-method-card {
+  padding: clamp(1.2rem, 2vw, 1.8rem) clamp(1rem, 1.5vw, 1.5rem);
+  border: 1px solid var(--color-line);
+  background: color-mix(in oklch, var(--color-navy-raised) 40%, transparent);
+  transition:
+    border-color 0.35s var(--ease-out-soft),
+    background-color 0.35s var(--ease-out-soft);
+}
+
+.pal-method-card:hover {
+  border-color: var(--color-line-strong);
+  background: color-mix(in oklch, var(--color-navy-raised) 70%, transparent);
+}
+
+.pal-method-card-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(0.95rem, 0.8rem + 0.6vw, 1.1rem);
+  color: var(--color-paper);
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.01em;
+}
+
+.pal-method-card-desc {
+  font-family: var(--font-sans);
+  font-size: clamp(0.82rem, 0.72rem + 0.4vw, 0.94rem);
+  color: var(--color-mist);
+  line-height: 1.55;
+}
+
+/* ─── Ficha académica: grilla de datos condensada ─── */
+.pal-fact-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-bottom: 1px solid var(--color-line);
+  padding-block: 0.9rem;
+}
+
+.pal-fact-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--color-blue-bright);
+}
+
+.pal-fact-value {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(0.9rem, 0.78rem + 0.4vw, 1rem);
+  color: var(--color-paper);
+  text-align: right;
+  letter-spacing: -0.01em;
+}
+
+/* ─── FAQ: acordeón editorial ─── */
+.pal-faq-item {
+  border-bottom: 1px solid var(--color-line);
+}
+
+.pal-faq-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  padding-block: 1.1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 1rem;
+  transition: color 0.25s;
+}
+
+.pal-faq-trigger:hover .pal-faq-q {
+  color: var(--color-paper);
+}
+
+.pal-faq-q {
+  font-family: var(--font-serif);
+  font-size: clamp(0.95rem, 0.82rem + 0.5vw, 1.1rem);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--color-mist);
+  line-height: 1.4;
+  transition: color 0.25s;
+}
+
+.pal-faq-icon {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--color-gold);
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.3s var(--ease-out-soft);
+  user-select: none;
+}
+
+.pal-faq-icon--open {
+  transform: rotate(45deg);
+}
+
+.pal-faq-answer {
+  font-family: var(--font-sans);
+  font-size: clamp(0.85rem, 0.74rem + 0.4vw, 0.97rem);
+  color: var(--color-mist);
+  line-height: 1.65;
+  padding-bottom: 1.1rem;
+  max-width: 62ch;
+}
+
+/* ─── Bloque de cierre: titular tipográfico enorme ─── */
+.pal-close-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 1.2rem + 6vw, 5.8rem);
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-paper);
+  max-width: 14ch;
+}
+
+/* ─── Cita central ─── */
+.pal-quote {
+  font-family: var(--font-serif);
+  font-size: clamp(1.3rem, 0.85rem + 2.2vw, 2.4rem);
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+  color: var(--color-paper);
+  max-width: 22ch;
+  position: relative;
+}
+
+.pal-quote::before {
+  content: "\201C";
+  position: absolute;
+  left: -0.45em;
+  top: -0.1em;
+  font-size: 3em;
+  line-height: 1;
+  color: var(--color-gold);
+  opacity: 0.35;
+  font-weight: 800;
+}
+
+/* ─── Firma LS ─── */
+.pal-author-sig {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: color-mix(in oklch, var(--color-gold) 55%, transparent);
+}
+
+.pal-author-sig strong {
+  font-weight: 600;
+  color: color-mix(in oklch, var(--color-gold) 80%, transparent);
+}
+
+/* ─── CTA primario: borde dorado, tipografía sans pesada ─── */
+.pal-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.9rem 2rem;
+  background: var(--color-gold);
+  color: var(--color-abyss);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1rem);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition:
+    background-color 0.25s var(--ease-out-soft),
+    transform 0.25s var(--ease-out-soft);
+}
+
+.pal-cta:hover {
+  background: var(--color-gold-soft);
+  transform: translateY(-2px);
+}
+
+.pal-cta--outline {
+  background: transparent;
+  color: var(--color-paper);
+  border: 1px solid var(--color-line-strong);
+}
+
+.pal-cta--outline:hover {
+  background: color-mix(in oklch, var(--color-navy-raised) 60%, transparent);
+  border-color: color-mix(in oklch, var(--color-blue-bright) 60%, transparent);
+  transform: translateY(-2px);
+}
+
+/* ─── Stat bar ─── */
+.pal-stat-num {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 1rem + 4vw, 4rem);
+  font-weight: 600;
+  color: var(--color-paper);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.pal-stat-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--color-mist-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* ─── Pulsación: contorno tipográfico "echo" ─── */
+.pal-ghost-headline {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-style: italic;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklch, var(--color-gold) 20%, transparent);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ─── Perfil de audiencia: lista de palabras ─── */
+.pal-audience-tag {
+  display: inline-block;
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 0.85rem + 1.2vw, 1.7rem);
+  font-weight: 600;
+  font-style: italic;
+  color: var(--color-mist);
+  line-height: 1.4;
+  transition: color 0.3s var(--ease-out-soft);
+}
+
+.pal-audience-tag:hover {
+  color: var(--color-paper);
+}
+
+/* ─── Reveal motion: el JS configura el estado inicial ─── */
+.pal-reveal-ready {
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pal-char,
+  .pal-word,
+  .pal-reveal-ready {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .pal-rotating-word {
+    animation: none !important;
+  }
+  .pal-cta:hover,
+  .pal-module-entry:hover .pal-module-index {
+    transform: none;
+  }
+}

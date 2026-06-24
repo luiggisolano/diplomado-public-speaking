@@ -1,0 +1,228 @@
+/*
+  Estilos co-localizados de la variante "La Voz".
+  Todas las clases llevan prefijo .voz- para no contaminar globals.css.
+  Keyframes y efectos específicos del scrollytelling de onda de voz.
+*/
+
+/* ─── Waveform hero: canvas flotante con mezcla de capa ─── */
+.voz-waveform-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ─── Hilo conductor: la onda que recorre toda la página ─── */
+.voz-spine {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: min(900px, 96vw);
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.06;
+}
+
+/* ─── Hero: fondo del escenario vocal ─── */
+.voz-hero-bg {
+  background-image:
+    radial-gradient(
+      70% 50% at 50% -10%,
+      color-mix(in oklch, var(--color-utmach) 30%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      90% 60% at 50% 110%,
+      color-mix(in oklch, var(--color-gold) 12%, transparent),
+      transparent 65%
+    );
+}
+
+/* ─── Waveform scroll-driven: la onda que evoluciona ─── */
+.voz-waveform-scroll {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ─── Barra ecualizadora vertical ─── */
+.voz-eq-bar {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  transform-origin: center bottom;
+  background: var(--color-gold);
+  will-change: transform, opacity;
+}
+
+@keyframes voz-eq-pulse {
+  0%, 100% { transform: scaleY(0.3); opacity: 0.4; }
+  50%       { transform: scaleY(1);   opacity: 0.9; }
+}
+
+.voz-eq-bar-animated {
+  animation: voz-eq-pulse 1.4s ease-in-out infinite;
+}
+
+/* ─── Estado dubitativo → firme de la onda ─── */
+@keyframes voz-tremble {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(-1.5px); }
+  50%  { transform: translateY(1px); }
+  75%  { transform: translateY(-0.8px); }
+  100% { transform: translateY(0); }
+}
+
+.voz-tremble {
+  animation: voz-tremble 0.18s linear infinite;
+}
+
+/* ─── Revelado de secciones con deslizamiento de onda ─── */
+.voz-reveal-init {
+  opacity: 0;
+  transform: translateY(32px);
+  will-change: transform, opacity;
+}
+
+/* ─── Módulo: tarjeta con acento de frecuencia izquierda ─── */
+.voz-module-card {
+  position: relative;
+  border: 1px solid var(--color-line);
+  background-color: color-mix(in oklch, var(--color-navy-raised) 55%, transparent);
+  transition:
+    border-color 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft),
+    box-shadow 0.35s var(--ease-out-soft);
+}
+
+.voz-module-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(
+    to bottom,
+    var(--color-utmach),
+    var(--color-gold)
+  );
+  opacity: 0.5;
+  transition: opacity 0.35s var(--ease-out-soft);
+}
+
+.voz-module-card:hover {
+  border-color: var(--color-line-strong);
+  transform: translateY(-5px);
+  box-shadow: 0 24px 56px -28px rgba(3, 8, 22, 0.9), var(--shadow-glow-blue);
+}
+
+.voz-module-card:hover::before {
+  opacity: 1;
+}
+
+/* ─── Transformación: separador before/after con onda ─── */
+.voz-transform-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.voz-transform-divider::before,
+.voz-transform-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-line-strong),
+    transparent
+  );
+}
+
+/* ─── FAQ accordion ─── */
+.voz-faq-item {
+  border-bottom: 1px solid var(--color-line);
+  transition: border-color 0.25s ease;
+}
+
+.voz-faq-item[data-open="true"] {
+  border-color: var(--color-line-strong);
+}
+
+.voz-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease-out-soft);
+}
+
+.voz-faq-answer[data-open="true"] {
+  max-height: 400px;
+}
+
+/* ─── Firma LS variante ─── */
+.voz-author-footer {
+  background: color-mix(in oklch, var(--color-abyss) 80%, var(--color-navy-deep) 20%);
+  border-top: 1px solid var(--color-line);
+}
+
+/* ─── Stat card con línea de base ─── */
+.voz-stat {
+  border-bottom: 2px solid color-mix(in oklch, var(--color-gold) 35%, transparent);
+  transition: border-color 0.3s ease;
+}
+
+.voz-stat:hover {
+  border-color: var(--color-gold);
+}
+
+/* ─── CTA inscripcion: panel de inscripción con halo dorado ─── */
+.voz-cta-panel {
+  position: relative;
+  background: color-mix(in oklch, var(--color-navy-raised) 70%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-gold) 22%, transparent);
+}
+
+.voz-cta-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--color-gold) 18%, transparent),
+    transparent 50%,
+    color-mix(in oklch, var(--color-utmach) 14%, transparent)
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Reducción de movimiento: todo estático ─── */
+@media (prefers-reduced-motion: reduce) {
+  .voz-eq-bar-animated {
+    animation: none;
+    transform: scaleY(0.6);
+    opacity: 0.6;
+  }
+  .voz-tremble {
+    animation: none;
+  }
+  .voz-reveal-init {
+    opacity: 1;
+    transform: none;
+  }
+  .voz-module-card:hover {
+    transform: none;
+  }
+}
