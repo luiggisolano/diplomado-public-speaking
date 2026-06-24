@@ -1,0 +1,18 @@
+{
+  "lcp_s": 4.371,
+  "lcp_element": null,
+  "lcp_phases": null,
+  "render_blocking": [],
+  "top_opportunities": [
+    {
+      "id": "unused-javascript",
+      "savings_ms": 300,
+      "title": "Reduce unused JavaScript"
+    },
+    {
+      "id": "server-response-time",
+      "savings_ms": 5,
+      "title": "Initial server response time was short"
+    }
+  ]
+}

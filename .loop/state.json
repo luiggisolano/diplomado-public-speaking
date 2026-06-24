@@ -1,0 +1,111 @@
+{
+  "target": "/",
+  "iteracion": 4,
+  "heap_anterior_mb": -8.055,
+  "intentos_mobile": 0,
+  "score_anterior": 0.6704,
+  "condiciones": {
+    "build": true,
+    "perf": false,
+    "leak": true,
+    "visual": true,
+    "seo": true
+  },
+  "ultimas_metricas": {
+    "lcp_s": 3.486,
+    "inp_proxy_tbt_ms": 62,
+    "cls": 0,
+    "js_kb": 178.9,
+    "seo_score": 1,
+    "_muestras_lcp": [
+      3.486,
+      3.473,
+      4.027
+    ],
+    "delta_heap_mb": -8.055
+  },
+  "historial": [
+    {
+      "iteracion": 1,
+      "score": 0.6808,
+      "metrics": {
+        "lcp_s": 4.202,
+        "inp_proxy_tbt_ms": 82,
+        "cls": 0,
+        "js_kb": 179,
+        "seo_score": 1,
+        "delta_heap_mb": -8.055
+      },
+      "condiciones": {
+        "perf": false,
+        "leak": true,
+        "visual": true,
+        "seo": true
+      }
+    },
+    {
+      "iteracion": 2,
+      "score": 0.7468,
+      "metrics": {
+        "lcp_s": 4.367,
+        "inp_proxy_tbt_ms": 68,
+        "cls": 0,
+        "js_kb": 179,
+        "seo_score": 1,
+        "delta_heap_mb": -8.054
+      },
+      "condiciones": {
+        "perf": false,
+        "leak": true,
+        "visual": true,
+        "seo": true
+      }
+    },
+    {
+      "iteracion": 3,
+      "score": 0.6704,
+      "metrics": {
+        "lcp_s": 4.176,
+        "inp_proxy_tbt_ms": 57,
+        "cls": 0,
+        "js_kb": 178.9,
+        "seo_score": 1,
+        "_muestras_lcp": [
+          4.204,
+          4.173,
+          4.176
+        ],
+        "delta_heap_mb": -8.055
+      },
+      "condiciones": {
+        "perf": false,
+        "leak": true,
+        "visual": true,
+        "seo": true
+      }
+    },
+    {
+      "iteracion": 4,
+      "score": 0.3944,
+      "metrics": {
+        "lcp_s": 3.486,
+        "inp_proxy_tbt_ms": 62,
+        "cls": 0,
+        "js_kb": 178.9,
+        "seo_score": 1,
+        "_muestras_lcp": [
+          3.486,
+          3.473,
+          4.027
+        ],
+        "delta_heap_mb": -8.055
+      },
+      "condiciones": {
+        "perf": false,
+        "leak": true,
+        "visual": true,
+        "seo": true
+      }
+    }
+  ]
+}

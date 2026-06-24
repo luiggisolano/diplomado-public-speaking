@@ -6,7 +6,7 @@ import "./globals.css";
 const spectral = Spectral({
   subsets: ["latin"],
   variable: "--font-spectral",
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -16,6 +16,7 @@ const inter = Inter({
   variable: "--font-inter",
   weight: ["300", "400", "500", "600"],
   display: "swap",
+  preload: false,
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -23,6 +24,7 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   weight: ["400", "500", "600"],
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {

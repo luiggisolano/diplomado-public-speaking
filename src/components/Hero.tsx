@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { createTimeline, stagger } from "animejs";
+import React, { useEffect, useRef } from "react";
+import { createTimeline } from "animejs";
 import { LineIcon } from "@/components/LineIcon";
 import { DotGrid } from "@/components/motion/DotGrid";
 import { MicrophoneMotif } from "@/components/motion/MicrophoneMotif";
@@ -13,12 +13,18 @@ import { HERO, PRIMARY_CTA_HREF } from "@/lib/content";
   técnica en mono, titular en serif Spectral con la línea de cierre en ámbar institucional,
   subtítulo, CTA azul y la fila de datos animados (CountUp). A la derecha, el panel-instrumento
   con la grilla de partículas (firma animejs.com) y el emblema de micrófono que traza su
-  silueta y emite ondas. Sobre todo, el plano blueprint y los halos del hero-field. La entrada
-  se orquesta con una timeline de anime.js (líneas enmascaradas + escalonado). Respeta
-  prefers-reduced-motion mostrando el contenido completo.
+  silueta y emite ondas. Sobre todo, el plano blueprint y los halos del hero-field.
+
+  La entrada del bloque de texto izquierdo (titular LCP, eyebrow, subtítulo, CTA, datos y
+  aval) se coreografía con keyframes CSS (.hero-line-animated y .hero-reveal--*) que arrancan
+  en el primer paint del navegador, sin esperar a la hidratación de React. Esto evita que el
+  contenido visible en móvil permanezca oculto durante la ventana de medición de LCP. Solo el
+  panel decorativo derecho (oculto en móvil) conserva la timeline de anime.js, ya que no es
+  parte del contenido de carga crítica. Respeta prefers-reduced-motion mostrando el contenido
+  completo, tanto vía las media queries CSS como vía el fallback de este efecto para el panel.
 */
 
-const MOUNT_DELAY_MS = 150;
+const PANEL_ENTRANCE_OFFSET_MS = 970;
 
 export default function Hero() {
   const rootRef = useRef<HTMLElement | null>(null);
@@ -47,42 +53,11 @@ export default function Hero() {
       defaults: { ease: "out(4)", duration: 1100 },
     });
 
-    timeline
-      .add(
-        '[data-hero="pretitle"]',
-        { opacity: [0, 1], translateY: [16, 0], duration: 800 },
-        MOUNT_DELAY_MS,
-      )
-      .add(
-        '[data-hero="line"]',
-        { translateY: ["110%", "0%"], duration: 1200, delay: stagger(140) },
-        "-=400",
-      )
-      .add(
-        '[data-hero="subtitle"]',
-        { opacity: [0, 1], translateY: [20, 0] },
-        "-=700",
-      )
-      .add(
-        '[data-hero="cta"]',
-        { opacity: [0, 1], translateY: [20, 0], scale: [0.96, 1] },
-        "-=850",
-      )
-      .add(
-        '[data-hero="stat"]',
-        { opacity: [0, 1], translateY: [16, 0], delay: stagger(90) },
-        "-=800",
-      )
-      .add(
-        '[data-hero="panel"]',
-        { opacity: [0, 1], scale: [0.94, 1], duration: 1300 },
-        "-=1200",
-      )
-      .add(
-        '[data-hero="trust"]',
-        { opacity: [0, 1], translateY: [12, 0], delay: stagger(60) },
-        "-=700",
-      );
+    timeline.add(
+      '[data-hero="panel"]',
+      { opacity: [0, 1], scale: [0.94, 1], duration: 1300 },
+      PANEL_ENTRANCE_OFFSET_MS,
+    );
 
     return () => {
       timeline.pause();
@@ -99,22 +74,25 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="flex flex-col">
-          <p
-            data-hero="pretitle"
-            className="tech-label mb-7 flex items-center gap-3 opacity-0"
-          >
+          <p className="hero-reveal hero-reveal--pretitle tech-label mb-7 flex items-center gap-3">
             <span className="inline-block h-px w-8 bg-blue-bright/50" />
             {HERO.preTitle}
           </p>
 
           <h1 className="font-serif text-[length:var(--text-display)] font-semibold leading-[1.04] tracking-[-0.02em] text-paper">
             <span className="mask-line">
-              <span data-hero="line" className="inline-block">
+              <span
+                className="hero-line-animated"
+                style={{ "--hero-line-index": "0" } as React.CSSProperties}
+              >
                 {HERO.titleLineOne}
               </span>
             </span>
             <span className="mask-line">
-              <span data-hero="line" className="inline-block">
+              <span
+                className="hero-line-animated"
+                style={{ "--hero-line-index": "1" } as React.CSSProperties}
+              >
                 {HERO.titleLineTwo}{" "}
                 <em className="serif-accent serif-accent--italic font-normal text-gold">
                   {HERO.titleAccent}
@@ -123,17 +101,11 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p
-            data-hero="subtitle"
-            className="mt-7 max-w-xl text-base leading-relaxed text-mist opacity-0 sm:text-lg"
-          >
+          <p className="hero-reveal hero-reveal--subtitle mt-7 max-w-xl text-base leading-relaxed text-mist sm:text-lg">
             {HERO.subtitle}
           </p>
 
-          <div
-            data-hero="cta"
-            className="mt-10 flex flex-col items-start gap-5 opacity-0 sm:flex-row sm:items-center sm:gap-7"
-          >
+          <div className="hero-reveal hero-reveal--cta mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-7">
             <a
               href={PRIMARY_CTA_HREF}
               className="group relative inline-flex items-center gap-3 rounded-full bg-gradient-to-b from-blue-bright to-blue px-9 py-4 text-sm font-semibold tracking-wide text-paper transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_50px_-12px_rgba(77,147,245,0.6)]"
@@ -151,11 +123,13 @@ export default function Hero() {
           </div>
 
           <dl className="mt-12 grid max-w-xl grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-4">
-            {HERO.stats.map((stat) => (
+            {HERO.stats.map((stat, statIndex) => (
               <div
                 key={stat.label}
-                data-hero="stat"
-                className="flex flex-col gap-1 border-l border-line pl-4 opacity-0"
+                className="hero-reveal hero-reveal--stat flex flex-col gap-1 border-l border-line pl-4"
+                style={
+                  { "--hero-stagger-index": statIndex } as React.CSSProperties
+                }
               >
                 <dt className="text-3xl font-semibold text-blue-bright sm:text-4xl">
                   <CountUp to={stat.value} suffix={stat.suffix} />
@@ -195,8 +169,8 @@ export default function Hero() {
           {HERO.trust.map((item, index) => (
             <li
               key={item}
-              data-hero="trust"
-              className="flex items-center gap-3 opacity-0"
+              className="hero-reveal hero-reveal--trust flex items-center gap-3"
+              style={{ "--hero-stagger-index": index } as React.CSSProperties}
             >
               {index > 0 && (
                 <span className="h-1 w-1 rounded-full bg-gold/70" aria-hidden />

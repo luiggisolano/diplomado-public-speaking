@@ -265,6 +265,102 @@ body {
   overflow: hidden;
 }
 
+/*
+  Revelado de líneas del titular LCP mediante CSS puro. Replica el comportamiento de la
+  timeline de anime.js (translateY 110%→0%, easing out(4) ≈ cubic-bezier(0.12,0.92,0.22,1),
+  duración 1200ms) sin depender de useEffect ni de la hidratación de React, permitiendo que
+  el elemento LCP sea pintado en el primer frame del navegador.
+
+  --hero-line-index se inyecta en línea desde Hero.tsx para replicar el stagger de 140ms
+  por línea. La primera línea arranca a los 150ms (MOUNT_DELAY_MS del componente original)
+  y cada línea adicional suma 140ms de delay.
+*/
+@keyframes heroLineReveal {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
+
+.hero-line-animated {
+  display: inline-block;
+  animation-name: heroLineReveal;
+  animation-duration: 1200ms;
+  animation-timing-function: cubic-bezier(0.12, 0.92, 0.22, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(150ms + var(--hero-line-index, 0) * 140ms);
+}
+
+/*
+  Revelado CSS-first del bloque de texto izquierdo del Hero (pretitle, subtitle, cta,
+  stats, trust). Sustituye la coreografía de la timeline de anime.js por keyframes que
+  arrancan en el primer paint del navegador, sin esperar a la hidratación de React. El
+  easing cubic-bezier(0.12,0.92,0.22,1) aproxima el out(4) de anime.js; cada modificador
+  declara su delay absoluto, su duración y su translateY inicial idénticos a los offsets
+  reconstruidos de la timeline previa, conservando el ritmo escalonado exacto.
+
+  El estado inicial (opacity 0 + desplazamiento) vive en el keyframe con
+  animation-fill-mode: both, de modo que el elemento ya nace oculto sin necesitar la clase
+  opacity-0 en el markup y sin flash. Solo se anima opacity y transform, que no provocan
+  reflow, manteniendo CLS en 0. El stagger por elemento se obtiene multiplicando
+  --hero-stagger-index (inyectado en línea) por --hero-stagger-step.
+*/
+@keyframes heroFadeRise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--hero-rise, 20px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-reveal {
+  animation-name: heroFadeRise;
+  animation-timing-function: cubic-bezier(0.12, 0.92, 0.22, 1);
+  animation-fill-mode: both;
+  animation-duration: var(--hero-duration, 1100ms);
+  animation-delay: calc(
+    var(--hero-base-delay, 0ms) +
+      var(--hero-stagger-index, 0) * var(--hero-stagger-step, 0ms)
+  );
+}
+
+.hero-reveal--pretitle {
+  --hero-rise: 16px;
+  --hero-duration: 800ms;
+  --hero-base-delay: 150ms;
+}
+
+.hero-reveal--subtitle {
+  --hero-rise: 20px;
+  --hero-duration: 1100ms;
+  --hero-base-delay: 250ms;
+}
+
+.hero-reveal--cta {
+  --hero-rise: 20px;
+  --hero-duration: 1100ms;
+  --hero-base-delay: 500ms;
+}
+
+.hero-reveal--stat {
+  --hero-rise: 16px;
+  --hero-duration: 1100ms;
+  --hero-base-delay: 800ms;
+  --hero-stagger-step: 90ms;
+}
+
+.hero-reveal--trust {
+  --hero-rise: 12px;
+  --hero-duration: 1100ms;
+  --hero-base-delay: 1570ms;
+  --hero-stagger-step: 60ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -274,6 +370,15 @@ body {
     transform: none !important;
   }
   .card-tech:hover {
+    transform: none;
+  }
+  .hero-line-animated {
+    animation: none;
+    transform: none;
+  }
+  .hero-reveal {
+    animation: none;
+    opacity: 1;
     transform: none;
   }
 }
