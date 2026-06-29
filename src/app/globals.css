@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-black: #0A0A0A;
+  --color-ink: #121212;
+  --color-surface: #1A1A18;
+  --color-charcoal: #2A2723;
+  --color-cream: #F5F0E8;
+  --color-cream-dim: #D9D2C5;
+  --color-gold: #C9A85C;
+  --color-gold-bright: #E8D49A;
+  --color-gold-dark: #A8893F;
+  --color-muted: #8A8578;
+  --color-line: #2E2B26;
+  --color-success: #6FAE7E;
+
+  --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
+
+main > * {
+  scroll-snap-align: start;
+}
+
+body {
+  background-color: var(--color-black);
+  color: var(--color-cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--color-gold);
+  color: var(--color-black);
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(.58,.3,.005,1) both; }
+.animate-fade-in    { animation: fade-in 0.6s cubic-bezier(.58,.3,.005,1) both; }
+.animate-shimmer    { animation: shimmer-pulse 2.5s ease-in-out infinite; }
+
+.animation-delay-100 { animation-delay: .1s; }
+.animation-delay-200 { animation-delay: .2s; }
+.animation-delay-300 { animation-delay: .3s; }
+.animation-delay-400 { animation-delay: .4s; }
+.animation-delay-500 { animation-delay: .5s; }
+.animation-delay-600 { animation-delay: .6s; }
+
+input:focus, textarea:focus, select:focus { outline: none; }
+
+.gold-border-glow {
+  box-shadow: 0 0 0 1px rgba(201, 168, 92, 0.25), 0 4px 24px rgba(201, 168, 92, 0.08);
+}
+
+.section-padding {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+  .section-padding {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
