@@ -10,3 +10,30 @@ npm-debug.log*
 next-env.d.ts
 .vercel
 *.tsbuildinfo
+
+# === guardia-seguridad-upload ===
+.env
+.env.*
+!.env.example
+!.env.sample
+.vercel/
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.*
+*credentials*.json
+*service-account*.json
+recovery-codes*.txt
+supabase/.temp/
+.DS_Store
+# === fin-guardia ===
