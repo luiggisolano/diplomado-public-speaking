@@ -1,0 +1,1093 @@
+/*
+  Podio — landing definitiva del diplomado, servida en «/» y también en «/g/podio», que
+  quedó como ruta heredada. Construida alrededor de una secuencia de imágenes que avanza
+  con el scroll: un dolly-in de auditorio que va del plano general con la sala llena al
+  primer plano del micrófono.
+
+  Tokens propios (no importa camara.css) para que la ruta sea autónoma: son la misma gama
+  oro/negro cálido del brochure real, declarados aquí para que tocar Cámara o Fusión no
+  pueda romper esta página ni al revés.
+
+  La tipografía es la del díptico promocional oficial (ver src/lib/fonts-diptico.ts):
+  Playfair Display para titulares, cifras y numeración de módulos; Glacial Indifference
+  para cuerpo, kickers y etiquetas. Las tres clases utilitarias que esta página hereda de
+  globals.css —.font-serif, .tech-label y .mono-num— se redefinen aquí acotadas a
+  .pod-root, porque su versión global apunta a Spectral e IBM Plex Mono y la comparten /,
+  /telon, /galeria y las cuatro rutas /v/*, que siguen en la gama Aula Futura.
+
+  El punto delicado de toda secuencia fotográfica es el contraste del texto: el material
+  tiene humo claro y focos quemados justo donde va el titular. Se resuelve con un velo
+  direccional opaco en el tercio donde vive la letra, dejando limpio el lado del podio.
+*/
+
+.pod-root {
+  --color-abyss: #080603;
+  --color-negro-calido: #100b06;
+  --color-negro-elevado: #1a130b;
+  --color-oro: #b4822d;
+  --color-oro-brillo: #e7b655;
+  --color-oro-suave: #f0c877;
+  --color-oro-sombra: #885825;
+  --color-hueso: #f3eee2;
+  --color-texto: #bdb6a8;
+  --color-texto-tenue: #7c766a;
+  --color-linea: rgba(189, 182, 168, 0.14);
+  --color-linea-fuerte: rgba(180, 130, 45, 0.4);
+
+  --ancho-columna-texto: 34rem;
+  --ancho-maximo-contenido: 72rem;
+  --margen-lateral: clamp(1.5rem, 5vw, 6rem);
+  --transicion-capitulo: 620ms cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /*
+    DipticoSignos va inmediatamente después de Glacial Indifference porque solo aporta el
+    interpunto y los signos de apertura que a esta le faltan; el orden de la cascada es lo
+    que garantiza que el resto del alfabeto lo siga dibujando Glacial.
+  */
+  --fuente-display: var(--font-diptico-display), "Playfair Display", Georgia, serif;
+  --fuente-sans:
+    var(--font-diptico-sans), var(--font-diptico-signos), var(--font-inter), system-ui,
+    sans-serif;
+
+  --tracking-etiqueta: 0.24em;
+  --tracking-kicker: 0.28em;
+
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-abyss);
+  color: var(--color-hueso);
+  font-family: var(--fuente-sans);
+  overflow-x: clip;
+}
+
+/* ---------------------------------------------------------------- tipografía */
+
+/*
+  Redefinición acotada de las utilidades globales. En el díptico la numeración de módulos
+  y las cifras de la ficha son Playfair, no una monoespaciada, así que .mono-num pasa a
+  display: conserva el nombre porque lo consumen el markup de esta página y el de las
+  demás variantes, pero aquí significa «cifra en Playfair».
+*/
+.pod-root .font-serif {
+  font-family: var(--fuente-display);
+  font-weight: 400;
+}
+
+.pod-root .tech-label {
+  font-family: var(--fuente-sans);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-etiqueta);
+}
+
+.pod-root .mono-num {
+  font-family: var(--fuente-display);
+  font-variant-numeric: normal;
+}
+
+/* ------------------------------------------------------------------ secuencia */
+
+.pod-secuencia {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--color-abyss);
+}
+
+.pod-secuencia__lienzo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 900ms ease-out;
+}
+
+.pod-secuencia[data-secuencia-lista="true"] .pod-secuencia__lienzo {
+  opacity: 1;
+}
+
+/*
+  Velo direccional suave. Oscurece el flanco izquierdo, donde se posa el titular, y se
+  disipa antes de llegar al podio, que se ve a plena luz. Es deliberadamente mucho más
+  ligero que el velo original —tope 0,62 en vez de negro macizo— para que el humo y los
+  focos sigan leyéndose bajo la letra en lugar de quedar sepultados.
+
+  El 0,62 del arranque no es un valor tanteado. Medido sobre los 96 frames, la banda donde
+  cae el titular llega a 245 de luminancia en el tramo medio, y ahí el hueso sin velo daba
+  1,01:1, es decir invisible. Componiendo el negro de la gama a 0,62 sobre ese pico el fondo
+  baja a ~98 y el titular recupera 4,9:1, que ya es AA. El halo del texto se mantiene, pero
+  reducido: con el velo puesto solo tiene que perfilar, no sostener la legibilidad entera.
+*/
+.pod-secuencia__velo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      100deg,
+      rgba(8, 6, 3, 0.62) 0%,
+      rgba(8, 6, 3, 0.56) 26%,
+      rgba(8, 6, 3, 0.34) 48%,
+      rgba(8, 6, 3, 0.1) 70%,
+      transparent 84%
+    ),
+    linear-gradient(to top, rgba(8, 6, 3, 0.5) 0%, transparent 24%);
+}
+
+/*
+  Halo de legibilidad para lo que se posa sobre el metraje. Con el velo suave ya puesto, dos
+  capas bastan: una ceñida que perfila la letra contra el humo y otra abierta que la despega
+  del fondo. Una sombra solo ocupa el área de la letra, así que no vela el encuadre.
+*/
+.pod-secuencia__contenido,
+.pod-secuencia__pie {
+  --halo-sobre-imagen: 0 0 2px rgba(8, 6, 3, 0.72), 0 2px 20px rgba(8, 6, 3, 0.6);
+}
+
+.pod-capitulo__titulo {
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  Los rótulos de 11-12 px piden otro tratamiento: a ese cuerpo una sombra difusa se
+  convierte en mancha y engorda el trazo, mientras un contorno de sombras de 1 px perfila la
+  letra. Van con menos opacidad que cuando no había velo, pero se quedan: el oro claro sobre
+  el tramo iluminado sigue siendo el punto más delicado de la pantalla.
+*/
+.pod-secuencia__kicker,
+.pod-capitulo__indice,
+.pod-secuencia__indicacion {
+  text-shadow:
+    1px 1px 1px rgba(8, 6, 3, 0.7), -1px 1px 1px rgba(8, 6, 3, 0.7),
+    1px -1px 1px rgba(8, 6, 3, 0.7), -1px -1px 1px rgba(8, 6, 3, 0.7),
+    0 2px 14px rgba(8, 6, 3, 0.62);
+}
+
+/*
+  La barra de progreso es un filete de 1 px: sobre el humo claro del tramo medio se perdería
+  igual que el texto, así que se le da su propia sombra proyectada y un carril algo más denso.
+*/
+.pod-progreso {
+  box-shadow: 0 1px 10px rgba(8, 6, 3, 0.75);
+}
+
+.pod-progreso__barra {
+  box-shadow: 0 0 12px rgba(231, 182, 85, 0.55);
+}
+
+.pod-secuencia__contenido {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5rem;
+  padding-inline: var(--margen-lateral);
+  padding-block: clamp(5rem, 12vh, 9rem);
+}
+
+/*
+  El díptico abre con «DIPLOMADO EN» muy espaciado sobre el titular. Ese tracking abierto
+  es la firma de la portada, así que el kicker lo replica en lugar del 0,16em anterior.
+*/
+.pod-secuencia__kicker {
+  color: var(--color-oro-brillo);
+  font-size: 0.72rem;
+  letter-spacing: var(--tracking-kicker);
+}
+
+/*
+  Los capítulos se apilan en la misma celda de la retícula: solo uno es visible y los
+  demás quedan bajo él sin empujar la maqueta, así el relevo no mueve nada alrededor.
+*/
+.pod-secuencia__capitulos {
+  display: grid;
+  max-width: var(--ancho-columna-texto);
+  min-height: 15rem;
+}
+
+.pod-capitulo {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(1.75rem);
+  transition:
+    opacity var(--transicion-capitulo),
+    transform var(--transicion-capitulo);
+  pointer-events: none;
+}
+
+.pod-capitulo[data-activo="true"] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/*
+  El número va en Playfair y la etiqueta en Glacial versalita: la misma pareja con la que
+  el díptico rotula los seis módulos, cifra serif dorada contra rótulo geométrico.
+*/
+.pod-capitulo__indice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-oro);
+}
+
+.pod-capitulo__etiqueta {
+  font-family: var(--fuente-sans);
+  font-size: 0.7rem;
+  letter-spacing: var(--tracking-etiqueta);
+  color: var(--color-texto-tenue);
+  text-transform: uppercase;
+}
+
+/*
+  Playfair tiene ojo menor y ascendentes más largas que la Spectral que estaba aquí antes:
+  el interlineado sube de 1,08 a 1,14 para que las mayúsculas acentuadas no rocen la línea
+  superior, y el tracking negativo casi desaparece porque su ancho ya es estrecho.
+*/
+.pod-capitulo__titulo {
+  font-size: var(--text-display);
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.005em;
+  color: var(--color-hueso);
+  text-wrap: balance;
+}
+
+/*
+  En el díptico el remate de cada par de frases no es cursiva sino Playfair Bold en oro
+  («Domina tu mente. / Domina tu audiencia.»). El acento adopta ese contraste de peso.
+*/
+.pod-capitulo__acento {
+  display: block;
+  font-weight: 700;
+  color: var(--color-oro-brillo);
+}
+
+/* ------------------------------------------------------------- pie y progreso */
+
+.pod-secuencia__pie {
+  position: absolute;
+  inset-inline: var(--margen-lateral);
+  bottom: clamp(1.75rem, 4vh, 3rem);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.pod-progreso {
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-linea);
+  overflow: hidden;
+}
+
+.pod-progreso__barra {
+  height: 100%;
+  background-color: var(--color-oro-brillo);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.pod-secuencia__indicacion {
+  flex-shrink: 0;
+  color: var(--color-texto-tenue);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  opacity: 1;
+  transition: opacity 480ms ease-out;
+}
+
+.pod-secuencia__indicacion[data-oculto="true"] {
+  opacity: 0;
+}
+
+/* --------------------------------------------------- estado del motion importado */
+
+/*
+  Estas tres clases las escriben los componentes de movimiento que esta ruta reutiliza de
+  Cámara: .cam-reveal es el estado oculto de partida que evita el destello antes de que GSAP
+  tome el control, y .cam-line/.cam-word las genera SplitText al partir un titular. Se
+  declaran aquí, acotadas a .pod-root, porque la ruta no importa camara.css: sin ellas el
+  revelado arrancaría con el texto ya visible y daría un salto.
+*/
+.pod-root .cam-reveal {
+  opacity: 0;
+}
+
+.pod-root .cam-line {
+  overflow: hidden;
+}
+
+.pod-root .cam-word {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ------------------------------------------------------------------- secciones */
+
+.pod-seccion {
+  position: relative;
+  padding-inline: var(--margen-lateral);
+  padding-block: clamp(5rem, 14vh, 9rem);
+  border-top: 1px solid var(--color-linea);
+  background-color: var(--color-abyss);
+}
+
+/*
+  El contenido se detiene en un ancho de lectura y se centra, mientras la sección sigue
+  ocupando todo el viewport: así los filetes y los fondos alternos cruzan la pantalla de
+  lado a lado sin que las rejillas se estiren en monitores anchos.
+*/
+.pod-seccion > * {
+  max-width: var(--ancho-maximo-contenido);
+  margin-inline: auto;
+}
+
+/*
+  Alternancia de fondo entre secciones consecutivas. Es lo que en Fusión hacía el relevo
+  abyss / navy-deep, traído a la gama oro y negro de esta ruta.
+*/
+.pod-seccion--alterna {
+  background-color: var(--color-negro-calido);
+}
+
+.pod-seccion--cifras {
+  padding-block: clamp(3rem, 8vh, 5rem);
+}
+
+.pod-seccion__eyebrow {
+  margin-bottom: 1.25rem;
+  color: var(--color-oro);
+  letter-spacing: 0.2em;
+}
+
+.pod-seccion__titulo {
+  max-width: 22ch;
+  font-size: var(--text-section);
+  font-weight: 400;
+  line-height: 1.16;
+  letter-spacing: -0.005em;
+  color: var(--color-hueso);
+  text-wrap: balance;
+}
+
+/*
+  Glacial Indifference es más ligera y de ojo menor que la Inter que servía antes el
+  cuerpo, así que sobre negro pide un cuerpo algo mayor para sostener la misma lectura.
+*/
+.pod-seccion__cuerpo {
+  max-width: 56ch;
+  margin-top: 1.5rem;
+  font-size: 1.0625rem;
+  color: var(--color-texto);
+  line-height: 1.72;
+}
+
+/*
+  Los tres logros son una lista, no un párrafo: sin marca ni aire quedaban como tres frases
+  pegadas. Se les pone el mismo filete dorado con el que el díptico abre cada logro de la
+  columna «TU TRANSFORMACIÓN».
+*/
+.pod-logros {
+  display: grid;
+  gap: 0.9rem;
+  list-style: none;
+  padding: 0;
+}
+
+.pod-logros li {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.pod-logros li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 0.85rem;
+  height: 1px;
+  background-color: var(--color-oro);
+}
+
+/* -------------------------------------------------------------- módulos */
+
+.pod-rejilla-modulos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+  overflow-x: clip;
+}
+
+.pod-modulo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-negro-calido);
+  border: 1px solid var(--color-linea);
+  transition:
+    border-color 320ms ease-out,
+    background-color 320ms ease-out;
+}
+
+.pod-modulo:hover {
+  background-color: var(--color-negro-elevado);
+  border-color: var(--color-linea-fuerte);
+}
+
+/*
+  Portada a sangre con el icono neón oro del material oficial. La entrada la conduce
+  ModuleSlide sobre la tarjeta completa, así que la imagen se mantiene quieta para no
+  competir con ese desplazamiento.
+*/
+.pod-modulo__portada {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: var(--color-abyss);
+  border-bottom: 1px solid var(--color-linea);
+}
+
+.pod-modulo__imagen {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pod-modulo__cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: clamp(1.35rem, 2.4vw, 1.85rem);
+}
+
+/*
+  Las cifras 01-06 del díptico son Playfair de cuerpo grande en oro, con el peso visual de
+  un folio editorial.
+*/
+.pod-modulo__numero {
+  font-size: 1.875rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-oro);
+}
+
+.pod-modulo__titulo {
+  margin-top: 0.9rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--color-hueso);
+}
+
+.pod-modulo__linea {
+  margin-top: 0.6rem;
+  font-size: 0.9375rem;
+  color: var(--color-texto);
+  line-height: 1.65;
+}
+
+/* ------------------------------------------------------------ especialistas */
+
+/*
+  Mismo ancho mínimo que la rejilla de módulos para que las dos caigan en tres columnas: seis
+  tarjetas en dos filas de tres, en vez de un 4+2 que deja la segunda fila coja.
+*/
+.pod-rejilla-especialistas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+.pod-especialista {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-negro-calido);
+  border: 1px solid var(--color-linea);
+}
+
+/*
+  Retrato temático mientras no haya fotografías: un halo dorado con el número del módulo
+  centrado. No se ilustra con personas inventadas ni con siluetas genéricas de banco.
+*/
+.pod-especialista__retrato {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-bottom: 1px solid var(--color-linea);
+  background-image: radial-gradient(
+    62% 62% at 50% 42%,
+    rgba(180, 130, 45, 0.22),
+    transparent 70%
+  );
+}
+
+.pod-especialista__numero {
+  font-size: 2.75rem;
+  line-height: 1;
+  color: var(--color-oro-sombra);
+}
+
+.pod-especialista__cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: clamp(1.25rem, 2.2vw, 1.6rem);
+}
+
+.pod-especialista__modulo {
+  font-size: 0.66rem;
+  color: var(--color-texto-tenue);
+}
+
+.pod-especialista__nombre {
+  margin-top: 0.9rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--color-hueso);
+}
+
+.pod-especialista__disciplina {
+  margin-top: 0.5rem;
+  font-size: 0.66rem;
+  color: var(--color-oro-brillo);
+}
+
+.pod-especialista__credencial {
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-texto);
+}
+
+/* ------------------------------------------------------ maqueta a dos columnas */
+
+/*
+  Reparto asimétrico para las secciones donde el titular acompaña a una lista larga: el
+  titular manda pero no ocupa la mitad del ancho.
+*/
+.pod-columnas {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+@media (min-width: 62rem) {
+  .pod-columnas {
+    grid-template-columns: 0.85fr 1.15fr;
+  }
+}
+
+.pod-perfil {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  padding-block: 1.15rem;
+  border-bottom: 1px solid var(--color-linea);
+}
+
+.pod-perfiles > .pod-perfil:first-child {
+  border-top: 1px solid var(--color-linea);
+}
+
+.pod-perfil__numero {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  color: var(--color-oro);
+}
+
+.pod-perfil__nombre {
+  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.5rem);
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+/* --------------------------------------------------------- antes y después */
+
+.pod-contraste {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+@media (min-width: 48rem) {
+  .pod-contraste {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pod-contraste__panel {
+  height: 100%;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background-color: var(--color-negro-calido);
+  border: 1px solid var(--color-linea);
+}
+
+.pod-contraste__panel--despues {
+  border-color: var(--color-linea-fuerte);
+  background-color: var(--color-negro-elevado);
+}
+
+.pod-contraste__rotulo {
+  font-size: 0.66rem;
+  color: var(--color-texto-tenue);
+}
+
+.pod-contraste__panel--despues .pod-contraste__rotulo {
+  color: var(--color-oro-brillo);
+}
+
+.pod-contraste .pod-logros {
+  margin-top: 1.4rem;
+}
+
+.pod-logros--destacados li {
+  color: var(--color-hueso);
+}
+
+.pod-logros--destacados li::before {
+  background-color: var(--color-oro-brillo);
+}
+
+.pod-cita {
+  max-width: 46rem;
+  margin: clamp(3.5rem, 9vh, 5.5rem) auto 0;
+  text-align: center;
+}
+
+.pod-cita__texto {
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.375rem);
+  font-weight: 400;
+  line-height: 1.28;
+  color: var(--color-hueso);
+  text-wrap: balance;
+}
+
+/* ------------------------------------------------------- pilares y razones */
+
+.pod-rejilla-pilares {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+.pod-pilar {
+  height: 100%;
+  padding: clamp(1.5rem, 2.6vw, 2rem);
+  background-color: var(--color-negro-calido);
+  border: 1px solid var(--color-linea);
+}
+
+.pod-pilar__numero {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-oro);
+}
+
+.pod-pilar__titulo {
+  margin-top: 1rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--color-hueso);
+}
+
+.pod-pilar__linea {
+  margin-top: 0.6rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--color-texto);
+}
+
+/* -------------------------------------------------------------- cifras y ficha */
+
+/*
+  Réplica del bloque «INFORMACIÓN GENERAL» del díptico: la cifra en Playfair dorado y debajo
+  su unidad en Glacial espaciada (160 HORAS · 6 MÓDULOS · 100 % EN LÍNEA). El contador lo
+  anima StatCounter al entrar en pantalla.
+*/
+.pod-cifras {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background-color: var(--color-linea);
+  border: 1px solid var(--color-linea);
+}
+
+@media (min-width: 48rem) {
+  .pod-cifras {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.pod-cifra {
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background-color: var(--color-abyss);
+}
+
+.pod-cifra__valor {
+  font-size: clamp(2.5rem, 1.8rem + 2vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--color-oro-brillo);
+}
+
+.pod-cifra__etiqueta {
+  margin-top: 1rem;
+  font-size: 0.66rem;
+  color: var(--color-texto-tenue);
+}
+
+.pod-datos {
+  border-top: 1px solid var(--color-linea);
+}
+
+.pod-dato {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.1rem;
+  border-bottom: 1px solid var(--color-linea);
+}
+
+.pod-dato__etiqueta {
+  font-size: 0.66rem;
+  letter-spacing: var(--tracking-etiqueta);
+  color: var(--color-texto-tenue);
+}
+
+.pod-dato__valor {
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--color-oro-brillo);
+}
+
+/* ------------------------------------------------------------------- faq */
+
+.pod-faq__item {
+  border-bottom: 1px solid var(--color-linea);
+}
+
+.pod-faq__item:first-child {
+  border-top: 1px solid var(--color-linea);
+}
+
+/*
+  El texto de la pregunta necesita min-width 0 para poder encogerse: como elemento flex su
+  ancho mínimo es el de su palabra más larga, y a 390 px «certificación» más el icono y el
+  hueco desbordaban la tarjeta cuatro píxeles.
+*/
+.pod-faq__pregunta > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pod-faq__pregunta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+  width: 100%;
+  padding-block: 1.35rem;
+  font-family: var(--fuente-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: left;
+  color: var(--color-hueso);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 240ms ease-out;
+}
+
+.pod-faq__pregunta:hover {
+  color: var(--color-oro-brillo);
+}
+
+/*
+  El margen derecho reserva sitio para el giro. Al rotar 45 grados, el aspa de 18 px pasa a
+  ocupar 25,5 px de caja visual (18 por raíz de dos), y sin ese hueco los cuatro píxeles de
+  diferencia asoman fuera del botón y aparecen como desborde horizontal en pantalla estrecha.
+*/
+.pod-faq__icono {
+  flex-shrink: 0;
+  margin-inline-end: 4px;
+  color: var(--color-oro);
+  transition: transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pod-faq__pregunta[aria-expanded="true"] .pod-faq__icono {
+  transform: rotate(45deg);
+}
+
+/*
+  La altura se anima con grid-template-rows de 0fr a 1fr, que abre sin reflow ni salto de
+  maqueta y no obliga a medir el contenido con JavaScript.
+*/
+.pod-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pod-faq__panel[data-abierta="true"] {
+  grid-template-rows: 1fr;
+}
+
+.pod-faq__panel-interior {
+  overflow: hidden;
+}
+
+.pod-faq__respuesta {
+  max-width: 46rem;
+  padding-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.72;
+  color: var(--color-texto);
+}
+
+/* ------------------------------------------------------- tarjeta de inscripción */
+
+.pod-inscripcion {
+  max-width: 34rem;
+  margin: clamp(2.5rem, 6vh, 3.5rem) auto 0;
+  padding: clamp(1.75rem, 3.5vw, 2.5rem);
+  text-align: left;
+  background-color: var(--color-negro-calido);
+  border: 1px solid var(--color-linea-fuerte);
+  box-shadow: 0 0 60px rgba(180, 130, 45, 0.12);
+}
+
+.pod-inscripcion__rotulo {
+  font-size: 0.66rem;
+  color: var(--color-oro-brillo);
+}
+
+.pod-inscripcion .pod-acciones {
+  flex-direction: column;
+  margin-top: 1.75rem;
+}
+
+.pod-inscripcion .pod-boton {
+  width: 100%;
+}
+
+.pod-contacto {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-linea);
+}
+
+.pod-contacto__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-block: 0.5rem;
+}
+
+.pod-contacto__fila dt {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  color: var(--color-texto-tenue);
+}
+
+.pod-contacto__fila dd {
+  font-size: 0.85rem;
+  text-align: right;
+  color: var(--color-texto);
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------------ cta */
+
+.pod-cierre {
+  text-align: center;
+}
+
+.pod-cierre .pod-seccion__titulo {
+  max-width: 20ch;
+  margin-inline: auto;
+}
+
+.pod-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: clamp(2rem, 5vh, 3rem);
+}
+
+.pod-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 2.25rem;
+  font-family: var(--fuente-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--color-oro);
+  color: var(--color-abyss);
+  background-color: var(--color-oro-brillo);
+  transition:
+    background-color 260ms ease-out,
+    transform 260ms ease-out;
+}
+
+.pod-boton:hover {
+  background-color: var(--color-oro-suave);
+  transform: translateY(-2px);
+}
+
+.pod-boton--secundario {
+  color: var(--color-oro-brillo);
+  background-color: transparent;
+}
+
+.pod-boton--secundario:hover {
+  background-color: rgba(180, 130, 45, 0.14);
+  color: var(--color-oro-suave);
+}
+
+/*
+  Estas dos líneas son frases largas, no rótulos de dos palabras: heredan de .tech-label la
+  caja alta y la familia, pero se les recorta el tracking para que no desborden en móvil.
+*/
+.pod-root .pod-microcopy {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--color-texto-tenue);
+}
+
+.pod-root .pod-secuencia__indicacion {
+  letter-spacing: 0.16em;
+}
+
+/* -------------------------------------------------------------------- pantalla estrecha */
+
+/*
+  Por debajo de esta relación el lienzo deja de recortar y muestra el encuadre entero
+  (la lógica vive en SecuenciaScroll). Aquí sí hay velo, y es el único sitio donde lo hay:
+  arranca al 44 % de la altura de la pantalla, por debajo del borde inferior de la imagen,
+  que con 8vh de margen y proporción 16:9 termina alrededor del 34 %. Es decir, no vela el
+  metraje, funde el negro sobre el que cae el titular. El titular se encoge para no comerse
+  la imagen.
+*/
+@media (max-width: 820px) {
+  /*
+    En vertical la secuencia 16:9 no puede llenar la pantalla sin recortar tanto que se
+    pierde la sala, que es justamente lo que cuenta el primer tramo. Se le da al lienzo su
+    proporción exacta anclado arriba y el texto baja al negro macizo de debajo: la imagen
+    se ve entera y el titular gana un fondo sólido en vez de competir con el humo.
+  */
+  .pod-secuencia__lienzo {
+    inset: auto 0 auto 0;
+    top: 8vh;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .pod-secuencia__velo {
+    background-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 44%,
+      rgba(8, 6, 3, 0.55) 52%,
+      var(--color-abyss) 62%
+    );
+  }
+
+  /*
+    El texto arranca justo bajo el borde inferior de la imagen: 8vh de margen superior más
+    la altura que impone la proporción 16:9 sobre el ancho de la pantalla.
+  */
+  .pod-secuencia__contenido {
+    justify-content: flex-start;
+    gap: 1.75rem;
+    padding-block-start: calc(8vh + 56.25vw + 2rem);
+    padding-block-end: 5rem;
+  }
+
+  .pod-secuencia__capitulos {
+    min-height: 13rem;
+  }
+
+  .pod-capitulo__titulo {
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+  }
+
+  .pod-acciones {
+    flex-direction: column;
+  }
+
+  .pod-boton {
+    width: 100%;
+  }
+}
+
+/* ------------------------------------------------------------- movimiento reducido */
+
+@media (prefers-reduced-motion: reduce) {
+  .pod-secuencia__lienzo,
+  .pod-capitulo,
+  .pod-boton,
+  .pod-modulo,
+  .pod-faq__panel,
+  .pod-faq__icono {
+    transition: none;
+  }
+
+  /*
+    Red de seguridad del motion importado: los componentes ya comprueban reduced-motion en
+    JavaScript, pero el estado oculto de partida lo pone el CSS. Si el revelado no llegara a
+    ejecutarse, sin esto la sección se quedaría invisible en vez de simplemente quieta.
+  */
+  .pod-root .cam-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /*
+    Sin scroll-driven no hay relevo de capítulos: se muestran los cuatro en columna,
+    legibles de una vez sobre el frame estático.
+  */
+  .pod-secuencia {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .pod-secuencia__capitulos {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .pod-capitulo,
+  .pod-capitulo[data-activo="true"] {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .pod-secuencia__indicacion {
+    display: none;
+  }
+}

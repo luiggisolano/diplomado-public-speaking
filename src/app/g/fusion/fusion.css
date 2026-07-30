@@ -1,0 +1,384 @@
+/*
+  Fusión — /g/fusion. Ejemplo que combina tres piezas que le gustaron al usuario:
+    · la LETRA de Cámara Anecoica (revelado palabra a palabra),
+    · la TRANSICIÓN DE MÓDULOS de Cámara (MethodConsole: barrido pinneado por etapas),
+    · el FONDO NUBE de Sónica (campo de bandas WebGL con domain warping).
+
+  La ruta reutiliza la maquetación y los componentes de Cámara envueltos en .cam-root
+  (tokens oro/negro cálido + clases cam-*, importados desde camara.css). Aquí viven solo
+  las piezas propias de la fusión: la capa de fondo nube reescalada a los tokens de
+  Cámara y el ajuste para que las secciones densas dejen respirar el medio entre bloques,
+  como en la dirección Sónica, sin sacrificar la legibilidad del texto hueso sobre negro.
+  Contraste texto >= 4.5:1 y respeto estricto a prefers-reduced-motion (heredados).
+
+  Desde el 29-07-2026 el hero ya no es un video en bucle sino la secuencia de frames
+  scroll-driven de /g/podio, y la tipografía es la del díptico promocional oficial
+  (Playfair Display + Glacial Indifference, ver src/lib/fonts-diptico.ts) en vez de la
+  gama Spectral + IBM Plex Mono que sigue vigente en /g/camara. Ambas cosas viven aquí,
+  acotadas a .fus-root: /g/camara comparte camara.css y no debe notar ninguno de los dos
+  cambios.
+*/
+
+/* ---------------------------------------------------------------- tipografía */
+
+/*
+  El díptico no tiene monoespaciada: sus dos únicas voces son Playfair para lo editorial
+  y Glacial para todo lo demás. La utilidad .font-mono que Cámara usa a lo largo de la
+  página cumple en realidad el papel de etiqueta en caja alta con tracking amplio, que en
+  el folleto es Glacial, así que se remapea entera a la sans. Las cifras —contadores,
+  numeración de módulos, índices de etapa— son la excepción: en el díptico los números son
+  serif, y se recuperan más abajo con .fus-cifra.
+
+  DipticoSignos va inmediatamente después de Glacial Indifference porque solo aporta el
+  interpunto y los signos de apertura que a esta le faltan; el orden de la cascada es lo
+  que garantiza que el resto del alfabeto lo siga dibujando Glacial.
+*/
+.fus-root {
+  --fuente-display: var(--font-diptico-display), "Playfair Display", Georgia, serif;
+  --fuente-sans:
+    var(--font-diptico-sans), var(--font-diptico-signos), var(--font-inter), system-ui,
+    sans-serif;
+  --tracking-etiqueta: 0.24em;
+
+  font-family: var(--fuente-sans);
+}
+
+.fus-root .font-serif {
+  font-family: var(--fuente-display);
+  font-weight: 400;
+}
+
+.fus-root .font-mono {
+  font-family: var(--fuente-sans);
+}
+
+.fus-root .tech-label {
+  font-family: var(--fuente-sans);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-etiqueta);
+}
+
+/*
+  Cifras en Playfair. .fus-cifra es la clase propia de esta ruta; las otras tres pertenecen
+  a componentes compartidos con /g/camara que no se pueden tocar sin arrastrar el cambio a
+  la otra dirección, así que se alcanzan por selector desde aquí: .mono-num la pone
+  StatCounter en el span que contiene el número —marcar el párrafo de fuera no basta,
+  porque la familia la decide el elemento que dibuja el glifo—, .cam-stage-index numera las
+  etapas de MethodConsole y la combinación .font-mono.text-4xl es exclusiva de sus dos
+  lecturas grandes. El nombre .mono-num queda desmentido aquí, igual que en Podio: en el
+  díptico los números son serif, no monoespaciados.
+*/
+.fus-root .fus-cifra,
+.fus-root .mono-num,
+.fus-root .cam-stage-index,
+.fus-root .font-mono.text-4xl {
+  font-family: var(--fuente-display);
+  font-variant-numeric: normal;
+}
+
+/*
+  Ajustes ópticos obligados por el cambio de métrica: Playfair tiene ojo menor y
+  ascendentes más largas que Spectral, así que el interlineado cerrado y el tracking
+  negativo que servían para la anterior aquí hacen que las líneas del titular se toquen.
+*/
+.fus-root .fus-titulo-seccion {
+  font-weight: 400;
+  line-height: 1.16;
+  letter-spacing: -0.005em;
+}
+
+.fus-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/*
+  Degradado estático de respaldo (y base bajo el lienzo): dos radiales cálidos sobre el
+  negro base. Es lo que se ve sin WebGL o con reduced-motion, y lo que asienta el color
+  cuando el shader aún no ha revelado.
+*/
+.fus-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(120% 80% at 18% 0%, #1a130b 0%, transparent 55%),
+    radial-gradient(120% 90% at 88% 100%, #0b0805 0%, transparent 60%);
+  background-color: var(--color-abyss);
+}
+
+/*
+  Grano fino en overlay: rompe el banding del degradado y de la nube, dándole textura de
+  medio físico. Idéntico al de Sónica.
+*/
+.fus-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.fus-backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ----------------------------------------------------------------------- hero */
+
+/*
+  Altura exacta de viewport, no mínima: ScrollTrigger pinnea esta sección y necesita saber
+  cuánto mide para calcular el espaciador. El overflow recorta el lienzo, que cubre más de
+  lo que se ve.
+*/
+.fus-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/*
+  Lienzo de la secuencia de frames, en el lugar exacto que ocupaba el video: cubre toda la
+  primera pantalla y queda detrás del contenido. El recorte lo decide el canvas (modo
+  «cubrir»), no object-fit, porque aquí no hay elemento reemplazado sino un dibujo. Aparece
+  con una transición corta en cuanto los frames prioritarios están decodificados, para que
+  el primer pintado no sea un salto de negro a imagen.
+*/
+.fus-hero-lienzo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 700ms ease-out;
+}
+
+.fus-hero[data-secuencia-lista="true"] .fus-hero-lienzo {
+  opacity: 1;
+}
+
+.fus-hero-marco {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+/*
+  Retirada del bloque de texto en el último tramo del recorrido. La presencia la escribe
+  FusionHero por frame y aquí solo se consume: opacidad más un desplazamiento corto hacia
+  arriba, en la misma dirección en la que entró. Al quedar retirado deja de recibir
+  puntero, porque un CTA invisible pero clicable es una trampa.
+*/
+.fus-hero-salida {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 3.5rem;
+  opacity: var(--fus-presencia, 1);
+  transform: translate3d(0, calc((1 - var(--fus-presencia, 1)) * -2.25rem), 0);
+  will-change: opacity, transform;
+}
+
+.fus-hero-salida[data-retirado="true"] {
+  pointer-events: none;
+}
+
+/*
+  Titular. Playfair Regular a interlineado 1,14: el 1,04 de la versión Spectral juntaba las
+  ascendentes de una línea con las descendentes de la anterior.
+*/
+.fus-hero-titulo {
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.005em;
+}
+
+/*
+  Remate de la pareja de frases. En el díptico el cierre no es una cursiva sino Playfair
+  Bold en oro («Domina tu mente. / Domina tu audiencia.»), y además la familia se carga
+  solo en estilo recto: pedir cursiva aquí obligaría al navegador a inclinarla por cálculo.
+*/
+.fus-hero-remate {
+  font-weight: 700;
+}
+
+.fus-hero-micro {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-mist-dim);
+}
+
+.fus-hero-cue {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 2.5rem;
+  transition: opacity 420ms ease-out;
+}
+
+.fus-hero-cue[data-oculto="true"] {
+  opacity: 0;
+}
+
+.fus-hero-cue-texto {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-etiqueta);
+  color: var(--color-mist-dim);
+}
+
+/*
+  Velo del hero sobre la secuencia. Un gradiente lateral oscurece la columna izquierda
+  —donde se ancla el titular— para asegurar el contraste del texto hueso, dejando respirar
+  las luces cálidas del escenario a la derecha; un gradiente vertical añade un velo general
+  y funde el borde inferior con el negro cálido de la sección siguiente. Todo con el negro
+  de marca (#080603), nunca negro puro.
+*/
+.fus-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(8, 6, 3, 0.86) 0%,
+      rgba(8, 6, 3, 0.56) 44%,
+      rgba(8, 6, 3, 0.24) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(8, 6, 3, 0.4) 0%,
+      rgba(8, 6, 3, 0.32) 42%,
+      rgba(8, 6, 3, 0.92) 100%
+    );
+}
+
+/*
+  El fondo nube es fijo detrás de todo; las secciones densas de Cámara son opacas por
+  defecto y lo taparían. Aquí las volvemos translúcidas para que el medio sónico respire
+  entre bloques. El texto hueso sigue legible sobre el negro cálido, y las superficies
+  internas (tarjetas card-tech, paneles cam-panel, cam-diff) conservan su propio fondo
+  para mantener el contraste local del cuerpo de texto. El Hero y las bandas (cam-band)
+  quedan intactos: son transparentes por diseño y muestran la nube a plena presencia.
+*/
+.fus-root main > section.bg-abyss,
+.fus-root main > section.bg-navy-deep {
+  background-color: color-mix(in oklch, var(--color-abyss) 60%, transparent);
+}
+
+/*
+  Portada de módulo. Cabecera de imagen a sangre en la parte superior de cada tarjeta,
+  en proporción 16:9. El marco recorta la imagen y aloja el barrido (clip-path) del
+  revelado; ModuleCover conduce la animación. La imagen (icono neón oro sobre negro) se
+  funde con el fondo cálido de la tarjeta; una línea inferior separa la portada del texto.
+*/
+.fus-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: var(--color-abyss);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.fus-cover-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform, opacity;
+}
+
+/*
+  Retrato de especialista. Proporción 4:5. Con foto real se recorta a sangre (encuadre
+  superior, ideal para retratos). Sin foto, un marcador temático: halo oro sobre negro,
+  silueta y el índice del módulo, para que la tarjeta se vea intencional mientras llegan
+  las fotos definitivas.
+*/
+.fus-speaker-portrait {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-line);
+  background:
+    radial-gradient(
+      90% 70% at 50% 28%,
+      color-mix(in oklch, var(--color-utmach-official) 24%, transparent),
+      transparent 70%
+    ),
+    var(--color-abyss);
+}
+
+.fus-speaker-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.fus-speaker-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in oklch, var(--color-blue-bright) 55%, transparent);
+}
+
+.fus-speaker-placeholder svg {
+  width: 34%;
+  height: auto;
+  opacity: 0.55;
+}
+
+.fus-speaker-modnum {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.5rem;
+  font-family: var(--fuente-display);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: color-mix(in oklch, var(--color-paper) 12%, transparent);
+}
+
+/* -------------------------------------------------------------- pantalla estrecha */
+
+/*
+  En vertical el titular ocupa todo el ancho, así que el velo lateral deja de servir: la
+  columna derecha, pensada para que respiren las luces del escenario, cae justo debajo del
+  texto. Se sustituye por un velo plano que oscurece la mitad inferior, donde vive el copy,
+  y conserva limpia la parte alta del encuadre.
+*/
+@media (max-width: 820px) {
+  .fus-hero-scrim {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(8, 6, 3, 0.34) 0%,
+        rgba(8, 6, 3, 0.52) 34%,
+        rgba(8, 6, 3, 0.88) 62%,
+        rgba(8, 6, 3, 0.96) 100%
+      );
+  }
+}

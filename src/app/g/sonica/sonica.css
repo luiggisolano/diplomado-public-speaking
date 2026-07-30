@@ -1,0 +1,1119 @@
+/*
+  Sistema de diseño scoped de la dirección "Sónica" (ruta /g/sonica). Brutalista
+  premium: navy-abismo profundo, azul institucional/eléctrico como único color de
+  acción, una señal magenta como firma decorativa (motivo "en vivo", nunca texto),
+  tipografía display masiva (Bricolage Grotesque) y etiquetas mono (IBM Plex Mono).
+  Todo vive bajo .sonica para no filtrarse a globals ni a las otras variantes. Las
+  variables de fuente (--font-display, --font-mono) vienen del @theme global.
+
+  Jerarquía de profundidad (ritmo de capítulos): immersive (shader a pleno, texto
+  gigante + scrim) / default (abismo casi opaco, shimmer del shader al 8%) / panel
+  (navy sólido, capítulo editorial en calma). Contraste de texto ≥ 4.5:1 en todos.
+*/
+
+.sonica {
+  --son-abyss: #080603;
+  --son-navy: #100b06;
+  --son-navy-2: #1a130b;
+  --son-blue: #b4822d;
+  --son-blue-el: #e7b655;
+  --son-blue-glow: #e7b655;
+  --son-signal: #e7b655;
+
+  --son-ink: #f3eee2;
+  --son-ink-72: rgba(243, 238, 226, 0.74);
+  --son-ink-52: rgba(243, 238, 226, 0.6);
+  --son-ink-40: rgba(243, 238, 226, 0.46);
+  --son-ink-30: rgba(243, 238, 226, 0.3);
+  --son-dim: rgba(243, 238, 226, 0.66);
+
+  --son-line: rgba(189, 182, 168, 0.12);
+  --son-line-strong: rgba(180, 130, 45, 0.42);
+
+  --son-text-body: clamp(1rem, 0.96rem + 0.28vw, 1.15rem);
+  --son-text-h: clamp(2.3rem, 1.2rem + 4.6vw, 4.6rem);
+  --son-text-xl: clamp(2.8rem, 1rem + 8vw, 6.5rem);
+  --son-text-hero: clamp(3.2rem, 1rem + 13vw, 10rem);
+
+  --son-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  min-height: 100dvh;
+  background-color: var(--son-abyss);
+  color: var(--son-ink);
+  font-family: var(--font-display);
+  font-synthesis-weight: none;
+}
+
+/* ------------------------------------------------------------------ backdrop */
+
+.son-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.son-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(120% 80% at 18% 0%, #1a130b 0%, transparent 55%),
+    radial-gradient(120% 90% at 88% 100%, #0b0805 0%, transparent 60%);
+  background-color: var(--son-abyss);
+}
+
+.son-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.son-backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.son-flow {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------------ skip link */
+
+.son-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 60;
+}
+
+.son-skip:focus {
+  left: 1rem;
+  top: 1rem;
+  padding: 0.65rem 1.1rem;
+  background: var(--son-blue-el);
+  color: var(--son-abyss);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------------ primitives */
+
+.son-section {
+  position: relative;
+  padding-block: clamp(4.5rem, 3rem + 7vw, 8.5rem);
+  background: color-mix(in oklch, var(--son-abyss) 92%, transparent);
+}
+
+.son-section--panel {
+  background: linear-gradient(180deg, var(--son-navy-2) 0%, var(--son-navy) 100%);
+}
+
+.son-section--immersive {
+  background: transparent;
+}
+
+.son-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+}
+
+.son-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--son-blue-el);
+  margin: 0;
+}
+
+.son-h {
+  margin: clamp(0.85rem, 1.5vw, 1.25rem) 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--son-text-h);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--son-ink);
+  text-wrap: balance;
+}
+
+.son-h--xl {
+  font-size: var(--son-text-xl);
+  line-height: 0.96;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.son-body {
+  font-size: var(--son-text-body);
+  line-height: 1.6;
+  color: var(--son-ink-72);
+  max-width: 60ch;
+}
+
+.son-dim {
+  color: var(--son-dim);
+}
+
+.son-signal {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--son-signal);
+  box-shadow: 0 0 10px 1px color-mix(in oklch, var(--son-signal) 55%, transparent);
+  animation: son-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes son-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.son-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  padding: 0.85rem 1.5rem;
+  border-radius: 2px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.3s var(--son-ease),
+    background-color 0.3s var(--son-ease),
+    border-color 0.3s var(--son-ease),
+    color 0.3s var(--son-ease);
+}
+
+.son-btn--primary {
+  background: var(--son-blue-el);
+  color: var(--son-abyss);
+}
+
+.son-btn--primary:hover {
+  background: var(--son-blue-glow);
+  transform: translateY(-2px);
+}
+
+.son-btn--ghost {
+  background: transparent;
+  color: var(--son-ink);
+  border: 1px solid var(--son-ink-30);
+}
+
+.son-btn--ghost:hover {
+  border-color: var(--son-blue-el);
+  color: var(--son-blue-glow);
+  transform: translateY(-2px);
+}
+
+/* ------------------------------------------------------------------ hero */
+
+.son-hero {
+  min-height: 100dvh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  padding-block: clamp(6rem, 12vh, 9rem) clamp(4rem, 8vh, 6rem);
+}
+
+.son-hero__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--son-abyss) 55%, transparent) 0%,
+    transparent 32%,
+    color-mix(in oklch, var(--son-abyss) 72%, transparent) 100%
+  );
+}
+
+.son-hero__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  width: 100%;
+}
+
+/* Sobre el shader vivo la etiqueta va en tinta blanca (no azul) para garantizar
+   contraste ≥ 4.5:1 aun sobre la banda más brillante del campo. */
+.son-hero__kicker {
+  color: var(--son-ink);
+}
+
+.son-hero__display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.son-hero__line {
+  display: block;
+}
+
+.son-hero__line--sm {
+  font-size: clamp(1.35rem, 1rem + 2.2vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--son-ink);
+}
+
+.son-hero__line--dim {
+  color: var(--son-dim);
+}
+
+.son-hero__accent {
+  font-size: var(--son-text-hero);
+  line-height: 0.86;
+  margin-top: 0.12em;
+  color: var(--son-ink);
+  text-shadow:
+    calc(var(--son-vel, 0) * -7px) 0 0 rgba(255, 61, 129, 0.5),
+    calc(var(--son-vel, 0) * 7px) 0 0 rgba(180, 130, 45, 0.55);
+}
+
+.son-split-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
+}
+
+.son-hero__sub {
+  max-width: 52ch;
+}
+
+.son-hero__cta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.son-hero__micro {
+  color: var(--son-ink-52);
+  letter-spacing: 0.16em;
+}
+
+.son-hero__scroll {
+  position: absolute;
+  right: clamp(1.25rem, 5vw, 4rem);
+  bottom: clamp(1.5rem, 4vh, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.son-hero__scroll .son-label {
+  writing-mode: vertical-rl;
+  letter-spacing: 0.3em;
+  color: var(--son-ink-52);
+}
+
+.son-hero__scroll-track {
+  position: relative;
+  width: 2px;
+  height: 48px;
+  overflow: hidden;
+  background: var(--son-line);
+}
+
+.son-hero__scroll-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  background: var(--son-blue-el);
+  animation: son-scroll-cue 1.9s var(--son-ease) infinite;
+}
+
+@keyframes son-scroll-cue {
+  0% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(48px);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .son-hero__scroll {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ stats marquee */
+
+.son-stats {
+  padding-block: clamp(2rem, 3vw, 3.25rem);
+  overflow: hidden;
+}
+
+.son-marquee {
+  overflow: hidden;
+}
+
+.son-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: son-marquee 34s linear infinite;
+}
+
+.son-marquee:hover .son-marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes son-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.son-marquee__group {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.son-marquee__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  padding-inline: clamp(1.5rem, 4vw, 3.25rem);
+}
+
+.son-marquee__item .son-signal {
+  align-self: center;
+}
+
+.son-marquee__val {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 1.5rem + 2.5vw, 3.75rem);
+  letter-spacing: -0.03em;
+  color: var(--son-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.son-marquee__label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--son-ink-52);
+}
+
+/* ------------------------------------------------------------------ promise */
+
+.son-promise__headline {
+  max-width: 17ch;
+}
+
+/* ------------------------------------------------------------------ modules gallery */
+
+.son-mods {
+  padding-block: clamp(4.5rem, 3rem + 7vw, 8.5rem);
+  overflow: hidden;
+}
+
+.son-mods__viewport {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.son-mods--pinned {
+  padding-block: 0;
+}
+
+.son-mods--pinned .son-mods__viewport {
+  overflow: hidden;
+  height: 100dvh;
+}
+
+.son-mods__track {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(1rem, 2vw, 2rem);
+  padding-inline: clamp(1.25rem, 6vw, 7rem);
+  min-width: 0;
+  will-change: transform;
+}
+
+.son-mods__intro {
+  flex: 0 0 auto;
+  width: min(88vw, 480px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+  padding-right: clamp(1rem, 2vw, 2rem);
+}
+
+.son-mods__title {
+  line-height: 0.98;
+}
+
+.son-mod {
+  flex: 0 0 auto;
+  width: min(78vw, 360px);
+  min-height: min(62vh, 520px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  border: 1px solid var(--son-line);
+  border-radius: 4px;
+  background: color-mix(in oklch, var(--son-navy-2) 84%, transparent);
+  transition:
+    border-color 0.4s var(--son-ease),
+    transform 0.4s var(--son-ease);
+}
+
+.son-mod:hover {
+  border-color: var(--son-line-strong);
+  transform: translateY(-6px);
+}
+
+.son-mod__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.son-mod__n {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  line-height: 1;
+  color: var(--son-blue-el);
+}
+
+.son-mod__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--son-ink);
+}
+
+.son-mod__line {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--son-ink-72);
+}
+
+.son-mod__key {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--son-ink-40);
+}
+
+.son-mods__progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 2;
+  background: var(--son-line);
+  opacity: 0;
+}
+
+.son-mods--pinned .son-mods__progress {
+  opacity: 1;
+}
+
+.son-mods__progress-bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--son-blue-el);
+}
+
+/* ------------------------------------------------------------------ audience */
+
+.son-aud__heading {
+  max-width: 20ch;
+}
+
+.son-aud__list {
+  list-style: none;
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--son-line);
+}
+
+.son-aud__item {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2vw, 1.4rem) 0;
+  border-bottom: 1px solid var(--son-line);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.25rem, 1rem + 1.6vw, 2.2rem);
+  letter-spacing: -0.01em;
+  color: var(--son-ink);
+  transition: color 0.3s var(--son-ease);
+}
+
+.son-aud__item:hover {
+  color: var(--son-blue-glow);
+}
+
+.son-aud__idx {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--son-blue-el);
+}
+
+/* ------------------------------------------------------------------ transformation */
+
+.son-trans__heading {
+  max-width: 16ch;
+}
+
+.son-trans__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.son-trans__col {
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border: 1px solid var(--son-line);
+  border-radius: 3px;
+}
+
+.son-trans__col--before {
+  background: color-mix(in oklch, var(--son-navy) 55%, transparent);
+}
+
+.son-trans__col--after {
+  background: color-mix(in oklch, var(--son-blue) 12%, var(--son-navy));
+  border-color: var(--son-line-strong);
+}
+
+.son-trans__tag {
+  margin-bottom: 1.1rem;
+}
+
+.son-trans__col--before .son-trans__tag {
+  color: var(--son-ink-52);
+}
+
+.son-trans__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.son-trans__item {
+  font-size: var(--son-text-body);
+  line-height: 1.5;
+  color: var(--son-dim);
+}
+
+.son-trans__item--after {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--son-ink);
+}
+
+.son-trans__item--after .son-signal {
+  margin-top: 0.5em;
+  flex: none;
+}
+
+.son-quote {
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 1rem + 2.6vw, 2.8rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--son-ink);
+}
+
+/* ------------------------------------------------------------------ method */
+
+.son-method__heading {
+  max-width: 18ch;
+}
+
+.son-method__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.son-method__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid var(--son-line);
+  border-radius: 3px;
+  background: color-mix(in oklch, var(--son-navy-2) 55%, transparent);
+  transition:
+    border-color 0.4s var(--son-ease),
+    transform 0.4s var(--son-ease);
+}
+
+.son-method__card:hover {
+  border-color: var(--son-line-strong);
+  transform: translateY(-4px);
+}
+
+.son-method__n {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--son-blue-el);
+}
+
+.son-method__t {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: var(--son-ink);
+}
+
+.son-method__d {
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+/* ------------------------------------------------------------------ facts */
+
+.son-facts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  border: 1px solid var(--son-line);
+  background: var(--son-line);
+}
+
+.son-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  margin: 0;
+  background: var(--son-navy);
+}
+
+.son-fact__label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--son-ink-52);
+}
+
+.son-fact__value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.1rem, 1rem + 0.6vw, 1.4rem);
+  color: var(--son-ink);
+}
+
+/* ------------------------------------------------------------------ urgency */
+
+.son-urg__heading {
+  max-width: 20ch;
+}
+
+.son-urg__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.son-urg__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid var(--son-line);
+  border-radius: 3px;
+  background: color-mix(in oklch, var(--son-navy-2) 55%, transparent);
+}
+
+.son-urg__n {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 1;
+  color: color-mix(in oklch, var(--son-blue-el) 32%, transparent);
+  -webkit-text-stroke: 1px var(--son-line-strong);
+}
+
+.son-urg__t {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: var(--son-ink);
+}
+
+.son-urg__d {
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+/* ------------------------------------------------------------------ faq */
+
+.son-faq__heading {
+  max-width: 22ch;
+}
+
+.son-faq__list {
+  list-style: none;
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
+  padding: 0;
+  border-bottom: 1px solid var(--son-line);
+}
+
+.son-faq__item {
+  border-top: 1px solid var(--son-line);
+}
+
+.son-faq__q-wrap {
+  margin: 0;
+}
+
+.son-faq__q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.15rem, 2vw, 1.5rem) 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.05rem, 0.98rem + 0.5vw, 1.35rem);
+  letter-spacing: -0.01em;
+  color: var(--son-ink);
+  transition: color 0.3s var(--son-ease);
+}
+
+.son-faq__q:hover {
+  color: var(--son-blue-glow);
+}
+
+.son-faq__icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.son-faq__icon::before,
+.son-faq__icon::after {
+  content: "";
+  position: absolute;
+  background: var(--son-blue-el);
+}
+
+.son-faq__icon::before {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.son-faq__icon::after {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+  transition: transform 0.3s var(--son-ease);
+}
+
+.son-faq__item[data-open="true"] .son-faq__icon::after {
+  transform: translateX(-50%) scaleY(0);
+}
+
+.son-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s var(--son-ease);
+}
+
+.son-faq__item[data-open="true"] .son-faq__panel {
+  grid-template-rows: 1fr;
+}
+
+.son-faq__panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.son-faq__a {
+  margin: 0;
+  padding-bottom: clamp(1.15rem, 2vw, 1.5rem);
+  max-width: 65ch;
+}
+
+/* ------------------------------------------------------------------ close */
+
+.son-close {
+  overflow: hidden;
+}
+
+.son-close__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    85% 85% at 50% 55%,
+    color-mix(in oklch, var(--son-abyss) 68%, transparent) 0%,
+    var(--son-abyss) 82%
+  );
+}
+
+/* Etiquetas del cierre en tinta clara (no azul) por ir sobre el shader vivo. */
+.son-close .son-label {
+  color: var(--son-ink-72);
+}
+
+.son-close__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.75rem;
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+
+.son-close__heading {
+  max-width: 18ch;
+}
+
+.son-close__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.son-close__micro {
+  color: var(--son-ink-52);
+  letter-spacing: 0.16em;
+}
+
+.son-close__contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--son-ink-52);
+}
+
+.son-close__link {
+  color: var(--son-ink-72);
+  text-decoration: none;
+  transition: color 0.3s var(--son-ease);
+}
+
+.son-close__link:hover {
+  color: var(--son-blue-glow);
+}
+
+.son-close__sep {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--son-line-strong);
+}
+
+/* ------------------------------------------------------------------ signature */
+
+.son-sign {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--son-line);
+  background: var(--son-abyss);
+  padding-block: clamp(3rem, 5vw, 4.5rem);
+}
+
+.son-sign__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.son-sign__mark {
+  width: 150px;
+  height: auto;
+  color: var(--son-blue-el);
+}
+
+.son-sign__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.son-sign__crafted {
+  color: var(--son-ink-52);
+}
+
+.son-sign__note {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--son-ink-40);
+}
+
+/* ------------------------------------------------------------------ focus */
+
+.sonica :where(a, button, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--son-blue-el);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------------ responsive */
+
+@media (max-width: 720px) {
+  .son-trans__cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .sonica *,
+  .sonica *::before,
+  .sonica *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .son-hero__accent {
+    text-shadow: none;
+  }
+
+  .son-marquee {
+    overflow: visible;
+  }
+
+  .son-marquee__track {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+    row-gap: 1.5rem;
+  }
+
+  .son-marquee__group--dup {
+    display: none;
+  }
+
+  .son-mods__viewport {
+    overflow: visible;
+    height: auto;
+    display: block;
+  }
+
+  .son-mods__track {
+    flex-direction: column;
+    transform: none !important;
+    padding-inline: clamp(1.25rem, 5vw, 4rem);
+  }
+
+  .son-mods__intro,
+  .son-mod {
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+  }
+
+  .son-mods__progress {
+    display: none;
+  }
+
+  [data-son-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

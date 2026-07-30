@@ -6,7 +6,10 @@ import { SHARED_AUTHOR } from "@/lib/variants-content";
   Galería de exploración de las tres landings experimentales del Diplomado en Public
   Speaking UTMACH. Página índice (no indexable) para comparar las direcciones creativas
   lado a lado durante la auditoría visual y la decisión de dirección. Cada tarjeta enlaza
-  a su ruta /v/<slug>. No interfiere con el landing v1 de producción en "/".
+  a su ruta /v/<slug>.
+
+  La raíz "/" ya no sirve la v1: desde el 29 de julio de 2026 la ocupa la landing definitiva
+  Podio, y la v1 quedó archivada en /aula-futura, que es a donde apunta el pie de esta página.
 */
 
 export const metadata: Metadata = {
@@ -128,10 +131,10 @@ export default function GaleriaPage() {
 
         <footer className="mt-20 flex items-center justify-between border-t border-[color:var(--color-line)] pt-6">
           <Link
-            href="/"
+            href="/aula-futura"
             className="focus-ring text-sm text-[color:var(--color-mist-dim)] no-underline hover:text-[color:var(--color-paper)]"
           >
-            ← Landing v1 (producción)
+            ← Landing v1 Aula Futura (archivada)
           </Link>
           <span className="mono-num text-xs text-[color:var(--color-gold-deep)]">
             {SHARED_AUTHOR.studio} · {SHARED_AUTHOR.year}

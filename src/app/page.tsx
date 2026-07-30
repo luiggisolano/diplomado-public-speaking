@@ -1,50 +1,26 @@
-import { UrgencyBar } from "@/components/UrgencyBar";
-import { SiteNav } from "@/components/SiteNav";
-import Hero from "@/components/Hero";
-import ProblemAgitation from "@/components/sections/ProblemAgitation";
-import Solution from "@/components/sections/Solution";
-import Modules from "@/components/sections/Modules";
-import Audience from "@/components/sections/Audience";
-import Transformation from "@/components/sections/Transformation";
-import Methodology from "@/components/sections/Methodology";
-import AcademicInfo from "@/components/sections/AcademicInfo";
-import Urgency from "@/components/sections/Urgency";
-import Faq from "@/components/sections/Faq";
-import FinalClose from "@/components/sections/FinalClose";
-import { SiteFooter } from "@/components/SiteFooter";
-import { WhatsappFab } from "@/components/WhatsappFab";
-import { AuthorSignature } from "@/components/AuthorSignature";
-
 /*
-  Composición del landing del Diplomado en Public Speaking UTMACH. Rediseño de nivel
-  editorial: barra de urgencia y navegación fija encabezan la página; los once bloques de
-  copy desarrollan hero cinematográfico, agitación a dos columnas, enfoque, los seis módulos,
-  público, transformación antes/después, metodología, ficha académica, urgencia/cierre,
-  preguntas frecuentes y coda final. El pie institucional del cliente y el botón flotante de
-  WhatsApp cierran la utilidad; la firma de autor LS cierra la pieza como invariante de marca.
+  Raíz del sitio: la landing definitiva del Diplomado en Public Speaking y Comunicación
+  Persuasiva del Centro de Educación Continua UTMACH.
+
+  Desde el 29 de julio de 2026 esta ruta sirve la versión Podio —secuencia de imágenes
+  guiada por el scroll y tipografía tomada del díptico promocional oficial— en lugar de la
+  v1 «Aula Futura», que se conserva íntegra y sin indexar en /aula-futura.
+
+  La composición vive en components/premium/podio/LandingPodio porque la comparte con
+  /g/podio, que quedó como ruta heredada de la fase de exploración. Esta es la canónica:
+  es la única de las dos que se indexa.
 */
 
+import type { Metadata } from "next";
+import { LandingPodio } from "@/components/premium/podio/LandingPodio";
+import { SITE_META } from "@/lib/content";
+
+export const metadata: Metadata = {
+  title: SITE_META.title,
+  description: SITE_META.description,
+  alternates: { canonical: "/" },
+};
+
 export default function Home() {
-  return (
-    <>
-      <UrgencyBar />
-      <SiteNav />
-      <main>
-        <Hero />
-        <ProblemAgitation />
-        <Solution />
-        <Modules />
-        <Audience />
-        <Transformation />
-        <Methodology />
-        <AcademicInfo />
-        <Urgency />
-        <Faq />
-        <FinalClose />
-      </main>
-      <SiteFooter />
-      <AuthorSignature />
-      <WhatsappFab />
-    </>
-  );
+  return <LandingPodio />;
 }

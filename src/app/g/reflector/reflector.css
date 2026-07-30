@@ -1,0 +1,853 @@
+/*
+  Reflector — hoja de estilos de la dirección de arte CLARA del Diplomado en Public
+  Speaking (UTMACH). Modo lfront: editorial-saas / conversion-showcase. "El foco cae
+  sobre el mensaje": una galería cálido-neutra (hueso) recorrida por un reflector azul
+  institucional que se mueve con el scroll (shader OGL a pantalla completa).
+
+  Todo el tema vive SCOPED bajo .reflector-root para no tocar el globals.css oscuro que
+  comparten las otras dos direcciones. El truco html:has(.reflector-root) repinta el
+  documento en hueso solo en esta ruta, sin editar el layout ni el globals compartidos.
+
+  Sistema de acento: ORO #b4822d es el ÚNICO color de acción (todo lo clicable). El
+  bronce olivo-dorado es únicamente acento de HONOR (sellos, cita, no clicable). Jerarquía
+  de texto por opacidad de una sola tinta profunda; todo texto legible pasa 4.5:1 sobre
+  hueso (3:1 en display grande). Sin naranja/terracota en ninguna parte.
+*/
+
+.reflector-root {
+  /* Lienzo hueso cálido-neutro (galería). Dos profundidades para el ritmo de capítulos. */
+  --r-paper: #f3eee2;
+  --r-paper-deep: #ece2d2;
+  --r-paper-raise: #faf6ee;
+
+  /* Panel oscuro-teatro: el ÚNICO gesto oscuro, reservado a la tarjeta de inscripción. */
+  --r-stage-ink: #141009;
+  --r-stage-ink-soft: #1a130b;
+
+  /* Tinta profunda y sus escalones legibles (verificados ≥4.5:1 sobre hueso). */
+  --r-ink: #141009;
+  --r-ink-90: rgba(22, 16, 9, 0.9);
+  --r-ink-body: rgba(22, 16, 9, 0.82);
+  --r-ink-muted: rgba(22, 16, 9, 0.7);
+  --r-ink-faint: rgba(22, 16, 9, 0.44); /* solo adorno, nunca texto con carga */
+
+  /* Reverso: tinta clara para el panel oscuro. */
+  --r-bone: #f3eee2;
+  --r-bone-body: rgba(244, 239, 230, 0.76);
+  --r-bone-muted: rgba(244, 239, 230, 0.56);
+
+  /* Acento de ACCIÓN: azul institucional UTMACH (todo lo clicable). */
+  --r-beam: #b4822d;
+  --r-beam-deep: #885825;
+  --r-beam-bright: #e7b655;
+  --r-beam-ink: #885825; /* oro suficientemente oscuro como texto pequeño sobre hueso */
+
+  /* Acento de HONOR: bronce olivo-dorado sobrio (hue ~40). Nunca clicable. */
+  --r-bronze: #b4822d; /* display grande / líneas (≥3:1) */
+  --r-bronze-ink: #885825; /* texto pequeño de honor sobre hueso (≥4.5:1) */
+  --r-bronze-lite: #e7b655; /* honor sobre panel oscuro */
+
+  /* Líneas hairline. */
+  --r-line: rgba(22, 16, 9, 0.12);
+  --r-line-soft: rgba(22, 16, 9, 0.08);
+  --r-line-beam: rgba(180, 130, 45, 0.32);
+  --r-line-bone: rgba(244, 239, 230, 0.16);
+
+  /* Radios (3) y sombras (3) — sistema pequeño y coherente. */
+  --r-radius-sm: 4px;
+  --r-radius-md: 12px;
+  --r-radius-pill: 999px;
+
+  --r-shadow-rest: 0 1px 2px rgba(22, 16, 9, 0.04);
+  --r-shadow-lift: 0 1px 2px rgba(22, 16, 9, 0.05), 0 26px 50px -30px rgba(22, 16, 9, 0.32);
+  --r-shadow-stage: 0 40px 90px -40px rgba(22, 16, 9, 0.55);
+
+  /* Escala de espacio 4/8 en tokens. */
+  --r-space-2: 0.5rem;
+  --r-space-3: 0.75rem;
+  --r-space-4: 1rem;
+  --r-space-6: 1.5rem;
+  --r-space-8: 2rem;
+  --r-space-12: 3rem;
+  --r-space-16: 4rem;
+  --r-space-section: clamp(5.5rem, 3rem + 8vw, 9.5rem);
+
+  /* Tipografía: un solo salto dramático, display serif Spectral. */
+  --r-display: clamp(2.9rem, 1.1rem + 7vw, 6rem);
+  --r-h2: clamp(2rem, 1.2rem + 3.2vw, 3.6rem);
+  --r-h3: clamp(1.35rem, 1.05rem + 1.1vw, 1.85rem);
+  --r-body: 1.0625rem;
+  --r-eyebrow: 0.72rem;
+
+  --r-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  z-index: 0;
+  min-height: 100dvh;
+  color: var(--r-ink);
+  background-color: var(--r-paper);
+  font-family: var(--font-sans);
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  Repinta html/body en hueso SOLO cuando esta dirección está montada, sin editar el
+  globals compartido (que es navy oscuro). Evita bordes oscuros en el overscroll.
+*/
+html:has(.reflector-root),
+html:has(.reflector-root) body {
+  background-color: #f3eee2;
+  color-scheme: light;
+}
+
+.reflector-root ::selection {
+  background: var(--r-beam);
+  color: var(--r-paper);
+}
+
+/* ---------- Capa del reflector (shader OGL a pantalla completa) ---------- */
+
+.reflector-beam-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Base de atmósfera por si WebGL no monta: lavado azul frío muy tenue arriba. */
+  background:
+    radial-gradient(120% 80% at 24% -10%, rgba(180, 130, 45, 0.12), transparent 60%),
+    radial-gradient(90% 70% at 88% 8%, rgba(180, 130, 45, 0.06), transparent 64%);
+}
+
+.reflector-beam-layer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Grano de papel fino, cálido, para que el hueso no se lea plano ni digital. */
+.reflector-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* El contenido siempre por encima de la luz. */
+.reflector-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Contenedores y ritmo ---------- */
+
+.r-shell {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 0.6rem + 3vw, 3.5rem);
+}
+
+.r-section {
+  padding-block: var(--r-space-section);
+  position: relative;
+}
+
+.r-chapter-deep {
+  background-color: var(--r-paper-deep);
+}
+
+.r-measure {
+  max-width: 62ch;
+}
+
+.r-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--r-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--r-beam-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.r-eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 1px;
+  background: var(--r-beam);
+  opacity: 0.7;
+}
+
+.r-eyebrow--honor {
+  color: var(--r-bronze-ink);
+}
+
+.r-eyebrow--honor::before {
+  background: var(--r-bronze);
+}
+
+/* ---------- Tipografía ---------- */
+
+.r-display {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: var(--r-display);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
+  color: var(--r-ink);
+  text-wrap: balance;
+}
+
+.r-h2 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: var(--r-h2);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  color: var(--r-ink);
+  text-wrap: balance;
+}
+
+.r-h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: var(--r-h3);
+  line-height: 1.16;
+  letter-spacing: -0.01em;
+  color: var(--r-ink);
+}
+
+/* La palabra-pivote: cursiva Spectral en azul (acción semántica del mensaje). */
+.r-pivot {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--r-beam);
+}
+
+.r-pivot--muted {
+  color: var(--r-ink-muted);
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+
+.r-body {
+  font-size: var(--r-body);
+  line-height: 1.62;
+  color: var(--r-ink-body);
+}
+
+.r-lead {
+  font-size: clamp(1.1rem, 1rem + 0.55vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--r-ink-90);
+}
+
+.r-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.r-mute {
+  color: var(--r-ink-muted);
+}
+
+.r-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--r-ink-muted);
+}
+
+/* ---------- Botones ---------- */
+
+.r-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.98rem;
+  line-height: 1;
+  padding: 1rem 1.6rem;
+  border-radius: var(--r-radius-pill);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 0.3s var(--r-ease),
+    background-color 0.3s var(--r-ease),
+    border-color 0.3s var(--r-ease),
+    box-shadow 0.3s var(--r-ease),
+    color 0.3s var(--r-ease);
+}
+
+.r-btn svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+}
+
+.r-btn--primary {
+  background-color: var(--r-beam);
+  color: #ffffff;
+  box-shadow: 0 14px 30px -16px rgba(180, 130, 45, 0.7);
+}
+
+.r-btn--primary:hover {
+  background-color: var(--r-beam-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 38px -16px rgba(180, 130, 45, 0.8);
+}
+
+.r-btn--whatsapp {
+  background-color: transparent;
+  color: var(--r-beam-ink);
+  border-color: var(--r-line-beam);
+}
+
+.r-btn--whatsapp:hover {
+  border-color: var(--r-beam);
+  background-color: rgba(180, 130, 45, 0.06);
+  transform: translateY(-2px);
+}
+
+.r-btn--ghost {
+  background-color: transparent;
+  color: var(--r-ink-90);
+  border-color: var(--r-line);
+}
+
+.r-btn--ghost:hover {
+  border-color: var(--r-ink-muted);
+  transform: translateY(-2px);
+}
+
+.r-btn--on-stage {
+  background-color: var(--r-bone);
+  color: var(--r-stage-ink);
+  box-shadow: 0 16px 34px -18px rgba(0, 0, 0, 0.6);
+}
+
+.r-btn--on-stage:hover {
+  background-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.r-btn--stage-ghost {
+  background-color: transparent;
+  color: var(--r-bone);
+  border-color: var(--r-line-bone);
+}
+
+.r-btn--stage-ghost:hover {
+  border-color: rgba(244, 239, 230, 0.5);
+  transform: translateY(-2px);
+}
+
+.r-link {
+  color: var(--r-beam-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--r-line-beam);
+  transition: border-color 0.25s var(--r-ease);
+}
+
+.r-link:hover {
+  border-color: var(--r-beam);
+}
+
+/* ---------- Sello institucional (nav superior) ---------- */
+
+.r-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: var(--r-ink);
+}
+
+.r-seal__ring {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--r-beam);
+  flex: none;
+}
+
+.r-seal__name {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.r-seal__sub {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--r-ink-muted);
+  margin-top: 0.25rem;
+}
+
+/* ---------- Tarjetas / paneles claros ---------- */
+
+.r-card {
+  position: relative;
+  background-color: var(--r-paper-raise);
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-md);
+  box-shadow: var(--r-shadow-rest);
+  transition:
+    transform 0.4s var(--r-ease),
+    box-shadow 0.4s var(--r-ease),
+    border-color 0.4s var(--r-ease);
+}
+
+.r-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--r-shadow-lift);
+  border-color: var(--r-line-beam);
+}
+
+.r-hairline {
+  height: 1px;
+  background: var(--r-line);
+  border: 0;
+  margin: 0;
+}
+
+/* ---------- Banda de stats ---------- */
+
+.r-stat__value {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 1.6rem + 3vw, 4.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--r-ink);
+}
+
+.r-stat__value .r-mono {
+  font-family: var(--font-serif);
+}
+
+.r-stat__suffix {
+  color: var(--r-beam);
+}
+
+.r-stat__label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--r-ink-muted);
+  margin-top: 0.6rem;
+}
+
+/* ---------- Módulos que se "encienden" con el haz ---------- */
+
+.r-module {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(1rem, 0.5rem + 2vw, 2.4rem);
+  align-items: baseline;
+  padding-block: clamp(1.4rem, 1rem + 1.4vw, 2.2rem);
+  border-top: 1px solid var(--r-line);
+  transition: opacity 0.5s var(--r-ease);
+}
+
+.r-module__num {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  color: var(--r-ink-faint);
+  padding-top: 0.4rem;
+  transition: color 0.5s var(--r-ease);
+}
+
+.r-module__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.014em;
+  color: var(--r-ink-muted);
+  transition: color 0.5s var(--r-ease);
+}
+
+.r-module__line {
+  margin-top: 0.5rem;
+  max-width: 46ch;
+  color: var(--r-ink-faint);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  transition: color 0.5s var(--r-ease);
+}
+
+/* El reflector llega: el módulo activo se ilumina (tinta plena + marca azul). */
+.r-module.is-lit .r-module__num {
+  color: var(--r-beam);
+}
+
+.r-module.is-lit .r-module__title {
+  color: var(--r-ink);
+}
+
+.r-module.is-lit .r-module__line {
+  color: var(--r-ink-body);
+}
+
+.r-module__beam {
+  position: absolute;
+  left: 0;
+  top: -1px;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--r-beam), transparent);
+  transition: width 0.7s var(--r-ease);
+}
+
+.r-module.is-lit .r-module__beam {
+  width: min(38%, 220px);
+}
+
+/* ---------- Antes / después ---------- */
+
+.r-ba {
+  display: grid;
+  gap: clamp(1rem, 0.5rem + 2vw, 2rem);
+}
+
+.r-ba__col {
+  padding: clamp(1.5rem, 1rem + 1.5vw, 2.4rem);
+  border-radius: var(--r-radius-md);
+  border: 1px solid var(--r-line);
+}
+
+.r-ba__col--before {
+  background-color: var(--r-paper-deep);
+}
+
+.r-ba__col--after {
+  background-color: var(--r-paper-raise);
+  border-color: var(--r-line-beam);
+  box-shadow: var(--r-shadow-lift);
+}
+
+.r-ba__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: start;
+  padding-block: 0.85rem;
+}
+
+.r-ba__item + .r-ba__item {
+  border-top: 1px solid var(--r-line-soft);
+}
+
+.r-ba__icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.r-ba__icon--before {
+  color: var(--r-ink-faint);
+}
+
+.r-ba__icon--after {
+  color: var(--r-beam);
+}
+
+.r-quote {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(1.6rem, 1.1rem + 2.4vw, 3rem);
+  line-height: 1.22;
+  letter-spacing: -0.014em;
+  color: var(--r-ink);
+  text-wrap: balance;
+}
+
+.r-quote__mark {
+  color: var(--r-bronze);
+  font-style: normal;
+}
+
+/* ---------- Ficha técnica ---------- */
+
+.r-fact {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background-color: var(--r-paper-raise);
+}
+
+.r-fact__label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--r-ink-muted);
+}
+
+.r-fact__value {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--r-ink);
+  margin-top: 0.35rem;
+}
+
+/* ---------- FAQ acordeón ---------- */
+
+.r-faq {
+  border-top: 1px solid var(--r-line);
+}
+
+.r-faq__item {
+  border-bottom: 1px solid var(--r-line);
+}
+
+.r-faq__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 1.5rem 0.25rem;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.1rem, 0.95rem + 0.7vw, 1.4rem);
+  color: var(--r-ink);
+  transition: color 0.25s var(--r-ease);
+}
+
+.r-faq__trigger:hover {
+  color: var(--r-beam);
+}
+
+.r-faq__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  color: var(--r-beam);
+  transition: transform 0.35s var(--r-ease);
+}
+
+.r-faq__trigger[aria-expanded="true"] .r-faq__icon {
+  transform: rotate(45deg);
+}
+
+.r-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s var(--r-ease);
+}
+
+.r-faq__panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.r-faq__panel-inner {
+  overflow: hidden;
+}
+
+.r-faq__answer {
+  padding: 0 0.25rem 1.6rem;
+  max-width: 60ch;
+  color: var(--r-ink-body);
+  line-height: 1.6;
+}
+
+/* ---------- Tarjeta de inscripción (el ÚNICO capítulo oscuro) ---------- */
+
+.r-stage {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--r-stage-ink);
+  border-radius: clamp(16px, 1rem + 1vw, 28px);
+  box-shadow: var(--r-shadow-stage);
+  color: var(--r-bone);
+  padding: clamp(2rem, 1.2rem + 4vw, 4.5rem);
+}
+
+.r-stage__glow {
+  position: absolute;
+  pointer-events: none;
+  inset: -20% 30% auto -10%;
+  height: 140%;
+  background: radial-gradient(60% 60% at 20% 0%, rgba(180, 130, 45, 0.55), transparent 70%);
+  filter: blur(10px);
+}
+
+.r-stage__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 1.2rem + 3vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  color: var(--r-bone);
+  text-wrap: balance;
+}
+
+.r-stage__trust {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--r-bronze-lite);
+}
+
+.r-stage__meta {
+  color: var(--r-bone-muted);
+}
+
+.r-stage__divider {
+  height: 1px;
+  background: var(--r-line-bone);
+  border: 0;
+}
+
+/* ---------- Barra sticky de WhatsApp (conversión LATAM) ---------- */
+
+.r-sticky {
+  position: fixed;
+  z-index: 40;
+  right: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  bottom: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+  transition:
+    opacity 0.4s var(--r-ease),
+    transform 0.4s var(--r-ease);
+}
+
+.r-sticky.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.r-sticky__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1.35rem;
+  border-radius: var(--r-radius-pill);
+  background-color: var(--r-beam);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 16px 34px -14px rgba(180, 130, 45, 0.75);
+  transition: transform 0.3s var(--r-ease), background-color 0.3s var(--r-ease);
+}
+
+.r-sticky__btn:hover {
+  background-color: var(--r-beam-deep);
+  transform: translateY(-2px);
+}
+
+.r-sticky__btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+}
+
+/* ---------- Firma LS ---------- */
+
+.r-sign__mono {
+  color: var(--r-ink);
+}
+
+.r-sign__caption {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--r-ink-muted);
+}
+
+/* ---------- Primitivas de revelado (motion GSAP) ---------- */
+
+.r-split-line {
+  display: block;
+}
+
+/*
+  Estado oculto SOLO cuando el motion está activo: la clase la añade el JS. Si el JS no
+  corre (o reduced-motion), el contenido queda visible por defecto: nunca una trampa de
+  invisibilidad. Solo se anima transform/opacity (sin reflow, CLS 0).
+*/
+.reflector-root.motion-on [data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  will-change: transform, opacity;
+}
+
+.reflector-root.motion-on [data-hero-fade] {
+  opacity: 0;
+  transform: translateY(20px);
+  will-change: transform, opacity;
+}
+
+.reflector-root.motion-on [data-hero-title] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reflector-root.motion-on [data-reveal],
+  .reflector-root.motion-on [data-hero-fade] {
+    opacity: 1;
+    transform: none;
+  }
+  .reflector-root.motion-on [data-hero-title] {
+    opacity: 1;
+  }
+  .r-btn:hover,
+  .r-card:hover,
+  .r-sticky__btn:hover {
+    transform: none;
+  }
+  .r-faq__panel {
+    transition: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (min-width: 720px) {
+  .r-ba {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 719px) {
+  .r-module {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  .r-module__num {
+    padding-top: 0;
+  }
+}

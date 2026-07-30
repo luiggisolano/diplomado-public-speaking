@@ -1,0 +1,562 @@
+/*
+  Cámara Anecoica — hoja de estilo scoped de la dirección de arte /g/camara.
+  Modo lfront: cinematic-product / material-tactile. El laboratorio silencioso de la
+  voz: una sala insonorizada de cuñas acústicas reimaginada como instrumento de
+  precisión. Reutiliza los tokens @theme del sistema "Aula Futura" (colores, fuentes
+  Spectral/IBM Plex Mono, spacing, easing) definidos en globals.css; aquí viven solo
+  las piezas bespoke de esta dirección: el campo de partículas fijo, las máscaras del
+  revelado tipográfico, el panel de instrumentos pinned, la datasheet, el acordeón y
+  el monograma de firma. Todo prefijado cam- para no colisionar con las otras dos
+  direcciones de gama alta que comparten el repositorio. Contraste texto >= 4.5:1 y
+  respeto estricto a prefers-reduced-motion.
+*/
+
+.cam-root {
+  --color-abyss: #080603;
+  --color-navy: #100b06;
+  --color-navy-deep: #080603;
+  --color-navy-raised: #1a130b;
+  --color-utmach: #885825;
+  --color-utmach-official: #b4822d;
+  --color-utmach-official-soft: #c99a38;
+  --color-blue: #b4822d;
+  --color-blue-bright: #e7b655;
+  --color-blue-glow: #e7b655;
+  --color-gold: #e7b655;
+  --color-gold-soft: #f0c877;
+  --color-gold-deep: #885825;
+  --color-paper: #f3eee2;
+  --color-mist: #bdb6a8;
+  --color-mist-dim: #7c766a;
+  --color-line: rgba(189, 182, 168, 0.14);
+  --color-line-strong: rgba(180, 130, 45, 0.4);
+  --shadow-glow-blue: 0 0 80px -16px rgba(180, 130, 45, 0.55);
+
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  color: var(--color-paper);
+  overflow-x: clip;
+}
+
+/*
+  Campo de presión sonora. Lienzo WebGL a pantalla completa, fijo detrás de todo el
+  contenido (z-0). Las secciones opacas lo tapan; las secciones abiertas lo dejan
+  respirar. pointer-events desactivado para que el scroll y los clics lleguen al
+  contenido. El fallback estático (sin WebGL o reduced-motion) evoca la retícula
+  coherente ya formada, legible y sin movimiento.
+*/
+.cam-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      130% 90% at 50% 8%,
+      color-mix(in oklch, var(--color-utmach-official) 12%, transparent),
+      transparent 62%
+    ),
+    var(--color-abyss);
+}
+
+.cam-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cam-field-fallback {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      60% 50% at 26% 18%,
+      color-mix(in oklch, var(--color-blue-bright) 16%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      70% 60% at 78% 92%,
+      color-mix(in oklch, var(--color-utmach-official) 18%, transparent),
+      transparent 64%
+    ),
+    linear-gradient(
+      color-mix(in oklch, var(--color-blue) 10%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--color-blue) 10%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 100% 100%, 100% 100%, 46px 46px, 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 78% 68% at 50% 40%, #000 0%, transparent 82%);
+  mask-image: radial-gradient(ellipse 78% 68% at 50% 40%, #000 0%, transparent 82%);
+  opacity: 0.9;
+}
+
+/*
+  Grano cinematográfico. Capa fija sobre toda la pieza, muy tenue, para el registro
+  de película. No captura eventos.
+*/
+.cam-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/*
+  Lectura de coalescencia. HUD de instrumento en la esquina inferior izquierda que
+  refleja el avance del scroll (grado de coalescencia del campo). Solo desktop; en
+  móvil se oculta para no competir con el pulgar. No es esencial: es un adorno de
+  telemetría, el contenido funciona sin él.
+*/
+.cam-hud {
+  position: fixed;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in oklch, var(--color-abyss) 72%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--color-mist);
+}
+
+@media (min-width: 900px) {
+  .cam-hud {
+    display: flex;
+  }
+}
+
+.cam-hud-track {
+  position: relative;
+  width: 92px;
+  height: 3px;
+  background: var(--color-line);
+  overflow: hidden;
+}
+
+.cam-hud-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--cam-hud-progress, 0%);
+  background: var(--color-blue-bright);
+}
+
+/*
+  Revelado. Estado inicial oculto que vive en CSS para no depender de la hidratación
+  y evitar el flash. GSAP toma el control cuando hay movimiento permitido; con
+  reduced-motion el contenido queda visible y estático de inmediato.
+*/
+.cam-reveal {
+  opacity: 0;
+}
+
+/*
+  Máscara de línea para el revelado palabra a palabra (SplitText). Las palabras nacen
+  desplazadas 115% hacia abajo y suben a su sitio; el overflow oculto recorta el
+  excedente para que el gesto sea limpio.
+*/
+.cam-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+.cam-word {
+  display: inline-block;
+  will-change: transform;
+}
+
+/*
+  Rail de metadatos del hero. Barra técnica superior con el nombre del instrumento a
+  la izquierda y coordenadas de sala a la derecha, en mono. Refuerza el registro de
+  panel de laboratorio.
+*/
+.cam-meta-rail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.7rem 0;
+}
+
+.cam-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      120% 90% at 18% 42%,
+      color-mix(in oklch, var(--color-abyss) 82%, transparent),
+      transparent 64%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in oklch, var(--color-abyss) 55%, transparent) 78%,
+      var(--color-abyss) 100%
+    );
+}
+
+/*
+  Señal de scroll del hero. Etiqueta mono con una línea vertical que respira hacia
+  abajo, invitando a descender al campo.
+*/
+.cam-scrollcue-line {
+  width: 1px;
+  height: 46px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-blue-bright),
+    transparent
+  );
+  transform-origin: top center;
+  animation: camScrollPulse 2.4s var(--ease-out-soft) infinite;
+}
+
+@keyframes camScrollPulse {
+  0% {
+    transform: scaleY(0.2);
+    opacity: 0.2;
+  }
+  40% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(0.2);
+    opacity: 0.2;
+  }
+}
+
+/*
+  Banda de medición. Franja abierta y delgada que deja ver el campo entre bloques
+  densos: el respiro del ritmo. Ticks hairline y una lectura mono centrada.
+*/
+.cam-band {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.cam-band-line {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  padding: 1.1rem 0;
+}
+
+.cam-band-ticks {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 10px;
+  background-image: linear-gradient(
+    90deg,
+    var(--color-line) 1px,
+    transparent 1px
+  );
+  background-size: 22px 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/*
+  Panel datasheet. Ficha técnica del diplomado con filas etiqueta / valor en mono,
+  como la hoja de especificaciones de un instrumento. Marca de esquina heredada del
+  lenguaje card-tech pero sin hover, porque es lectura estática.
+*/
+.cam-panel {
+  position: relative;
+  border: 1px solid var(--color-line);
+  background: color-mix(in oklch, var(--color-navy-raised) 42%, transparent);
+}
+
+.cam-panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 16px;
+  height: 16px;
+  border-top: 2px solid color-mix(in oklch, var(--color-blue-bright) 62%, transparent);
+  border-left: 2px solid color-mix(in oklch, var(--color-blue-bright) 62%, transparent);
+}
+
+.cam-spec-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.25rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.cam-spec-row:first-child {
+  border-top: 0;
+}
+
+/*
+  Etiqueta de público. Fila-tag en mono con un guion índice y una hairline inferior,
+  registro de catálogo. Sin fondo de pastilla para no engordar la composición.
+*/
+.cam-audience-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--color-line);
+  transition: color 0.35s var(--ease-out-soft),
+    padding-left 0.35s var(--ease-out-soft);
+}
+
+.cam-audience-row:hover {
+  color: var(--color-paper);
+  padding-left: 0.5rem;
+}
+
+/*
+  Columnas de transformación. Señal de entrada (antes) contra señal calibrada
+  (después). El bloque calibrado se marca con un borde superior azul y realce de
+  fondo para leerse como el estado resuelto.
+*/
+.cam-diff {
+  position: relative;
+  border: 1px solid var(--color-line);
+  padding: 1.75rem;
+  background: color-mix(in oklch, var(--color-navy-deep) 60%, transparent);
+}
+
+.cam-diff--tuned {
+  border-color: var(--color-line-strong);
+  background: color-mix(in oklch, var(--color-utmach-official) 12%, transparent);
+}
+
+.cam-diff-item {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.cam-diff-item:first-of-type {
+  border-top: 0;
+}
+
+/*
+  Panel de instrumentos (pinned). Consola de medición de la sala. Cada etapa del
+  método se ilumina y su barra se llena conforme el scroll avanza dentro de la
+  sección fijada. La variable --fill (0..1) la conduce ScrollTrigger vía JS; sin JS,
+  desktop pequeño o reduced-motion, la consola cae al estado estático legible
+  (.cam-console--static) con todas las etapas completas.
+*/
+.cam-console {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+}
+
+.cam-stage {
+  --fill: 1;
+  position: relative;
+  padding: 1.5rem 0 1.5rem 0;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-mist);
+  transition: color 0.4s var(--ease-out-soft);
+}
+
+.cam-stage:first-child {
+  border-top: 0;
+}
+
+.cam-console--live .cam-stage {
+  --fill: 0;
+  color: var(--color-mist-dim);
+}
+
+.cam-stage.is-active,
+.cam-stage.is-done {
+  color: var(--color-paper);
+}
+
+.cam-stage-index {
+  color: var(--color-mist-dim);
+  transition: color 0.4s var(--ease-out-soft);
+}
+
+.cam-stage.is-active .cam-stage-index {
+  color: var(--color-blue-bright);
+}
+
+.cam-stage-bar {
+  position: relative;
+  margin-top: 1rem;
+  height: 2px;
+  background: var(--color-line);
+  overflow: hidden;
+}
+
+.cam-stage-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  transform: scaleX(var(--fill));
+  transform-origin: left center;
+  background: var(--color-blue-bright);
+  transition: transform 0.12s linear;
+}
+
+.cam-console--live .cam-stage-bar::after {
+  transition: none;
+}
+
+/*
+  Acordeón FAQ. Transición por grid-template-rows (0fr -> 1fr), la técnica correcta
+  para animar altura sin reflow de layout. El botón es el disparador accesible con
+  aria-expanded; el chevron gira al abrir.
+*/
+.cam-faq-item {
+  border-top: 1px solid var(--color-line);
+}
+
+.cam-faq-item:last-child {
+  border-bottom: 1px solid var(--color-line);
+}
+
+.cam-faq-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 1.5rem 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-paper);
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+.cam-faq-icon {
+  flex: 0 0 auto;
+  color: var(--color-blue-bright);
+  transition: transform 0.4s var(--ease-out-soft);
+}
+
+.cam-faq-trigger[aria-expanded="true"] .cam-faq-icon {
+  transform: rotate(45deg);
+}
+
+.cam-faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s var(--ease-out-soft);
+}
+
+.cam-faq-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.cam-faq-panel-inner {
+  overflow: hidden;
+}
+
+/*
+  Monograma de firma "LS". Adaptación scoped de la firma de autor a la paleta azul de
+  esta dirección (la firma global usa dorado, fuera de gama aquí). El trazo se dibuja
+  solo al entrar al viewport vía Web Animations API; honra reduced-motion mostrándose
+  completo. Es el invariante de marca del estudio.
+*/
+.cam-monogram path {
+  stroke: var(--color-blue-glow);
+}
+
+.cam-monogram-splatter {
+  fill: var(--color-blue-bright);
+  opacity: 0;
+}
+
+/*
+  Botón primario de acción. Relleno con el azul institucional (ancla de marca) y
+  texto casi-blanco: el único elemento de mayor peso cromático de la página. El halo
+  frío aparece al hover como un cono de auditorio.
+*/
+.cam-btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.6rem;
+  background: var(--color-utmach-official);
+  color: var(--color-paper);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background 0.35s var(--ease-out-soft),
+    box-shadow 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft);
+}
+
+.cam-btn-primary:hover {
+  background: var(--color-utmach-official-soft);
+  box-shadow: var(--shadow-glow-blue);
+  transform: translateY(-2px);
+}
+
+/*
+  Botón fantasma. Solo perímetro hairline; el hover enciende el borde azul-brillante.
+  Jerarquía por debajo del primario, para la acción de WhatsApp secundaria.
+*/
+.cam-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.6rem;
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-paper);
+  transition: border-color 0.35s var(--ease-out-soft),
+    background 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft);
+}
+
+.cam-btn-ghost:hover {
+  border-color: var(--color-blue-bright);
+  background: color-mix(in oklch, var(--color-blue-bright) 10%, transparent);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cam-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .cam-scrollcue-line {
+    animation: none;
+  }
+  .cam-faq-panel {
+    transition: none;
+  }
+  .cam-stage-bar::after,
+  .cam-btn-primary,
+  .cam-btn-ghost,
+  .cam-audience-row {
+    transition: none;
+  }
+  .cam-btn-primary:hover,
+  .cam-btn-ghost:hover {
+    transform: none;
+  }
+}

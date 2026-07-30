@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Spectral } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Mono, Inter, Spectral } from "next/font/google";
 import { SITE_META } from "@/lib/content";
 import "./globals.css";
 
@@ -27,6 +27,14 @@ const plexMono = IBM_Plex_Mono({
   preload: false,
 });
 
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: SITE_META.title,
   description: SITE_META.description,
@@ -46,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${spectral.variable} ${inter.variable} ${plexMono.variable}`}
+      className={`${spectral.variable} ${inter.variable} ${plexMono.variable} ${bricolage.variable}`}
     >
       <body>{children}</body>
     </html>
