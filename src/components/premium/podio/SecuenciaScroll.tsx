@@ -9,9 +9,9 @@
   El control es exacto y bidireccional en todas las plataformas.
 
   Integrado con ScrollTrigger porque es el sistema de movimiento del resto de /g/*, y
-  así hereda la sincronía con Lenis que monta SmoothScroll. La lógica de precarga
-  (frames clave primero, resto en tiempo ocioso) y el respaldo al frame más cercano ya
-  cargado son propias: garantizan que un scroll rápido nunca deje el lienzo en blanco.
+  así hereda la sincronía con Lenis que monta SmoothScroll. El respaldo al frame más
+  cercano ya cargado es propio: garantiza que un scroll rápido nunca deje el lienzo en
+  blanco.
 
   Con prefers-reduced-motion no se instala el ScrollTrigger: se dibuja un único frame
   representativo y la sección se comporta como una imagen fija.
@@ -20,6 +20,20 @@
   video de fondo por esta misma secuencia. De ahí las tres propiedades opcionales de
   encuadre, duración y clase del lienzo: sus valores por defecto reproducen exactamente
   el comportamiento de Podio, así que montar la secuencia en otra ruta no la altera.
+
+  MEMORIA (2026-08-03). El precio de este método no es el peso en disco sino el de la
+  imagen ya descomprimida: los 96 WebP ocupan 3,4 MB en el servidor y 338 MiB en RAM en
+  cuanto se dibujan (1280·720·4 bytes cada uno). La primera versión sostenía los 96 vivos
+  a la vez y medía +440 MB de residente sobre la misma página sin lienzo. Por eso aquí:
+
+    · Los frames se manejan como ImageBitmap y no como HTMLImageElement, porque son lo
+      único que se puede liberar de forma determinista, con close(). Con un <img> la
+      decisión de cuándo soltar el bitmap decodificado es del navegador, y no la suelta.
+    · Solo se sostiene una ventana alrededor del frame en pantalla; lo que sale de ella se
+      cierra en el acto. El techo pasa de los 96 frames a RADIO·2+1, unos 60 MB.
+    · Recuperar un frame ya visto no vuelve a la red: el WebP sigue en el caché HTTP del
+      navegador y solo se paga la decodificación, que además ocurre fuera del hilo
+      principal porque createImageBitmap es asíncrono de verdad.
 */
 
 import { useEffect, useRef } from "react";
@@ -35,8 +49,13 @@ const RUTA_SECUENCIA_ESCRITORIO = "/podio/frames/desktop";
 const RUTA_SECUENCIA_MOVIL = "/podio/frames/mobile";
 const ANCHO_MAXIMO_PARA_SECUENCIA_MOVIL = 820;
 
-const FRAMES_DE_PRECARGA_PRIORITARIA = [1, 24, 48, 72, 96];
-const CANTIDAD_DE_FRAMES_INICIALES = 12;
+/*
+  Cuántos frames se sostienen a cada lado del que está en pantalla. Ocho cubre un tercio de
+  segundo de recorrido a velocidad de lectura, que es cuanto tarda un frame en decodificarse
+  desde el caché, y deja el techo de memoria en diecisiete frames: 60 MB en escritorio y
+  23 MB en móvil, frente a los 338 y 132 MiB que costaba sostener la secuencia entera.
+*/
+const RADIO_DE_LA_VENTANA_DE_FRAMES = 8;
 const FRAME_REPRESENTATIVO_SIN_MOVIMIENTO = 78;
 
 const RELACION_DE_ASPECTO_DE_LA_SECUENCIA = 16 / 9;
@@ -48,6 +67,8 @@ const COLOR_DE_FONDO_DEL_LIENZO = "#080603";
 const DURACION_DEL_RECORRIDO_EN_PANTALLAS = 4;
 const SUAVIZADO_DEL_SCRUB_EN_SEGUNDOS = 0.45;
 const CLASE_DEL_LIENZO_POR_DEFECTO = "pod-secuencia__lienzo";
+
+const SENTIDO_HACIA_ADELANTE = 1;
 
 /*
   «auto» respeta la relación de la secuencia y muestra el encuadre entero cuando la
@@ -79,84 +100,147 @@ function elegirCarpetaSegunAnchoDePantalla(): string {
   return esPantallaPequena ? RUTA_SECUENCIA_MOVIL : RUTA_SECUENCIA_ESCRITORIO;
 }
 
-function cargarImagen(rutaDeImagen: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolver) => {
-    const imagen = new Image();
-    imagen.decoding = "async";
-    imagen.onload = () => resolver(imagen);
-    imagen.onerror = () => resolver(null);
-    imagen.src = rutaDeImagen;
-  });
+function estaDentroDeLaSecuencia(numeroDeFrame: number): boolean {
+  return numeroDeFrame >= PRIMER_FRAME && numeroDeFrame <= CANTIDAD_DE_FRAMES;
 }
 
+/*
+  Sostiene los frames decodificados que hacen falta ahora mismo y solo esos. Cada llamada a
+  asegurarVentana declara el nuevo centro; lo que queda fuera se cierra, y lo que falta se
+  pide en orden de cercanía al centro, dando preferencia al sentido en que se está moviendo
+  el scroll para que la decodificación vaya por delante de la vista y no por detrás.
+*/
 class BancoDeFrames {
   private readonly carpetaBase: string;
-  private readonly imagenes: Array<HTMLImageElement | null>;
-  private readonly framesYaSolicitados: Set<number>;
+  private readonly alQuedarDisponibleUnFrame: (numeroDeFrame: number) => void;
+  private readonly framesDecodificados = new Map<number, ImageBitmap>();
+  private readonly cargasEnCurso = new Map<number, Promise<void>>();
+  private readonly abortarDescargas = new AbortController();
+  private framesDeseados = new Set<number>();
   private descartado = false;
 
-  constructor(carpetaBase: string) {
+  constructor(carpetaBase: string, alQuedarDisponibleUnFrame: (numeroDeFrame: number) => void) {
     this.carpetaBase = carpetaBase;
-    this.imagenes = new Array(CANTIDAD_DE_FRAMES + PRIMER_FRAME).fill(null);
-    this.framesYaSolicitados = new Set();
+    this.alQuedarDisponibleUnFrame = alQuedarDisponibleUnFrame;
   }
 
   descartar(): void {
     this.descartado = true;
-  }
-
-  async cargarFrame(numeroDeFrame: number): Promise<HTMLImageElement | null> {
-    if (this.framesYaSolicitados.has(numeroDeFrame)) {
-      return this.imagenes[numeroDeFrame];
+    this.abortarDescargas.abort();
+    for (const frame of this.framesDecodificados.values()) {
+      frame.close();
     }
-    this.framesYaSolicitados.add(numeroDeFrame);
-    const imagen = await cargarImagen(construirRutaDeFrame(this.carpetaBase, numeroDeFrame));
-    if (!this.descartado) {
-      this.imagenes[numeroDeFrame] = imagen;
+    this.framesDecodificados.clear();
+    this.framesDeseados.clear();
+  }
+
+  asegurarVentana(centro: number, sentido: number = SENTIDO_HACIA_ADELANTE): void {
+    if (this.descartado) {
+      return;
     }
-    return imagen;
-  }
 
-  async cargarFramesPrioritarios(): Promise<void> {
-    await Promise.all(
-      FRAMES_DE_PRECARGA_PRIORITARIA.map((numeroDeFrame) => this.cargarFrame(numeroDeFrame)),
-    );
-    const framesIniciales = Array.from(
-      { length: CANTIDAD_DE_FRAMES_INICIALES },
-      (_, indice) => PRIMER_FRAME + indice,
-    );
-    await Promise.all(framesIniciales.map((numeroDeFrame) => this.cargarFrame(numeroDeFrame)));
-  }
-
-  cargarRestoEnTiempoOcioso(): void {
-    const agendarSiguiente = window.requestIdleCallback ?? window.requestAnimationFrame;
-    const cargarDesde = (numeroDeFrame: number) => {
-      if (numeroDeFrame > CANTIDAD_DE_FRAMES || this.descartado) {
-        return;
+    const enOrdenDePrioridad: number[] = [centro];
+    for (let distancia = 1; distancia <= RADIO_DE_LA_VENTANA_DE_FRAMES; distancia += 1) {
+      const delantero = centro + distancia * sentido;
+      const trasero = centro - distancia * sentido;
+      if (estaDentroDeLaSecuencia(delantero)) {
+        enOrdenDePrioridad.push(delantero);
       }
-      void this.cargarFrame(numeroDeFrame).then(() => {
-        agendarSiguiente(() => cargarDesde(numeroDeFrame + 1));
-      });
-    };
-    cargarDesde(PRIMER_FRAME);
+      if (estaDentroDeLaSecuencia(trasero)) {
+        enOrdenDePrioridad.push(trasero);
+      }
+    }
+
+    this.framesDeseados = new Set(enOrdenDePrioridad);
+    this.liberarLosQueSalieronDeLaVentana();
+
+    for (const numeroDeFrame of enOrdenDePrioridad) {
+      this.pedirFrame(numeroDeFrame);
+    }
   }
 
-  obtenerFrameMasCercanoDisponible(numeroDeFrame: number): HTMLImageElement | null {
-    const frameExacto = this.imagenes[numeroDeFrame];
+  /*
+    Camino aparte para movimiento reducido: ahí no hay recorrido, se dibuja un fotograma y
+    ya, así que sostener una ventana entera sería pagar dieciséis decodificaciones que nadie
+    va a ver.
+  */
+  cargarUnicoFrame(numeroDeFrame: number): void {
+    if (this.descartado) {
+      return;
+    }
+    this.framesDeseados = new Set([numeroDeFrame]);
+    this.liberarLosQueSalieronDeLaVentana();
+    this.pedirFrame(numeroDeFrame);
+  }
+
+  obtenerFrameMasCercanoDisponible(numeroDeFrame: number): ImageBitmap | null {
+    const frameExacto = this.framesDecodificados.get(numeroDeFrame);
     if (frameExacto) {
       return frameExacto;
     }
-    for (let distancia = 1; distancia < CANTIDAD_DE_FRAMES; distancia += 1) {
-      const frameAnterior = this.imagenes[numeroDeFrame - distancia];
+    for (let distancia = 1; distancia <= RADIO_DE_LA_VENTANA_DE_FRAMES; distancia += 1) {
+      const frameAnterior = this.framesDecodificados.get(numeroDeFrame - distancia);
       if (frameAnterior) {
         return frameAnterior;
       }
-      const frameSiguiente = this.imagenes[numeroDeFrame + distancia];
+      const frameSiguiente = this.framesDecodificados.get(numeroDeFrame + distancia);
       if (frameSiguiente) {
         return frameSiguiente;
       }
     }
     return null;
+  }
+
+  private liberarLosQueSalieronDeLaVentana(): void {
+    for (const [numeroDeFrame, frame] of this.framesDecodificados) {
+      if (!this.framesDeseados.has(numeroDeFrame)) {
+        frame.close();
+        this.framesDecodificados.delete(numeroDeFrame);
+      }
+    }
+  }
+
+  private pedirFrame(numeroDeFrame: number): void {
+    if (this.framesDecodificados.has(numeroDeFrame) || this.cargasEnCurso.has(numeroDeFrame)) {
+      return;
+    }
+
+    const descarga = this.descargarYDecodificar(numeroDeFrame)
+      .then((frame) => {
+        this.cargasEnCurso.delete(numeroDeFrame);
+        if (!frame) {
+          return;
+        }
+        /*
+          Entre que se pidió y llegó, la ventana pudo haberse movido. Guardar aquí un frame
+          que ya nadie quiere sería exactamente la fuga que este banco existe para evitar.
+        */
+        if (this.descartado || !this.framesDeseados.has(numeroDeFrame)) {
+          frame.close();
+          return;
+        }
+        this.framesDecodificados.set(numeroDeFrame, frame);
+        this.alQuedarDisponibleUnFrame(numeroDeFrame);
+      })
+      .catch(() => {
+        this.cargasEnCurso.delete(numeroDeFrame);
+      });
+
+    this.cargasEnCurso.set(numeroDeFrame, descarga);
+  }
+
+  private async descargarYDecodificar(numeroDeFrame: number): Promise<ImageBitmap | null> {
+    try {
+      const respuesta = await fetch(construirRutaDeFrame(this.carpetaBase, numeroDeFrame), {
+        signal: this.abortarDescargas.signal,
+      });
+      if (!respuesta.ok) {
+        return null;
+      }
+      return await createImageBitmap(await respuesta.blob());
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -178,7 +262,7 @@ class LienzoDeSecuencia {
     this.elementoCanvas.height = Math.round(this.elementoCanvas.clientHeight * densidadDePixeles);
   }
 
-  dibujarAjustado(imagen: HTMLImageElement | null): void {
+  dibujarAjustado(imagen: ImageBitmap | null): void {
     if (!imagen || !this.contexto) {
       return;
     }
@@ -236,16 +320,38 @@ export function SecuenciaScroll({
 
     registerGsapPlugins();
 
-    const banco = new BancoDeFrames(elegirCarpetaSegunAnchoDePantalla());
     const lienzo = new LienzoDeSecuencia(elementoCanvas, modoDeEncuadre);
     const sinMovimiento = prefersReducedMotionNow();
 
     let disparadorDeScroll: ScrollTrigger | null = null;
-    let cancelado = false;
+    let frameEnPantalla = PRIMER_FRAME;
+    let elLienzoYaTieneImagen = false;
+
+    /*
+      Un frame que llega tarde solo se pinta si sigue siendo el que toca. Sin esta guarda,
+      la ventana entera se dibujaría en cascada según fuera decodificando y el recorrido
+      daría saltos hacia atrás.
+
+      El primer frame que se pinta es además el que da por lista la sección: hasta entonces
+      la portada mantiene su fondo macizo, porque retirarlo antes descubriría un lienzo en
+      negro en lugar del auditorio.
+    */
+    const banco = new BancoDeFrames(elegirCarpetaSegunAnchoDePantalla(), (numeroDeFrame) => {
+      if (numeroDeFrame !== frameEnPantalla) {
+        return;
+      }
+      lienzo.dibujarAjustado(banco.obtenerFrameMasCercanoDisponible(numeroDeFrame));
+      if (!elLienzoYaTieneImagen) {
+        elLienzoYaTieneImagen = true;
+        elementoSeccion.dataset.secuenciaLista = "true";
+      }
+    });
 
     const redibujarSegunProgreso = (progreso: number) => {
       const frameObjetivo = calcularFrameDesdeProgreso(progreso);
-      void banco.cargarFrame(frameObjetivo);
+      const sentido = frameObjetivo >= frameEnPantalla ? 1 : -1;
+      frameEnPantalla = frameObjetivo;
+      banco.asegurarVentana(frameObjetivo, sentido);
       lienzo.dibujarAjustado(banco.obtenerFrameMasCercanoDisponible(frameObjetivo));
       notificarProgresoRef.current?.(progreso);
     };
@@ -255,20 +361,10 @@ export function SecuenciaScroll({
       redibujarSegunProgreso(disparadorDeScroll?.progress ?? 0);
     };
 
-    void banco.cargarFramesPrioritarios().then(() => {
-      if (cancelado) {
-        return;
-      }
-      elementoSeccion.dataset.secuenciaLista = "true";
-
-      if (sinMovimiento) {
-        lienzo.dibujarAjustado(
-          banco.obtenerFrameMasCercanoDisponible(FRAME_REPRESENTATIVO_SIN_MOVIMIENTO),
-        );
-        banco.cargarRestoEnTiempoOcioso();
-        return;
-      }
-
+    if (sinMovimiento) {
+      frameEnPantalla = FRAME_REPRESENTATIVO_SIN_MOVIMIENTO;
+      banco.cargarUnicoFrame(FRAME_REPRESENTATIVO_SIN_MOVIMIENTO);
+    } else {
       disparadorDeScroll = ScrollTrigger.create({
         trigger: elementoSeccion,
         start: "top top",
@@ -281,13 +377,11 @@ export function SecuenciaScroll({
       });
 
       redibujarSegunProgreso(0);
-      banco.cargarRestoEnTiempoOcioso();
-    });
+    }
 
     window.addEventListener("resize", atenderCambioDeTamano);
 
     return () => {
-      cancelado = true;
       banco.descartar();
       window.removeEventListener("resize", atenderCambioDeTamano);
       disparadorDeScroll?.kill();
