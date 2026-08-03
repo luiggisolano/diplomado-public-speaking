@@ -34,7 +34,12 @@
   --color-linea: rgba(189, 182, 168, 0.14);
   --color-linea-fuerte: rgba(180, 130, 45, 0.4);
 
-  --ancho-columna-texto: 34rem;
+  /*
+    Medida de la columna del titular. Es más ancha de lo que pediría una columna alineada a
+    la izquierda porque el texto va centrado: con 34rem el titular caía en cinco líneas muy
+    estrechas que tapaban el podio de arriba abajo.
+  */
+  --ancho-columna-texto: 46rem;
   --ancho-maximo-contenido: 72rem;
   --margen-lateral: clamp(1.5rem, 5vw, 6rem);
   --transicion-capitulo: 620ms cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -110,31 +115,195 @@
 }
 
 /*
-  Velo direccional suave. Oscurece el flanco izquierdo, donde se posa el titular, y se
-  disipa antes de llegar al podio, que se ve a plena luz. Es deliberadamente mucho más
-  ligero que el velo original —tope 0,62 en vez de negro macizo— para que el humo y los
-  focos sigan leyéndose bajo la letra en lugar de quedar sepultados.
+  Velo radial centrado. Al pasar los títulos al centro de la pantalla, el velo direccional
+  que oscurecía el flanco izquierdo dejó de proteger nada: medido sobre los 96 frames, la
+  banda central alcanza 151 de luminancia media en el tramo del micrófono iluminado, donde
+  el hueso daba 2,52:1. Ahora la densidad se concentra donde de verdad cae la letra, 0,55 en
+  el centro, y se disuelve hacia los bordes para que los focos y la multitud sigan a la
+  vista. Con esa composición el titular recupera unos 7:1 en el peor tramo.
 
-  El 0,62 del arranque no es un valor tanteado. Medido sobre los 96 frames, la banda donde
-  cae el titular llega a 245 de luminancia en el tramo medio, y ahí el hueso sin velo daba
-  1,01:1, es decir invisible. Componiendo el negro de la gama a 0,62 sobre ese pico el fondo
-  baja a ~98 y el titular recupera 4,9:1, que ya es AA. El halo del texto se mantiene, pero
-  reducido: con el velo puesto solo tiene que perfilar, no sostener la legibilidad entera.
+  La segunda capa asienta el pie de pantalla, donde vive la barra de progreso.
 */
 .pod-secuencia__velo {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(
-      100deg,
-      rgba(8, 6, 3, 0.62) 0%,
-      rgba(8, 6, 3, 0.56) 26%,
-      rgba(8, 6, 3, 0.34) 48%,
-      rgba(8, 6, 3, 0.1) 70%,
-      transparent 84%
+    radial-gradient(
+      68% 58% at 50% 48%,
+      rgba(8, 6, 3, 0.55) 0%,
+      rgba(8, 6, 3, 0.44) 42%,
+      rgba(8, 6, 3, 0.2) 72%,
+      transparent 100%
     ),
     linear-gradient(to top, rgba(8, 6, 3, 0.5) 0%, transparent 24%);
+}
+
+/* ------------------------------------------------------------ portada de apertura */
+
+/*
+  Capa de bienvenida sobre la secuencia. Recorre tres estados encadenados a un solo dato, el
+  progreso del recorrido, sin lógica de animación propia:
+
+    1. Cargando  · el fondo macizo tapa el lienzo y solo se ve el sello institucional.
+    2. Lista     · SecuenciaScroll marca data-secuencia-lista y ese fondo se retira, así que
+                   el auditorio aparece detrás del logo. La invitación sigue en pantalla.
+    3. Iniciado  · al primer tramo de scroll la portada entera se va y entran los títulos.
+
+  Va por encima del contenido con z-index propio porque en el DOM la preceden el lienzo y el
+  velo, pero la siguen los capítulos, y sin capa explícita el texto asomaría sobre el logo.
+*/
+.pod-portada {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--margen-lateral);
+  padding-block: clamp(4rem, 10vh, 7rem);
+  text-align: center;
+  transition:
+    opacity 720ms ease-out,
+    transform 720ms ease-out;
+}
+
+.pod-secuencia[data-iniciado="true"] .pod-portada {
+  opacity: 0;
+  transform: translateY(-1.5rem);
+  pointer-events: none;
+}
+
+.pod-portada__fondo {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-abyss);
+  transition: opacity 900ms ease-out;
+}
+
+/*
+  El fondo se retira en cuanto los frames prioritarios están decodificados: ese es el
+  instante en que el auditorio puede aparecer sin parpadeo ni lienzo en blanco.
+*/
+.pod-secuencia[data-secuencia-lista="true"] .pod-portada__fondo {
+  opacity: 0;
+}
+
+/*
+  El escudo se separa de la firma, pero las tres líneas de la firma respiran entre sí mucho
+  menos: son un solo bloque tipográfico, no cuatro elementos apilados. De ahí que el gap del
+  contenedor sea cero y cada línea traiga su propio margen superior.
+*/
+.pod-portada__marca {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pod-portada__logo {
+  width: clamp(10rem, 24vh, 16.5rem);
+  height: auto;
+  filter: drop-shadow(0 2px 26px rgba(8, 6, 3, 0.85));
+}
+
+/*
+  Las tres líneas escalan con el ancho de la ventana en vez de quedarse fijas: con trackings
+  de 0.24em y 0.28em, fijar el tamaño de escritorio desbordaría el margen lateral en las
+  pantallas estrechas.
+*/
+.pod-portada__institucion {
+  margin-top: 1.5rem;
+  font-size: clamp(0.68rem, 1.35vw, 0.95rem);
+  color: var(--color-texto);
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  La sede es la línea que la firma pronuncia fuerte: sube a serif y a un cuerpo tres veces
+  mayor que el genérico que la precede, con el tracking apenas abierto que pide una versalita
+  de display. Es el mismo salto de registro que hace el díptico entre rótulo y titular.
+*/
+.pod-portada__sede {
+  margin-top: 0.3rem;
+  font-size: clamp(1.5rem, 3.2vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-hueso);
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  El aval cierra el bloque bajo el filete: es la letra pequeña de un certificado, así que va
+  al cuerpo menor de los tres y con el tracking más abierto.
+*/
+.pod-portada__aval {
+  position: relative;
+  margin-top: 1.15rem;
+  padding-top: 1.15rem;
+  font-size: clamp(0.6rem, 1.15vw, 0.8rem);
+  color: var(--color-hueso);
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  La invitación se ancla al pie en vez de formar columna con el sello: así el logo ocupa el
+  centro óptico real, que es donde se pidió, y la flecha señala hacia abajo desde el borde
+  inferior, que es hacia donde de verdad hay que deslizar.
+*/
+.pod-portada__invitacion {
+  position: absolute;
+  inset-inline: 0;
+  bottom: clamp(3.5rem, 9vh, 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--color-hueso);
+}
+
+.pod-portada__flecha {
+  color: var(--color-oro-brillo);
+  filter: drop-shadow(0 2px 12px rgba(8, 6, 3, 0.9));
+  animation: pod-descenso 2.4s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+}
+
+.pod-portada__indicacion {
+  font-size: 0.68rem;
+  color: var(--color-hueso);
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  Descenso corto y con pausa larga entre repeticiones: la flecha señala el gesto sin
+  convertirse en un parpadeo que compita con la imagen.
+*/
+@keyframes pod-descenso {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  78% {
+    transform: translateY(0.55rem);
+    opacity: 1;
+  }
+}
+
+/*
+  Los títulos esperan a que el recorrido arranque: mientras la portada está en pantalla, dos
+  bloques de texto centrados compitiendo por el mismo eje se estorbarían.
+*/
+.pod-secuencia:not([data-iniciado="true"]) .pod-secuencia__contenido {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pod-secuencia__contenido {
+  transition: opacity 620ms ease-out;
 }
 
 /*
@@ -143,7 +312,8 @@
   del fondo. Una sombra solo ocupa el área de la letra, así que no vela el encuadre.
 */
 .pod-secuencia__contenido,
-.pod-secuencia__pie {
+.pod-secuencia__pie,
+.pod-portada {
   --halo-sobre-imagen: 0 0 2px rgba(8, 6, 3, 0.72), 0 2px 20px rgba(8, 6, 3, 0.6);
 }
 
@@ -152,13 +322,26 @@
 }
 
 /*
+  Los registros en oro necesitan más halo que los titulares en hueso: el tramo medio del
+  recorrido es el del humo iluminado, y ahí el oro claro y el fondo caen en la misma franja
+  de luminancia. A ese cuerpo pequeño una sombra difusa engorda el trazo, así que el borde lo
+  pone un contorno de sombras de 1 px, el mismo recurso que la barra de progreso y el aviso
+  de scroll, y la proyectada solo asienta el conjunto.
+*/
+.pod-capitulo__antetitulo,
+.pod-capitulo:not([data-destacado="true"]) .pod-capitulo__subtitulo {
+  text-shadow:
+    1px 1px 1px rgba(8, 6, 3, 0.75), -1px 1px 1px rgba(8, 6, 3, 0.75),
+    1px -1px 1px rgba(8, 6, 3, 0.75), -1px -1px 1px rgba(8, 6, 3, 0.75),
+    0 2px 16px rgba(8, 6, 3, 0.65);
+}
+
+/*
   Los rótulos de 11-12 px piden otro tratamiento: a ese cuerpo una sombra difusa se
   convierte en mancha y engorda el trazo, mientras un contorno de sombras de 1 px perfila la
   letra. Van con menos opacidad que cuando no había velo, pero se quedan: el oro claro sobre
   el tramo iluminado sigue siendo el punto más delicado de la pantalla.
 */
-.pod-secuencia__kicker,
-.pod-capitulo__indice,
 .pod-secuencia__indicacion {
   text-shadow:
     1px 1px 1px rgba(8, 6, 3, 0.7), -1px 1px 1px rgba(8, 6, 3, 0.7),
@@ -178,35 +361,41 @@
   box-shadow: 0 0 12px rgba(231, 182, 85, 0.55);
 }
 
+/*
+  Los títulos van centrados en la pantalla, alineados con el eje del podio y del micrófono
+  que la secuencia lleva al centro del encuadre. El texto se centra también en su caja, no
+  solo el bloque, porque un titular de dos líneas descentrado dentro de una columna centrada
+  delata la maqueta.
+*/
 .pod-secuencia__contenido {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 2.5rem;
   padding-inline: var(--margen-lateral);
   padding-block: clamp(5rem, 12vh, 9rem);
-}
-
-/*
-  El díptico abre con «DIPLOMADO EN» muy espaciado sobre el titular. Ese tracking abierto
-  es la firma de la portada, así que el kicker lo replica en lugar del 0,16em anterior.
-*/
-.pod-secuencia__kicker {
-  color: var(--color-oro-brillo);
-  font-size: 0.72rem;
-  letter-spacing: var(--tracking-kicker);
+  text-align: center;
 }
 
 /*
   Los capítulos se apilan en la misma celda de la retícula: solo uno es visible y los
   demás quedan bajo él sin empujar la maqueta, así el relevo no mueve nada alrededor.
 */
+/*
+  La medida la marca el titular más largo, que es el que nombra el programa: con los 46rem
+  de los otros dos capítulos caía en cinco líneas y el bloque tapaba el podio de arriba
+  abajo, justo lo que el encuadre quiere dejar ver. Los capítulos breves no se estiran por
+  esto porque sus líneas van cortadas a mano.
+*/
 .pod-secuencia__capitulos {
   display: grid;
-  max-width: var(--ancho-columna-texto);
+  width: 100%;
+  max-width: min(58rem, 100%);
   min-height: 15rem;
+  margin-inline: auto;
 }
 
 .pod-capitulo {
@@ -226,50 +415,136 @@
 }
 
 /*
-  El número va en Playfair y la etiqueta en Glacial versalita: la misma pareja con la que
-  el díptico rotula los seis módulos, cifra serif dorada contra rótulo geométrico.
-*/
-.pod-capitulo__indice {
-  display: flex;
-  align-items: baseline;
-  gap: 0.85rem;
-  margin-bottom: 1.1rem;
-  font-size: 1.5rem;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--color-oro);
-}
-
-.pod-capitulo__etiqueta {
-  font-family: var(--fuente-sans);
-  font-size: 0.7rem;
-  letter-spacing: var(--tracking-etiqueta);
-  color: var(--color-texto-tenue);
-  text-transform: uppercase;
-}
-
-/*
   Playfair tiene ojo menor y ascendentes más largas que la Spectral que estaba aquí antes:
   el interlineado sube de 1,08 a 1,14 para que las mayúsculas acentuadas no rocen la línea
   superior, y el tracking negativo casi desaparece porque su ancho ya es estrecho.
 */
+/*
+  Cuerpo propio, más contenido que el --text-display global del que venía. Alineado a la
+  izquierda, 84 px daba una columna alta y estrecha que funcionaba; centrado, ese tamaño
+  partía la frase en cinco líneas y el bloque tapaba el podio entero. A 64 px cae en cuatro
+  y deja ver el escenario entre el texto y los bordes.
+*/
+/*
+  Los tres titulares van en caja alta, así que el tracking pasa a positivo: Playfair aprieta
+  las mayúsculas y sin ese aire la palabra se lee como un bloque macizo. El peso se queda en
+  regular; el bold lo reserva el capítulo del nombre del programa, que es el único que debe
+  sonar más fuerte que los otros dos.
+*/
 .pod-capitulo__titulo {
-  font-size: var(--text-display);
+  font-size: clamp(2.25rem, 1.5rem + 2.6vw, 4rem);
   font-weight: 400;
-  line-height: 1.14;
-  letter-spacing: -0.005em;
+  line-height: 1.08;
+  letter-spacing: 0.03em;
+  text-indent: 0.03em;
+  text-transform: uppercase;
   color: var(--color-hueso);
   text-wrap: balance;
 }
 
 /*
-  En el díptico el remate de cada par de frases no es cursiva sino Playfair Bold en oro
-  («Domina tu mente. / Domina tu audiencia.»). El acento adopta ese contraste de peso.
+  Cada línea del titular ocupa su propio renglón: el corte de verso lo decide el contenido,
+  no el ancho disponible. Dentro de una línea el texto sí puede reajustarse si la pantalla
+  no le da, y ahí entra el equilibrado heredado del titular.
 */
-.pod-capitulo__acento {
+.pod-capitulo__linea {
   display: block;
-  font-weight: 700;
+}
+
+/*
+  El capítulo que nombra el programa se compone como el lockup de la marca, en tres registros
+  de una misma unidad: el genérico en oro muy espaciado, la materia en serif de display, y la
+  especialidad en sans espaciada bajo ella. Los tres van en caja alta, así que el titular es
+  el único de la secuencia que no lleva minúsculas, y por eso puede pesar más sin gritar.
+
+  Es también el único que va en hueso: las dos frases que lo preceden llevan el oro, y aquí
+  el oro se reserva para el genérico, que es quien lo introduce.
+*/
+.pod-capitulo__antetitulo {
+  margin-bottom: 0.7rem;
+  font-size: clamp(0.7rem, 1.25vw, 1rem);
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
   color: var(--color-oro-brillo);
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  En los dos capítulos de apertura el registro pequeño es media frase, no un genérico de tres
+  palabras: con los 0,42em del lockup la línea se estiraba tanto que dejaba de leerse como
+  una unidad. Baja al tracking del díptico y ambos registros comparten cuerpo, para que el
+  espejo entre los dos capítulos —uno con la línea pequeña arriba y el otro abajo— se
+  reconozca como la misma pieza girada.
+*/
+.pod-capitulo:not([data-destacado="true"]) .pod-capitulo__antetitulo,
+.pod-capitulo:not([data-destacado="true"]) .pod-capitulo__subtitulo {
+  font-size: clamp(0.78rem, 1.35vw, 1.1rem);
+  letter-spacing: var(--tracking-kicker);
+  text-indent: var(--tracking-kicker);
+  color: var(--color-oro-brillo);
+}
+
+.pod-capitulo[data-destacado="true"] .pod-capitulo__titulo {
+  margin-top: 0.6rem;
+  font-size: clamp(2.5rem, 1.25rem + 4.2vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--color-hueso);
+}
+
+.pod-capitulo__subtitulo {
+  margin-top: 1.05rem;
+  font-size: clamp(0.78rem, 1.5vw, 1.25rem);
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  color: var(--color-hueso);
+  text-shadow: var(--halo-sobre-imagen);
+}
+
+/*
+  La bajada explica; el titular anuncia. Va en la sans del díptico y con medida corta para
+  que se lea como pie del titular y no como un segundo titular. El filete dorado que la
+  precede es el que separa los dos registros, el trabajo que antes hacía el destello: marca
+  el corte entre el nombre del programa y su explicación sin añadir nada sobre la letra.
+*/
+.pod-capitulo__bajada {
+  position: relative;
+  max-width: min(56ch, 100%);
+  margin: 1.75rem auto 0;
+  padding-top: 1.75rem;
+  font-family: var(--fuente-sans);
+  font-size: clamp(0.92rem, 0.86rem + 0.3vw, 1.1rem);
+  line-height: 1.62;
+  color: var(--color-texto);
+  text-shadow: var(--halo-sobre-imagen);
+  text-wrap: pretty;
+}
+
+/*
+  El filete va en oro claro y con sombra propia por la misma razón que la barra de progreso:
+  un pelo de 1 px cruza tramos donde el metraje pasa de la madera clara del podio al negro
+  del patio de butacas, y sin ese perfil desaparece justo sobre la parte iluminada. Lo
+  comparten la firma de la portada y la bajada del capítulo: es el mismo signo, separar el
+  nombre de su letra pequeña.
+*/
+.pod-portada__aval::before,
+.pod-capitulo__bajada::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5rem;
+  height: 1px;
+  transform: translateX(-50%);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-oro-brillo) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 1px 3px rgba(8, 6, 3, 0.8);
 }
 
 /* ------------------------------------------------------------- pie y progreso */
@@ -364,20 +639,39 @@
   padding-block: clamp(3rem, 8vh, 5rem);
 }
 
-.pod-seccion__eyebrow {
-  margin-bottom: 1.25rem;
-  color: var(--color-oro);
-  letter-spacing: 0.2em;
+/*
+  Encabezado de sección. Repite la pareja de registros con la que se compone la secuencia de
+  apertura: rótulo pequeño en oro muy espaciado sobre titular de display en caja alta y
+  hueso. Es el mismo sistema, una escala más abajo, para que el cuerpo de la página se lea
+  como continuación del hero y no como otra plantilla.
+*/
+.pod-encabezado__rotulo {
+  margin-bottom: 1.15rem;
+  font-size: clamp(0.68rem, 1.1vw, 0.85rem);
+  letter-spacing: var(--tracking-kicker);
+  text-indent: var(--tracking-kicker);
+  color: var(--color-oro-brillo);
 }
 
-.pod-seccion__titulo {
-  max-width: 22ch;
+/*
+  En caja alta el tracking pasa a positivo y la medida se abre de 22 a 26 caracteres: las
+  mayúsculas ocupan más y con la medida anterior los titulares largos del documento caían en
+  cinco y seis líneas.
+*/
+.pod-encabezado__titulo {
+  max-width: 26ch;
   font-size: var(--text-section);
   font-weight: 400;
-  line-height: 1.16;
-  letter-spacing: -0.005em;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  text-indent: 0.03em;
+  text-transform: uppercase;
   color: var(--color-hueso);
   text-wrap: balance;
+}
+
+.pod-encabezado__entrada > * + * {
+  margin-top: 1.1rem;
 }
 
 /*
@@ -390,33 +684,6 @@
   font-size: 1.0625rem;
   color: var(--color-texto);
   line-height: 1.72;
-}
-
-/*
-  Los tres logros son una lista, no un párrafo: sin marca ni aire quedaban como tres frases
-  pegadas. Se les pone el mismo filete dorado con el que el díptico abre cada logro de la
-  columna «TU TRANSFORMACIÓN».
-*/
-.pod-logros {
-  display: grid;
-  gap: 0.9rem;
-  list-style: none;
-  padding: 0;
-}
-
-.pod-logros li {
-  position: relative;
-  padding-left: 1.5rem;
-}
-
-.pod-logros li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.72em;
-  width: 0.85rem;
-  height: 1px;
-  background-color: var(--color-oro);
 }
 
 /* -------------------------------------------------------------- módulos */
@@ -590,89 +857,8 @@
   }
 }
 
-.pod-perfil {
-  display: flex;
-  align-items: baseline;
-  gap: 1.25rem;
-  padding-block: 1.15rem;
-  border-bottom: 1px solid var(--color-linea);
-}
-
-.pod-perfiles > .pod-perfil:first-child {
-  border-top: 1px solid var(--color-linea);
-}
-
-.pod-perfil__numero {
-  flex-shrink: 0;
-  font-size: 0.95rem;
-  color: var(--color-oro);
-}
-
-.pod-perfil__nombre {
-  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.5rem);
-  font-weight: 400;
-  color: var(--color-texto);
-}
-
-/* --------------------------------------------------------- antes y después */
-
-.pod-contraste {
-  display: grid;
-  gap: clamp(1rem, 2vw, 1.5rem);
-  margin-top: clamp(2.5rem, 6vh, 4rem);
-}
-
 @media (min-width: 48rem) {
-  .pod-contraste {
-    grid-template-columns: 1fr 1fr;
-  }
-}
 
-.pod-contraste__panel {
-  height: 100%;
-  padding: clamp(1.5rem, 3vw, 2.25rem);
-  background-color: var(--color-negro-calido);
-  border: 1px solid var(--color-linea);
-}
-
-.pod-contraste__panel--despues {
-  border-color: var(--color-linea-fuerte);
-  background-color: var(--color-negro-elevado);
-}
-
-.pod-contraste__rotulo {
-  font-size: 0.66rem;
-  color: var(--color-texto-tenue);
-}
-
-.pod-contraste__panel--despues .pod-contraste__rotulo {
-  color: var(--color-oro-brillo);
-}
-
-.pod-contraste .pod-logros {
-  margin-top: 1.4rem;
-}
-
-.pod-logros--destacados li {
-  color: var(--color-hueso);
-}
-
-.pod-logros--destacados li::before {
-  background-color: var(--color-oro-brillo);
-}
-
-.pod-cita {
-  max-width: 46rem;
-  margin: clamp(3.5rem, 9vh, 5.5rem) auto 0;
-  text-align: center;
-}
-
-.pod-cita__texto {
-  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.375rem);
-  font-weight: 400;
-  line-height: 1.28;
-  color: var(--color-hueso);
-  text-wrap: balance;
 }
 
 /* ------------------------------------------------------- pilares y razones */
@@ -874,11 +1060,6 @@
   box-shadow: 0 0 60px rgba(180, 130, 45, 0.12);
 }
 
-.pod-inscripcion__rotulo {
-  font-size: 0.66rem;
-  color: var(--color-oro-brillo);
-}
-
 .pod-inscripcion .pod-acciones {
   flex-direction: column;
   margin-top: 1.75rem;
@@ -921,9 +1102,8 @@
   text-align: center;
 }
 
-.pod-cierre .pod-seccion__titulo {
-  max-width: 20ch;
-  margin-inline: auto;
+.pod-cierre .pod-encabezado {
+  text-align: center;
 }
 
 .pod-acciones {
@@ -1005,6 +1185,30 @@
     aspect-ratio: 16 / 9;
   }
 
+  /*
+    La firma entera baja al negro de debajo del metraje, igual que hacen los capítulos: es un
+    bloque de cuatro registros, más alto que los 56,25vw que mide la imagen en vertical, y
+    superpuesto quedaba a caballo del borde con el escudo partido por la mitad. Abajo se lee
+    sobre negro macizo, que es como está compuesto el lockup original.
+  */
+  .pod-portada {
+    justify-content: flex-start;
+    padding-block-start: calc(8vh + 56.25vw + 2.5rem);
+  }
+
+  .pod-portada__marca {
+    position: static;
+    transform: none;
+  }
+
+  /*
+    En vertical el sello se mide contra el ancho de la pantalla, no contra su altura: los
+    24vh de escritorio dan un escudo que deja sin sitio a las tres líneas que lo siguen.
+  */
+  .pod-portada__logo {
+    width: min(30vw, 22vh);
+  }
+
   .pod-secuencia__velo {
     background-image: linear-gradient(
       to bottom,
@@ -1032,6 +1236,15 @@
 
   .pod-capitulo__titulo {
     font-size: clamp(1.75rem, 7vw, 2.5rem);
+  }
+
+  /*
+    El titular destacado mantiene su salto de escala sobre los otros dos, pero medido contra
+    el ancho de un móvil: la escala de escritorio le da un cuerpo que en caja alta desborda
+    el margen lateral.
+  */
+  .pod-capitulo[data-destacado="true"] .pod-capitulo__titulo {
+    font-size: clamp(1.9rem, 8.4vw, 3.25rem);
   }
 
   .pod-acciones {
@@ -1066,12 +1279,30 @@
   }
 
   /*
-    Sin scroll-driven no hay relevo de capítulos: se muestran los cuatro en columna,
+    Sin scroll-driven no hay relevo de capítulos: se muestran los tres en columna,
     legibles de una vez sobre el frame estático.
   */
   .pod-secuencia {
     height: auto;
     min-height: 100dvh;
+  }
+
+  /*
+    Sin ScrollTrigger el progreso nunca sube de cero, así que la portada no llegaría a
+    retirarse y los títulos quedarían ocultos para siempre detrás de ella. Aquí la portada
+    no llega a existir y el contenido se muestra de entrada.
+  */
+  .pod-portada {
+    display: none;
+  }
+
+  .pod-secuencia:not([data-iniciado="true"]) .pod-secuencia__contenido {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pod-portada__flecha {
+    animation: none;
   }
 
   .pod-secuencia__capitulos {
@@ -1090,4 +1321,595 @@
   .pod-secuencia__indicacion {
     display: none;
   }
+}
+
+/* ------------------------------------------------------------------- barra de navegación */
+
+/*
+  Fija arriba, pero replegada mientras dura la secuencia de apertura: BarraPodio marca
+  data-visible cuando el recorrido pinneado deja el viewport. Se retira hacia arriba en lugar
+  de solo desvanecerse, y con visibility: hidden, que es lo que además la saca del orden de
+  tabulación mientras no está: una barra invisible pero enfocable manda el teclado a enlaces
+  que nadie ve.
+
+  El fondo va translúcido con desenfoque porque debajo pasan secciones de fondo alterno y una
+  banda opaca cortaría la página en dos a cada cambio.
+*/
+.pod-barra {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding-inline: var(--margen-lateral);
+  padding-block: 0.9rem;
+  border-bottom: 1px solid transparent;
+  background-color: rgba(8, 6, 3, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition:
+    opacity 420ms ease-out,
+    transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s linear 420ms;
+}
+
+.pod-barra[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  border-bottom-color: var(--color-linea);
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.pod-barra__marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: auto;
+  color: var(--color-hueso);
+  text-decoration: none;
+}
+
+.pod-barra__isotipo {
+  width: clamp(1.75rem, 3.4vw, 2.35rem);
+  height: auto;
+}
+
+/*
+  Una sola línea en caja alta: el lockup completo mide casi noventa píxeles y aquí hay
+  cuarenta. El tracking se abre lo justo para que la versalita no se apelmace a este cuerpo.
+*/
+.pod-barra__nombre {
+  font-size: clamp(0.85rem, 1.5vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pod-barra__lista {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2.2vw, 2rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+  El subrayado crece desde el centro en lugar de aparecer entero: sobre un fondo oscuro un
+  filete que se enciende de golpe se lee como un parpadeo.
+*/
+.pod-barra__enlace {
+  position: relative;
+  display: block;
+  padding-block: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--color-texto);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 240ms ease-out;
+}
+
+.pod-barra__enlace::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: var(--color-oro-brillo);
+  transform: scaleX(0);
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pod-barra__enlace:hover,
+.pod-barra__enlace:focus-visible {
+  color: var(--color-hueso);
+}
+
+.pod-barra__enlace:hover::after,
+.pod-barra__enlace:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/*
+  El botón repite el oro macizo del cierre, pero a la escala de una barra: es el mismo
+  destino, y hasta ahora vivía once secciones más abajo.
+*/
+.pod-barra__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid var(--color-oro);
+  color: var(--color-abyss);
+  background-color: var(--color-oro-brillo);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 260ms ease-out,
+    transform 260ms ease-out;
+}
+
+.pod-barra__cta:hover,
+.pod-barra__cta:focus-visible {
+  background-color: var(--color-oro-suave);
+  transform: translateY(-1px);
+}
+
+/*
+  El conmutador solo existe en pantalla estrecha, donde los cinco destinos no caben en línea.
+  Dos trazos que se cruzan al desplegar: un icono de tres barras a esta escala se emborrona.
+*/
+.pod-barra__conmutador {
+  display: none;
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--color-linea);
+  background-color: transparent;
+  cursor: pointer;
+}
+
+/*
+  Los dos trazos se distinguen por modificador y no por :first-of-type, porque el primer
+  <span> del botón es el rótulo para lector de pantalla: con el selector posicional uno de
+  los dos trazos se quedaba sin regla y el aspa salía como una diagonal suelta.
+
+  Van centrados sobre el mismo punto y separados por el propio transform, de modo que al
+  desplegar basta con anular esa separación y girarlos en sentidos opuestos.
+*/
+.pod-barra__trazo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.05rem;
+  height: 1px;
+  background-color: var(--color-hueso);
+  transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pod-barra__trazo--alto {
+  transform: translate(-50%, -0.25rem);
+}
+
+.pod-barra__trazo--bajo {
+  transform: translate(-50%, 0.25rem);
+}
+
+.pod-barra[data-desplegado="true"] .pod-barra__trazo--alto {
+  transform: translate(-50%, 0) rotate(45deg);
+}
+
+.pod-barra[data-desplegado="true"] .pod-barra__trazo--bajo {
+  transform: translate(-50%, 0) rotate(-45deg);
+}
+
+/*
+  El destino de un ancla se detiene bajo la barra en lugar de quedar tapado por ella. Lenis
+  ya aplica su propio desplazamiento al saltar, pero esto cubre el caso de movimiento
+  reducido, donde no hay Lenis y el salto lo hace el navegador.
+*/
+.pod-seccion--destino {
+  scroll-margin-top: 6rem;
+}
+
+@media (max-width: 900px) {
+  /*
+    Los cinco destinos bajan a un panel que se despliega bajo la barra. En la propia barra se
+    quedan la marca y el botón, que es lo único que hay que poder tocar sin pensar.
+  */
+  .pod-barra__conmutador {
+    display: block;
+  }
+
+  .pod-barra__navegacion {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    border-bottom: 1px solid var(--color-linea);
+    background-color: rgba(8, 6, 3, 0.94);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.75rem);
+    transition:
+      opacity 280ms ease-out,
+      transform 280ms ease-out,
+      visibility 0s linear 280ms;
+  }
+
+  .pod-barra[data-desplegado="true"] .pod-barra__navegacion {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
+
+  .pod-barra__lista {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-inline: var(--margen-lateral);
+  }
+
+  .pod-barra__enlace {
+    padding-block: 1rem;
+    border-top: 1px solid var(--color-linea);
+    font-size: 0.75rem;
+  }
+
+  .pod-barra__enlace::after {
+    display: none;
+  }
+}
+
+/*
+  En pantalla de móvil la barra se queda con lo imprescindible: la firma se reduce al
+  isotipo, el nombre desaparece. Con los tres elementos a la vez el botón quedaba encajado
+  entre la marca y el conmutador sin aire a ningún lado, y el nombre es lo único de los tres
+  que no hace falta tocar. La barra baja también de altura, porque en vertical cada píxel de
+  banda fija se lo quita al contenido.
+*/
+@media (max-width: 560px) {
+  .pod-barra {
+    gap: 0.75rem;
+    padding-block: 0.7rem;
+  }
+
+  .pod-barra__nombre {
+    display: none;
+  }
+
+  .pod-barra__isotipo {
+    width: 2.1rem;
+  }
+
+  .pod-barra__cta {
+    padding: 0.62rem 1.15rem;
+    font-size: 0.66rem;
+  }
+
+  .pod-barra__conmutador {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+}
+
+/* --------------------------------------------------- bloques del cuerpo editorial */
+
+/*
+  El cuerpo de la página alterna los dos colores del sistema por peso de la frase, igual que
+  la secuencia de apertura: el hueso sostiene lo que se lee y el oro marca lo que se subraya.
+  Reciben oro los rótulos que abren un bloque y las frases que lo rematan, que son las que el
+  documento escribe como sentencia; el resto es hueso o el gris de lectura.
+*/
+
+.pod-aval {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.6rem 1.4rem;
+  margin-top: clamp(2rem, 5vh, 3rem);
+  font-size: 0.62rem;
+  color: var(--color-texto-tenue);
+}
+
+.pod-aval__rotulo {
+  color: var(--color-oro-brillo);
+}
+
+/*
+  Los sellos se separan con interpuntos dibujados y no escritos: así la lista se reordena
+  sola al cambiar el ancho sin que quede un punto huérfano al final de una línea.
+*/
+.pod-aval__sello + .pod-aval__sello::before {
+  content: "·";
+  margin-right: 1.4rem;
+  color: var(--color-oro-sombra);
+}
+
+.pod-seccion__entrada {
+  max-width: 46ch;
+  font-family: var(--fuente-display);
+  font-size: clamp(1.15rem, 0.95rem + 0.7vw, 1.6rem);
+  line-height: 1.4;
+  color: var(--color-hueso);
+}
+
+/*
+  El giro y la sentencia son las dos frases con las que el documento cierra la agitación.
+  Van en display sobre el cuerpo, y la sentencia además en oro: es la línea que el visitante
+  debería recordar de todo el bloque.
+*/
+.pod-seccion__giro {
+  max-width: 46ch;
+  margin-top: clamp(2.5rem, 6vh, 3.5rem);
+  font-size: clamp(1.25rem, 1rem + 0.9vw, 1.9rem);
+  line-height: 1.32;
+  color: var(--color-hueso);
+}
+
+.pod-seccion__sentencia {
+  max-width: 46ch;
+  margin-top: 0.6rem;
+  font-size: clamp(1.25rem, 1rem + 0.9vw, 1.9rem);
+  line-height: 1.32;
+  color: var(--color-oro-brillo);
+}
+
+.pod-rotulo-lista {
+  margin-top: clamp(2.5rem, 6vh, 3.5rem);
+  font-size: 0.68rem;
+  letter-spacing: var(--tracking-kicker);
+  text-indent: var(--tracking-kicker);
+  color: var(--color-oro-brillo);
+}
+
+.pod-sintomas {
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-linea);
+}
+
+/*
+  Los síntomas se leen como una enumeración de reproches, así que van en filas separadas por
+  filete y no en tarjetas: la caja los convertiría en argumentos de venta y aquí el registro
+  es el contrario.
+*/
+.pod-sintoma {
+  max-width: 62ch;
+  padding-block: 1.05rem;
+  border-bottom: 1px solid var(--color-linea);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-texto);
+}
+
+.pod-remate {
+  max-width: 40ch;
+  margin-top: clamp(2.5rem, 6vh, 3.5rem);
+  font-size: clamp(1.3rem, 1rem + 1.1vw, 2.1rem);
+  line-height: 1.28;
+  color: var(--color-oro-brillo);
+  text-wrap: balance;
+}
+
+.pod-rejilla-dimensiones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: 1.75rem;
+}
+
+.pod-dimension {
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid var(--color-linea);
+  background-color: var(--color-negro-calido);
+}
+
+.pod-dimension__numero {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--color-oro);
+}
+
+.pod-dimension__titulo {
+  margin-top: 0.9rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--color-hueso);
+}
+
+.pod-dimension__linea {
+  margin-top: 0.6rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--color-texto);
+}
+
+/*
+  La promesa de cada módulo es la línea que el documento pone en negrita bajo el título: va
+  en display y en oro, y el desarrollo debajo en cuerpo de lectura. El resultado cierra la
+  tarjeta con su propio rótulo, porque es una promesa medible y no una descripción más.
+*/
+.pod-modulo__promesa {
+  margin-top: 0.75rem;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--color-oro-brillo);
+}
+
+.pod-modulo__resultado {
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--color-linea);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-hueso);
+}
+
+.pod-modulo__resultado-rotulo {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.6rem;
+  color: var(--color-oro);
+}
+
+.pod-rejilla-perfiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+.pod-perfil__titulo {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--color-hueso);
+}
+
+.pod-perfil__linea {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--color-texto);
+}
+
+/*
+  Antes y después, uno al lado del otro. El primero se queda en el gris de lectura y el
+  segundo sube a hueso con filete de oro: la diferencia de tratamiento es el argumento.
+*/
+.pod-balanza {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+.pod-balanza__lado {
+  height: 100%;
+  padding: clamp(1.75rem, 3.5vw, 2.5rem);
+  border: 1px solid var(--color-linea);
+  background-color: var(--color-negro-calido);
+}
+
+.pod-balanza__lado[data-tono="despues"] {
+  border-color: var(--color-linea-fuerte);
+  background-color: var(--color-negro-elevado);
+}
+
+.pod-balanza__rotulo {
+  font-size: 0.66rem;
+  letter-spacing: var(--tracking-kicker);
+  text-indent: var(--tracking-kicker);
+  color: var(--color-texto-tenue);
+}
+
+.pod-balanza__lado[data-tono="despues"] .pod-balanza__rotulo {
+  color: var(--color-oro-brillo);
+}
+
+.pod-balanza__lista {
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pod-balanza__punto {
+  padding-block: 0.85rem;
+  border-top: 1px solid var(--color-linea);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-texto);
+}
+
+.pod-balanza__lado[data-tono="despues"] .pod-balanza__punto {
+  color: var(--color-hueso);
+}
+
+/*
+  El cierre repite las dos frases con las que abre la secuencia, y con el mismo reparto de
+  peso: la primera en hueso y grande, la segunda en oro. La página termina donde empezó.
+*/
+.pod-cierre__frase {
+  max-width: 40ch;
+  margin-inline: auto;
+}
+
+/*
+  Las dos frases entran cada una en su propio revelado, así que el aire entre ellas va entre
+  los envoltorios: sin él la segunda arranca pegada al punto de la primera y las dos se leen
+  como un solo párrafo en caja alta.
+*/
+.pod-cierre__frase > .cam-reveal + .cam-reveal {
+  margin-top: clamp(1.25rem, 3vh, 2rem);
+}
+
+.pod-cierre__linea {
+  font-size: clamp(1.6rem, 1.1rem + 1.8vw, 3rem);
+  line-height: 1.16;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-oro-brillo);
+  text-wrap: balance;
+}
+
+.pod-cierre__linea[data-peso="fuerte"] {
+  font-weight: 700;
+  color: var(--color-hueso);
+}
+
+.pod-cierre .pod-microcopy {
+  margin-top: 1.25rem;
+}
+
+/*
+  Tarjeta de perfil. Lleva el nombre que antes ocupaba la fila con filete del listado de
+  público; aquella composición se retiró con el copy que la sostenía, así que el nombre queda
+  libre para lo único que hay ahora bajo ese título.
+*/
+.pod-perfil {
+  height: 100%;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid var(--color-linea);
+  border-top: 1px solid var(--color-linea-fuerte);
+  background-color: var(--color-negro-calido);
+}
+
+/*
+  Reveal envuelve cada tarjeta en su propio div, y ese div es el que ocupa la celda de la
+  retícula. Sin estirarlo, las tarjetas de una misma fila miden lo que mide su texto y la
+  fila queda con los bordes inferiores a distinta altura.
+*/
+.pod-rejilla-pilares > .cam-reveal,
+.pod-rejilla-perfiles > .cam-reveal,
+.pod-rejilla-dimensiones > .cam-reveal,
+.pod-rejilla-especialistas > .cam-reveal,
+.pod-balanza > .cam-reveal {
+  height: 100%;
+}
+
+.pod-pilar,
+.pod-dimension,
+.pod-especialista {
+  height: 100%;
+}
+
+/*
+  La entradilla necesita su propia separación del titular: en caja alta el titular no deja
+  descendentes bajo la línea base y el bloque siguiente se le pega.
+*/
+.pod-encabezado__entrada {
+  margin-top: clamp(1.5rem, 3vh, 2.25rem);
 }

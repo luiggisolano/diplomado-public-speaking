@@ -20,11 +20,12 @@ import { prefersReducedMotionNow } from "./useReducedMotion";
 type SmoothScrollProps = {
   children: React.ReactNode;
   lerp?: number;
+  anchorOffset?: number;
 };
 
 const DEFAULT_LERP = 0.1;
 
-export function SmoothScroll({ children, lerp = DEFAULT_LERP }: SmoothScrollProps) {
+export function SmoothScroll({ children, lerp = DEFAULT_LERP, anchorOffset }: SmoothScrollProps) {
   useEffect(() => {
     registerGsapPlugins();
 
@@ -32,11 +33,24 @@ export function SmoothScroll({ children, lerp = DEFAULT_LERP }: SmoothScrollProp
       return;
     }
 
+    /*
+      Con «anchors» es Lenis quien atiende los clics en enlaces de fragmento, en lugar del
+      salto nativo del navegador. Sin esto la página se teletransportaría al destino y Lenis
+      tendría que recuperar después su posición interna, que es donde aparece el tirón. El
+      desplazamiento va en negativo porque se mide como aire por encima del destino.
+
+      Queda desactivado mientras no se pida un desplazamiento, y no es una comodidad de la
+      API: Lenis atiende el clic con preventDefault, así que mueve la vista pero no el foco.
+      Un enlace de salto al contenido principal, que es el uso que las demás rutas hacen de
+      los fragmentos, dejaría de servir para quien navega con teclado. Solo lo activa la
+      página que de verdad navega por anclas.
+    */
     const lenis = new Lenis({
       lerp,
       smoothWheel: true,
       wheelMultiplier: 1,
       touchMultiplier: 1.5,
+      anchors: anchorOffset === undefined ? false : { offset: -anchorOffset },
     });
 
     const syncScrollTrigger = () => ScrollTrigger.update();
@@ -51,7 +65,7 @@ export function SmoothScroll({ children, lerp = DEFAULT_LERP }: SmoothScrollProp
       gsap.ticker.remove(raf);
       lenis.destroy();
     };
-  }, [lerp]);
+  }, [lerp, anchorOffset]);
 
   return <>{children}</>;
 }
