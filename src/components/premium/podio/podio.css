@@ -2331,21 +2331,6 @@
 }
 
 /*
-  El revelado envuelve cada tarjeta en su propio div, y ese div es el que ocupa la celda de
-  la retícula. Sin estirarlo, las tarjetas de una misma fila miden lo que mide su texto y la
-  fila queda con los bordes inferiores a distinta altura.
-
-  Este es el contrato que hace que .cam-reveal sea intocable: si un envoltorio dejara de
-  emitir esa clase, la regla no casaría con nada y el defecto aparecería como una fila
-  desalineada, sin ningún error que lo delate.
-*/
-.pod-rejilla-pilares > .cam-reveal,
-.pod-rejilla-especialistas > .cam-reveal,
-.pod-balanza > .cam-reveal {
-  height: 100%;
-}
-
-/*
   Retícula de tarjetas de argumento. Se ajusta al contenido con auto-fit para que las filas
   no queden huecas cuando el número de tarjetas no divide en columnas exactas.
 */
@@ -2380,6 +2365,253 @@
 .pod-pilar,
 .pod-especialista {
   height: 100%;
+}
+
+/*
+  El revelado envuelve cada tarjeta en su propio div, y ese div es el que ocupa la celda de
+  la retícula. Sin estirarlo, las tarjetas de una misma fila miden lo que mide su texto y la
+  fila queda con los bordes inferiores a distinta altura.
+
+  Este es el contrato que hace que .cam-reveal sea intocable: si un envoltorio dejara de
+  emitir esa clase, la regla no casaría con nada y el defecto aparecería como una fila
+  desalineada, sin ningún error que lo delate.
+*/
+.pod-rejilla-pilares > .cam-reveal,
+.pod-rejilla-especialistas > .cam-reveal {
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------- pie de imprenta */
+
+/*
+  Una sola línea con la firma institucional, separada del cuerpo por un filete y sobre el
+  negro de la página.
+
+  Los interpuntos solo existen mientras la línea cabe entera, igual que en el aval y por la
+  misma razón: en cuanto envuelve, el separador del primer dato de cada renglón queda
+  colgando contra el margen izquierdo. Por debajo del umbral cada dato toma su propio
+  renglón centrado y los separa el salto.
+*/
+.pod-pie {
+  padding-inline: var(--margen-lateral);
+  padding-block: var(--pod-space-6);
+  border-top: 1px solid var(--color-linea);
+  background-color: var(--color-abyss);
+}
+
+.pod-pie__linea {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--pod-space-1) var(--pod-space-3);
+  max-width: var(--ancho-maximo-contenido);
+  margin-inline: auto;
+  font-size: var(--pod-etiqueta);
+  line-height: 1.5;
+  color: var(--pod-tinta-3);
+  text-align: center;
+}
+
+.pod-pie__anio {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  La marca es lo único del pie que sube de tono: es la firma, y en el resto de la página el
+  hueso pleno está reservado a lo que se lee, no a lo que se acredita.
+*/
+.pod-pie__marca {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--pod-tinta-1);
+}
+
+@media (min-width: 48rem) {
+  .pod-pie__dato::before {
+    content: "·";
+    margin-right: var(--pod-space-3);
+    color: var(--pod-tinta-4);
+  }
+}
+
+/*
+  Sin separadores, cada dato necesita su renglón: dejarlos fluir haría que dos de los tres
+  compartieran línea por unos pocos píxeles y el tercero quedara solo, que es la misma
+  irregularidad que el aval tenía antes de repartirse uno por renglón.
+*/
+@media (max-width: 47.99rem) {
+  .pod-pie__linea > * {
+    flex: 0 0 100%;
+  }
+}
+
+/* ------------------------------------------------ método: el micrófono llega al atril */
+
+/*
+  La sala de fondo y el micrófono en un mismo bloque: la fotografía es un <img> con srcset,
+  porque es contenido estático que el navegador sabe servir mejor que un lienzo, y encima va
+  el canvas donde se compone la secuencia con transparencia.
+
+  El lienzo NO lleva fondo propio: si lo tuviera, taparía la sala y el canal alfa de los
+  fotogramas no serviría de nada.
+*/
+.pod-microfono {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-top: var(--pod-aire-bloque);
+  overflow: hidden;
+  background-color: var(--color-abyss);
+  border: 1px solid var(--color-linea);
+}
+
+.pod-microfono__sala {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/*
+  El micrófono viene renderizado con luces frías de violeta y azul, que son las de la
+  demostración de donde salen los fotogramas, no las de esta página. Bajarle la saturación lo
+  devuelve al metal gris que un SM58 tiene de verdad, y bajo el foco ámbar de la sala se
+  integra sin teñirse: teñirlo de oro lo habría fundido con la madera del atril.
+*/
+.pod-microfono__lienzo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: saturate(0.5) hue-rotate(-12deg) brightness(1.04);
+}
+
+/* ------------------------------------------------- transformación: los cinco pares */
+
+/*
+  El cartel cruza el ancho de lectura bajo el encabezado. Es la única foto de la página que
+  lo hace sin ser fondo, y solo puede permitírselo porque a 1.152 px de caja el archivo
+  mayor de umbral-ascensor tiene 1.122: 0,97 px por píxel (la cuenta vive en MediaEscena).
+
+  16/9 y no una banda más estrecha: la fotografía es vertical, y al recortarla más se pierden
+  la cabeza del hombre y el marco iluminado de la puerta, que son la imagen entera.
+*/
+.pod-banda {
+  aspect-ratio: 16 / 9;
+  margin-top: var(--pod-aire-bloque);
+  overflow: hidden;
+  background-color: var(--color-abyss);
+  border: 1px solid var(--color-linea);
+}
+
+@media (max-width: 48rem) {
+  .pod-banda {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+.pod-banda .pod-escena__imagen {
+  object-position: 50% 30%;
+}
+
+/*
+  Los rótulos de cada lado comparten la retícula de los pares, así que encabezan sus columnas
+  de verdad en lugar de flotar sobre ellas. Desaparecen en vertical, donde no hay dos
+  columnas que rotular y cada par ya se lee de arriba abajo.
+*/
+.pod-marbetes {
+  display: none;
+}
+
+@media (min-width: 62rem) {
+  .pod-marbetes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(3rem, 7vw, 6rem) minmax(0, 1fr);
+    gap: clamp(1rem, 2vw, 2rem);
+    margin-top: var(--pod-aire-bloque);
+  }
+}
+
+.pod-marbete {
+  font-size: var(--pod-etiqueta);
+  line-height: 1.3;
+  letter-spacing: var(--tracking-kicker);
+  text-indent: var(--tracking-kicker);
+  color: var(--pod-tinta-3);
+}
+
+.pod-marbete[data-tono="despues"] {
+  color: var(--pod-oro-tinta);
+}
+
+.pod-pasos {
+  margin-top: var(--pod-space-6);
+}
+
+/*
+  Cada renglón enfrenta un antes con su después exacto. La columna del medio es el hueco que
+  ocupa el eje que se pinta, y por eso tiene medida propia y no un gap: el filete necesita
+  una pista donde vivir.
+*/
+.pod-paso {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--pod-space-3);
+  align-items: center;
+  padding-block: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-top: 1px solid var(--color-linea);
+}
+
+@media (min-width: 62rem) {
+  .pod-paso {
+    grid-template-columns: minmax(0, 1fr) clamp(3rem, 7vw, 6rem) minmax(0, 1fr);
+    gap: clamp(1rem, 2vw, 2rem);
+  }
+}
+
+/*
+  Los dos lados llevan medida propia y no la de su columna: entre 48 y 62rem el par se
+  descompone en un solo renglón por lado, y sin tope cada frase se estiraba a los 691 px de
+  la tableta, 88 caracteres por línea.
+*/
+.pod-paso__antes {
+  max-width: 52ch;
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.55;
+  color: var(--pod-tinta-4);
+}
+
+.pod-paso__despues {
+  max-width: 52ch;
+  font-size: var(--pod-cuerpo);
+  line-height: 1.55;
+  color: var(--pod-tinta-1);
+}
+
+/*
+  El eje entre los dos estados. En vertical no separa columnas sino renglones, así que se
+  acorta a un filete suelto que hace de bisagra entre el antes y el después.
+*/
+.pod-paso__eje {
+  position: relative;
+  display: block;
+  width: 3rem;
+  height: 1px;
+  background-color: var(--color-linea);
+}
+
+@media (min-width: 62rem) {
+  .pod-paso__eje {
+    width: auto;
+  }
+}
+
+.pod-paso__carga {
+  position: absolute;
+  inset: 0;
+  background-color: var(--pod-oro-tinta);
+  transform: scaleX(0);
+  transform-origin: left center;
 }
 
 /*
@@ -2424,7 +2656,23 @@
     white-space: nowrap;
     text-wrap: nowrap;
   }
-}/*
+}
+
+/*
+  El remate de la transformación cierra una composición simétrica —banda a todo el ancho y
+  cinco pares enfrentados—, así que se centra en lugar de colgar del margen izquierdo.
+
+  Sin medida en caracteres y con reparto equilibrado: la frase mide 968 px de trazo a 44 px
+  sobre los 1.152 del ancho de lectura, así que cabe en un renglón sin tocar el cuerpo, y por
+  debajo de ese ancho se parte en dos líneas de largo parecido en vez de dejar una huérfana.
+*/
+.pod-remate--centrado {
+  max-width: none;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/*
   La promesa de cada módulo es la línea que el documento pone en negrita bajo el título: va
   en display y en oro, y el desarrollo debajo en cuerpo de lectura. El resultado cierra la
   tarjeta con su propio rótulo, porque es una promesa medible y no una descripción más.
@@ -2559,116 +2807,6 @@
   font-size: var(--pod-cuerpo-s);
   line-height: 1.55;
   color: var(--pod-tinta-2);
-}
-
-/*
-  Antes y después, uno al lado del otro. El primero se queda en el gris de lectura y el
-  segundo sube a hueso con filete de oro: la diferencia de tratamiento es el argumento.
-*/
-.pod-balanza {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
-  gap: clamp(1rem, 2.5vw, 2rem);
-  margin-top: var(--pod-aire-bloque);
-}
-
-.pod-balanza__lado {
-  height: 100%;
-  padding: clamp(1.75rem, 3.5vw, 2.5rem);
-  border: 1px solid var(--color-linea);
-  background-color: var(--color-negro-calido);
-}
-
-.pod-balanza__lado[data-tono="despues"] {
-  border-color: var(--color-linea-fuerte);
-  background-color: var(--color-negro-elevado);
-}
-
-/*
-  El contraste entre los dos lados pasa a sostenerse con dos escalones de la misma tinta y
-  con el color del filete, no con dos grises distintos ni con un cambio de hue: el «después»
-  no es de otro color, es la misma voz dicha con toda la tinta.
-*/
-.pod-balanza__rotulo {
-  font-size: var(--pod-etiqueta);
-  line-height: 1.3;
-  letter-spacing: var(--tracking-kicker);
-  text-indent: var(--tracking-kicker);
-  color: var(--pod-tinta-3);
-}
-
-.pod-balanza__lado[data-tono="despues"] .pod-balanza__rotulo {
-  color: var(--pod-tinta-1);
-}
-
-.pod-balanza__lista {
-  margin: var(--pod-space-5) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-/*
-  Las diez líneas del antes y el después son la promesa de transformación, el corazón de la
-  oferta: cruzan el piso de cuerpo en lugar de quedarse en tamaño de nota.
-*/
-.pod-balanza__punto {
-  max-width: 42ch;
-  padding-block: var(--pod-space-3);
-  border-top: 1px solid var(--color-linea);
-  font-size: var(--pod-cuerpo-s);
-  line-height: 1.55;
-  color: var(--pod-tinta-3);
-}
-
-.pod-balanza__lado[data-tono="despues"] .pod-balanza__punto {
-  color: var(--pod-tinta-1);
-}
-
-/*
-  El cierre repite las dos frases con las que abre la secuencia, y con el mismo reparto de
-  peso: la primera en hueso y grande, la segunda en oro. La página termina donde empezó.
-*/
-/*
-  La medida la declara cada línea, no este contenedor: sus 40ch se resolvían contra los
-  16 px que hereda del cuerpo, es decir 356 px, y estrangulaban a 13 caracteres reales una
-  frase de display de 56 px que el contrato mide en 20.
-*/
-.pod-cierre__frase {
-  margin-inline: auto;
-}
-
-/*
-  Las dos frases entran cada una en su propio revelado, así que el aire entre ellas va entre
-  los envoltorios: sin él la segunda arranca pegada al punto de la primera y las dos se leen
-  como un solo párrafo en caja alta.
-
-  Es el cuarto contrato que depende de que los envoltorios emitan .cam-reveal exacta, y el
-  más silencioso de todos: si dejaran de emitirla, las dos frases del cierre simplemente se
-  pegarían y nadie vería un error.
-*/
-.pod-cierre__frase > .cam-reveal + .cam-reveal {
-  margin-top: var(--pod-space-5);
-}
-
-/*
-  «Puedes ser el mejor en lo que haces. Si no sabes comunicarlo, nadie lo notará.» Es la
-  última pantalla y la frase que cierra el argumento entero: es la única línea de la página
-  que puede permitirse ese tamaño.
-*/
-.pod-cierre__linea {
-  max-width: 20ch;
-  margin-inline: auto;
-  font-size: clamp(1.875rem, 1.35rem + 2.15vw, 3.5rem);
-  line-height: 1.12;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--pod-oro-tinta);
-  text-wrap: balance;
-}
-
-.pod-cierre__linea[data-peso="fuerte"] {
-  font-weight: 700;
-  color: var(--pod-tinta-1);
 }
 
 .pod-cierre .pod-microcopy {

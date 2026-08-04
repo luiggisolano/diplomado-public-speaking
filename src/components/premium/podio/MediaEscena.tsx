@@ -47,6 +47,15 @@ const MEDIDA_DE_COLUMNA =
 const MEDIDA_A_SANGRE = "100vw";
 
 /*
+  La banda ocupa el ancho de lectura entero, que se topa en los 72rem del contenido. A 1.440
+  eso son 1.152 px CSS contra los 1.122 del archivo mayor de umbral-ascensor: 0,97 px por
+  píxel, prácticamente uno a uno, que es el límite en el que un cartel de este set puede
+  cruzar la página sin verse blando. Ningún otro debería usar esta variante sin rehacer esa
+  cuenta con su propia resolución.
+*/
+const MEDIDA_DE_BANDA = "(min-width: 78rem) 1152px, calc(100vw - 3rem)";
+
+/*
   anchoIntrinseco/altoIntrinseco son las medidas reales del archivo mayor de cada cartel, y
   «archivos» lista los anchos REALES de cada variante servida, con su sufijo. La caja que
   reserva el espacio la declara el CSS con aspect-ratio, así que estos atributos no mueven la
@@ -129,7 +138,7 @@ type CartelDisponible = keyof typeof CARTELES;
 
 type MediaEscenaProps = {
   cartel: CartelDisponible;
-  variante: "columna" | "fondo";
+  variante: "columna" | "fondo" | "banda";
   claseDeLaImagen?: string;
   tono?: "claro";
 };
@@ -195,7 +204,7 @@ export function MediaEscena({
       ref={imagenRef}
       src={rutaDe(archivoMayor.sufijo)}
       srcSet={conjuntoDeFuentes}
-      sizes={ficha.medida}
+      sizes={variante === "banda" ? MEDIDA_DE_BANDA : ficha.medida}
       alt=""
       width={ficha.anchoIntrinseco}
       height={ficha.altoIntrinseco}
@@ -204,12 +213,16 @@ export function MediaEscena({
       decoding="async"
       className={claseDeLaImagen ?? "pod-escena__imagen"}
       style={{ objectPosition: ficha.encuadre }}
-      aria-hidden={variante === "fondo" ? true : undefined}
+      aria-hidden={variante === "columna" ? undefined : true}
     />
   );
 
   if (variante === "fondo") {
     return imagen;
+  }
+
+  if (variante === "banda") {
+    return <div className="pod-banda">{imagen}</div>;
   }
 
   return (

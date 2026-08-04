@@ -25,7 +25,7 @@
   subir, porque marcan capítulo y una página de 19.000 px se relee; el cuerpo entra una sola
   vez, porque reproducir 57 bloques en las dos direcciones se lee como nerviosismo.
 
-Cuatro carteles fotográficos entran en cuatro de los doce bloques, sin que ninguno se
+  Cuatro carteles fotográficos entran en cuatro de los doce bloques, sin que ninguno se
   repita: mesa-directorio, equipo-nocturno y muro-certificados en la columna derecha de una
   escena a dos partes, y auditorio-orador de fondo en el cierre. Los tres de columna no
   sangran porque su resolución nativa no da; el del cierre sí, porque tiene un archivo propio
@@ -53,6 +53,8 @@ import { CifraPodio } from "@/components/premium/podio/CifraPodio";
 import { EjeDelPrograma } from "@/components/premium/podio/EjeDelPrograma";
 import { FileteCargado } from "@/components/premium/podio/FileteCargado";
 import { MediaEscena } from "@/components/premium/podio/MediaEscena";
+import { MicrofonoEnEscena } from "@/components/premium/podio/MicrofonoEnEscena";
+import { PasoDeTransformacion } from "@/components/premium/podio/PasoDeTransformacion";
 import { CLASES_TIPOGRAFIA_DIPTICO } from "@/lib/fonts-diptico";
 import { SHARED_CONTACT } from "@/lib/variants-content";
 import {
@@ -105,6 +107,17 @@ const ID_DEL_ROTULO_DE_SINTOMAS = "pod-sintomas-rotulo";
   la barra es más baja, ese margen se lee simplemente como más respiro.
 */
 const DESPLAZAMIENTO_BAJO_LA_BARRA = 24;
+
+/*
+  Pie de imprenta. El año va escrito y no calculado con Date: el componente se renderiza en
+  el servidor y en el navegador, y una fecha viva puede dar dos textos distintos en la misma
+  carga, que es un fallo de hidratación garantizado la noche del 31 de diciembre.
+*/
+const PIE_DE_PAGINA = [
+  "Universidad Técnica de Machala",
+  "Machala, El Oro, Ecuador",
+] as const;
+const ANIO_DEL_PIE = "2026";
 
 function numeroOrdinal(indice: number): string {
   return String(indice + 1).padStart(2, "0");
@@ -396,41 +409,48 @@ export function LandingPodio() {
             dos están en fondos distintos con diez filas de texto entre medias.
           */}
           <section className="pod-seccion" aria-labelledby="pod-transformacion">
-            <div className="pod-escena">
-              <div className="pod-escena__texto">
-                <EncabezadoPodio
-                  id="pod-transformacion"
-                  eyebrow={PODIO_TRANSFORMACION.eyebrow}
-                  titulo={PODIO_TRANSFORMACION.titulo}
-                />
-              </div>
+            <EncabezadoPodio
+              id="pod-transformacion"
+              eyebrow={PODIO_TRANSFORMACION.eyebrow}
+              titulo={PODIO_TRANSFORMACION.titulo}
+            />
 
-              <MediaEscena cartel="umbral-ascensor" variante="columna" />
+            {/*
+              El cartel pasa a banda de ancho completo bajo el encabezado. «Esto cambia en
+              ti» son tres palabras, el titular más corto de la página: en la mitad de una
+              escena a dos partes dejaba la otra mitad en negro.
+            */}
+            <MediaEscena cartel="umbral-ascensor" variante="banda" />
+
+            {/*
+              Los diez puntos del copy son en realidad CINCO PARES: cada antes tiene escrito
+              su después exacto. Enfrentados renglón a renglón, ese paralelismo se ve; en dos
+              columnas independientes, que es como estaban, se pierde y el bloque se lee como
+              dos listas que casualmente miden lo mismo.
+            */}
+            <div className="pod-marbetes">
+              <p className="pod-marbete tech-label" data-tono="antes">
+                {PODIO_TRANSFORMACION.antes.rotulo}
+              </p>
+              <span />
+              <p className="pod-marbete tech-label" data-tono="despues">
+                {PODIO_TRANSFORMACION.despues.rotulo}
+              </p>
             </div>
 
-            <div className="pod-balanza">
-              {[PODIO_TRANSFORMACION.antes, PODIO_TRANSFORMACION.despues].map((lado, indice) => (
-                <RevelaPodio key={lado.rotulo} retardo={indice * 0.08}>
-                  <div
-                    className="pod-balanza__lado"
-                    data-tono={indice === 0 ? "antes" : "despues"}
-                  >
-                    <p className="pod-balanza__rotulo tech-label">{lado.rotulo}</p>
-                    <ul className="pod-balanza__lista">
-                      {lado.puntos.map((punto) => (
-                        <li key={punto} className="pod-balanza__punto">
-                          {punto}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </RevelaPodio>
+            <div className="pod-pasos">
+              {PODIO_TRANSFORMACION.antes.puntos.map((punto, indice) => (
+                <PasoDeTransformacion
+                  key={punto}
+                  antes={punto}
+                  despues={PODIO_TRANSFORMACION.despues.puntos[indice]}
+                />
               ))}
             </div>
 
             <LineaPodio
               texto={PODIO_TRANSFORMACION.remate}
-              className="pod-remate font-serif"
+              className="pod-remate pod-remate--centrado font-serif"
             />
           </section>
 
@@ -445,6 +465,13 @@ export function LandingPodio() {
               titulo={PODIO_METODO.titulo}
               entrada={<p className="pod-seccion__cuerpo">{PODIO_METODO.entrada}</p>}
             />
+
+            {/*
+              El micrófono llega al atril mientras se recorre la sección. La sala está vacía
+              en la fotografía y los 96 fotogramas del micrófono traen canal alfa, así que se
+              componen encima en lugar de tapar el fondo con el suyo.
+            */}
+            <MicrofonoEnEscena />
 
             <div className="pod-rejilla-pilares">
               {PODIO_METODO.pilares.map((pilar, indice) => (
@@ -571,18 +598,6 @@ export function LandingPodio() {
               Inscripción al Diplomado en Public Speaking
             </h2>
 
-            <div className="pod-cierre__frase">
-              {PODIO_CIERRE.lineas.map((linea, indice) => (
-                <LineaPodio
-                  key={linea}
-                  texto={linea}
-                  className="pod-cierre__linea font-serif"
-                  corte="letras"
-                  peso={indice === 0 ? "fuerte" : undefined}
-                />
-              ))}
-            </div>
-
             <RevelaPodio retardo={0.1}>
               <div className="pod-inscripcion">
                 <div className="pod-acciones">
@@ -619,6 +634,22 @@ export function LandingPodio() {
             </RevelaPodio>
           </section>
         </main>
+
+        {/*
+          Pie de imprenta. Va fuera del main porque no es contenido de la página sino su
+          firma: quién publica, desde dónde y de qué año es lo que se está leyendo.
+        */}
+        <footer className="pod-pie">
+          <p className="pod-pie__linea">
+            <span className="pod-pie__anio">© {ANIO_DEL_PIE}</span>
+            <span className="pod-pie__marca">Diplomado Public Speaking</span>
+            {PIE_DE_PAGINA.map((dato) => (
+              <span key={dato} className="pod-pie__dato">
+                {dato}
+              </span>
+            ))}
+          </p>
+        </footer>
       </div>
     </SmoothScroll>
   );
