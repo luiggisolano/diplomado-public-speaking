@@ -6,23 +6,38 @@
   que es la canónica e indexable desde que esta versión sustituyó a la v1 Aula Futura, y
   «/g/podio», que quedó como ruta heredada con noindex y canonical hacia la raíz.
 
-  El contenido y el repertorio de movimiento vienen de /g/fusion, que los había reunido
-  durante la exploración: las doce secciones de copy y las cuatro piezas de motion. Lo que
-  NO se trae es su capa de presentación. Fusion se monta sobre camara.css con clases cam-*
-  y fus-*, mientras esta ruta es autónoma sobre podio.css con tokens propios, de modo que el
-  markup está rehecho en clases pod-* y conserva el velo calibrado, los halos de texto sobre
-  imagen y la tipografía del díptico que se ajustaron aquí. Tampoco se trae el fondo de nube
-  WebGL de fusion: la identidad de esta landing es la secuencia de frames, y superponer las
-  dos capas competiría por la misma atención.
+  El contenido viene de /g/fusion, que lo había reunido durante la exploración. Lo que NO se
+  trae es su capa de presentación. Fusion se monta sobre camara.css con clases cam-* y fus-*,
+  mientras esta ruta es autónoma sobre podio.css con tokens propios, de modo que el markup
+  está rehecho en clases pod-* y conserva el velo calibrado, los halos de texto sobre imagen
+  y la tipografía del díptico que se ajustaron aquí. Tampoco se trae el fondo de nube WebGL
+  de fusion: la identidad de esta landing es la secuencia de frames, y superponer las dos
+  capas competiría por la misma atención.
 
-  Las cuatro piezas de motion sí se importan en lugar de duplicarse, porque son movimiento
-  puro sin presentación propia: solo dependen de las clases de estado inicial .cam-reveal,
-  .cam-line y .cam-word, declaradas en podio.css junto a las demás. El acordeón de preguntas
-  es la excepción y se rehizo en FaqPodio, porque su markup sí traía clases de Cámara.
+  El movimiento del cuerpo tampoco se importa ya. Las piezas de premium/camara y
+  premium/fusion las consumen /g/camara y /g/fusion, así que recalibrar su gesto para esta
+  página habría cambiado dos rutas ajenas: en su lugar viven aquí RevelaPodio, LineaPodio,
+  CifraPodio, FileteCargado, EjeDelPrograma y MediaEscena. Todos emiten la clase .cam-reveal
+  exacta cuando envuelven contenido, que no es cosmética: sostiene varias reglas de podio.css
+  y la mayoría falla en silencio.
+
+  El régimen es de dos niveles. Titulares y líneas de display entran y vuelven a salir al
+  subir, porque marcan capítulo y una página de 19.000 px se relee; el cuerpo entra una sola
+  vez, porque reproducir 57 bloques en las dos direcciones se lee como nerviosismo.
+
+Cuatro carteles fotográficos entran en cuatro de los doce bloques, sin que ninguno se
+  repita: mesa-directorio, equipo-nocturno y muro-certificados en la columna derecha de una
+  escena a dos partes, y auditorio-orador de fondo en el cierre. Los tres de columna no
+  sangran porque su resolución nativa no da; el del cierre sí, porque tiene un archivo propio
+  de 1.856 px reexportado para eso, y la excepción está documentada con su aritmética en
+  podio.css.
+
+  Las escenas «La formación» y «Seis enfoques» se retiraron el 2026-08-03 por decisión del
+  cliente; su copy sigue en lib/podio-content por si vuelve.
 
   Server Component: el canvas, la precarga de frames, el pinning y el motion viven en los
-  componentes cliente. Copy íntegro desde lib/variants-content (fuente única) y tipografía
-  desde lib/fonts-diptico, montada sobre .pod-root para no alcanzar el layout raíz.
+  componentes cliente. Copy íntegro desde lib/podio-content (fuente única) y tipografía desde
+  lib/fonts-diptico, montada sobre .pod-root para no alcanzar el layout raíz.
 */
 
 import "./podio.css";
@@ -32,9 +47,12 @@ import { BarraPodio } from "@/components/premium/podio/BarraPodio";
 import { PodioEscena } from "@/components/premium/podio/PodioEscena";
 import { FaqPodio } from "@/components/premium/podio/FaqPodio";
 import { EncabezadoPodio } from "@/components/premium/podio/EncabezadoPodio";
-import { Reveal } from "@/components/premium/camara/Reveal";
-import { StatCounter } from "@/components/premium/camara/StatCounter";
-import { ModuleSlide } from "@/components/premium/fusion/ModuleSlide";
+import { RevelaPodio } from "@/components/premium/podio/RevelaPodio";
+import { LineaPodio } from "@/components/premium/podio/LineaPodio";
+import { CifraPodio } from "@/components/premium/podio/CifraPodio";
+import { EjeDelPrograma } from "@/components/premium/podio/EjeDelPrograma";
+import { FileteCargado } from "@/components/premium/podio/FileteCargado";
+import { MediaEscena } from "@/components/premium/podio/MediaEscena";
 import { CLASES_TIPOGRAFIA_DIPTICO } from "@/lib/fonts-diptico";
 import { SHARED_CONTACT } from "@/lib/variants-content";
 import {
@@ -43,12 +61,10 @@ import {
   PODIO_CIERRE,
   PODIO_CIFRAS,
   PODIO_FICHA,
-  PODIO_MAPA,
   PODIO_METODO,
   PODIO_MODULOS,
   PODIO_PREGUNTAS,
   PODIO_PUBLICO,
-  PODIO_SOLUCION,
   PODIO_TRANSFORMACION,
   PODIO_URGENCIA,
 } from "@/lib/podio-content";
@@ -77,6 +93,13 @@ const NOMBRE_ESPECIALISTA_PENDIENTE = "Nombre por confirmar";
 const RETARDO_ENTRE_TARJETAS = 0.04;
 
 /*
+  El rótulo de los síntomas hace de título accesible de su propia escena. Se apunta a él con
+  aria-labelledby en lugar de repetir el texto en un aria-label: la frase ya está escrita en
+  pantalla y duplicarla obliga a un lector de pantalla a oírla dos veces.
+*/
+const ID_DEL_ROTULO_DE_SINTOMAS = "pod-sintomas-rotulo";
+
+/*
   Aire que Lenis deja sobre el destino al saltar a un ancla, para que la barra no tape el
   título al aterrizar. Es la altura de la barra en escritorio más un margen; en móvil, donde
   la barra es más baja, ese margen se lee simplemente como más respiro.
@@ -97,18 +120,19 @@ export function LandingPodio() {
 
           <section className="pod-seccion pod-seccion--cifras" aria-label="Datos del diplomado">
             <dl className="pod-cifras">
-              {PODIO_CIFRAS.map((cifra) => (
-                <div key={cifra.etiqueta} className="pod-cifra">
-                  <dd className="pod-cifra__valor mono-num">
-                    <StatCounter value={cifra.valor} suffix={cifra.sufijo} />
-                  </dd>
-                  <dt className="pod-cifra__etiqueta tech-label">{cifra.etiqueta}</dt>
-                </div>
+              {PODIO_CIFRAS.map((cifra, indice) => (
+                <CifraPodio
+                  key={cifra.etiqueta}
+                  valor={cifra.valor}
+                  sufijo={cifra.sufijo}
+                  etiqueta={cifra.etiqueta}
+                  indice={indice}
+                />
               ))}
             </dl>
 
-            <Reveal delay={0.1}>
-              <p className="pod-aval tech-label">
+            <RevelaPodio retardo={0.1} className="pod-aval-marco">
+              <p className="pod-aval">
                 <span className="pod-aval__rotulo">{PODIO_AVAL.rotulo}</span>
                 {PODIO_AVAL.sellos.map((sello) => (
                   <span key={sello} className="pod-aval__sello">
@@ -116,108 +140,100 @@ export function LandingPodio() {
                   </span>
                 ))}
               </p>
-            </Reveal>
+            </RevelaPodio>
           </section>
 
-          <section
-            className="pod-seccion"
-            aria-labelledby="pod-agitacion"
-          >
+          {/*
+            Escena A. Una sola afirmación: existe un punto de inflexión en la carrera de toda
+            persona profesional. Antes esta sección encadenaba entradilla, cuerpo, giro,
+            sentencia, rótulo, seis síntomas y remate, cuatro afirmaciones apiladas en un
+            solo bloque.
+
+            El encabezado va fuera de la escena y ocupa el ancho de lectura entero; dentro de
+            la retícula quedan solo el texto y la fotografía. Metido en la columna izquierda,
+            el titular disponía de la mitad del ancho y caía en cinco renglones que hacían de
+            él una masa vertical: es la afirmación que abre el capítulo y necesita leerse de
+            una vez, no un párrafo en caja alta.
+          */}
+          <section className="pod-seccion" aria-labelledby="pod-agitacion">
             <EncabezadoPodio
               id="pod-agitacion"
               eyebrow={PODIO_AGITACION.eyebrow}
               titulo={PODIO_AGITACION.titulo}
-              entrada={
-                <>
-                  <p className="pod-seccion__entrada">{PODIO_AGITACION.entrada}</p>
-                  <p className="pod-seccion__cuerpo">{PODIO_AGITACION.cuerpo}</p>
-                </>
-              }
             />
 
-            <Reveal delay={0.05}>
-              <p className="pod-seccion__giro font-serif">{PODIO_AGITACION.giro}</p>
-              <p className="pod-seccion__sentencia font-serif">{PODIO_AGITACION.sentencia}</p>
-            </Reveal>
+            <div className="pod-escena">
+              <div className="pod-escena__texto">
+                <LineaPodio
+                  texto={PODIO_AGITACION.entrada}
+                  className="pod-seccion__entrada font-serif"
+                />
+                <p className="pod-seccion__cuerpo">{PODIO_AGITACION.cuerpo}</p>
+                <LineaPodio
+                  texto={PODIO_AGITACION.giro}
+                  className="pod-seccion__giro font-serif"
+                />
+                <LineaPodio
+                  texto={PODIO_AGITACION.sentencia}
+                  className="pod-seccion__sentencia font-serif"
+                />
+              </div>
 
-            <Reveal delay={0.1}>
-              <p className="pod-rotulo-lista tech-label">{PODIO_AGITACION.rotuloSintomas}</p>
-            </Reveal>
+              <MediaEscena cartel="equipo-nocturno" variante="columna" />
+            </div>
+          </section>
 
-            <ul className="pod-sintomas">
+          {/*
+            Escena B. Otra sola afirmación: así se ve cuando esa habilidad no está entrenada.
+            Comparte fondo con la escena A a propósito; lo que marca el corte es el filete
+            superior, no un cambio de color, así que la alternancia de la página sigue igual
+            a partir de aquí.
+          */}
+          <section className="pod-seccion" aria-labelledby={ID_DEL_ROTULO_DE_SINTOMAS}>
+            <RevelaPodio retardo={0.05}>
+              <p id={ID_DEL_ROTULO_DE_SINTOMAS} className="pod-rotulo-lista tech-label">
+                {PODIO_AGITACION.rotuloSintomas}
+              </p>
+            </RevelaPodio>
+
+            {/*
+              Lista ordenada y no viñetas sueltas: los folios 01-06 son el recuento, y en
+              una enumeración que existe para que el visitante se reconozca en varias, saber
+              cuántas van y cuántas quedan es información. El número dibujado va fuera del
+              árbol de accesibilidad porque la lista ordenada ya lo anuncia, y oírlo dos
+              veces es peor que no verlo.
+
+              El revelado envuelve al contenido de cada punto y no al punto entero: un div
+              suelto entre los hijos de una lista no es marcado válido, que es lo que había.
+            */}
+            <ol className="pod-sintomas">
               {PODIO_AGITACION.sintomas.map((sintoma, indice) => (
-                <Reveal key={sintoma} delay={indice * RETARDO_ENTRE_TARJETAS}>
-                  <li className="pod-sintoma">{sintoma}</li>
-                </Reveal>
+                <li key={sintoma} className="pod-sintoma">
+                  <FileteCargado />
+                  <RevelaPodio retardo={indice * RETARDO_ENTRE_TARJETAS}>
+                    <div className="pod-sintoma__fila">
+                      <span className="pod-sintoma__folio mono-num" aria-hidden="true">
+                        {numeroOrdinal(indice)}
+                      </span>
+                      <p className="pod-sintoma__texto">{sintoma}</p>
+                    </div>
+                  </RevelaPodio>
+                </li>
               ))}
-            </ul>
+            </ol>
 
-            <Reveal delay={0.05}>
-              <p className="pod-remate font-serif">{PODIO_AGITACION.remate}</p>
-            </Reveal>
-          </section>
+            <FileteCargado />
 
-          <section
-            className="pod-seccion pod-seccion--alterna"
-            aria-labelledby="pod-solucion"
-          >
-            <EncabezadoPodio
-              id="pod-solucion"
-              eyebrow={PODIO_SOLUCION.eyebrow}
-              titulo={PODIO_SOLUCION.titulo}
-              entrada={PODIO_SOLUCION.cuerpo.map((parrafo) => (
-                <p key={parrafo} className="pod-seccion__cuerpo">
-                  {parrafo}
-                </p>
-              ))}
+            <LineaPodio
+              texto={PODIO_AGITACION.remate}
+              className="pod-remate pod-remate--una-linea font-serif"
             />
-
-            <Reveal delay={0.05}>
-              <p className="pod-rotulo-lista tech-label">{PODIO_SOLUCION.rotuloDiferencia}</p>
-            </Reveal>
-
-            <div className="pod-rejilla-pilares">
-              {PODIO_SOLUCION.diferenciales.map((diferencial, indice) => (
-                <Reveal key={diferencial.titulo} delay={indice * RETARDO_ENTRE_TARJETAS}>
-                  <article className="pod-pilar">
-                    <p className="pod-pilar__numero mono-num">{numeroOrdinal(indice)}</p>
-                    <h3 className="pod-pilar__titulo">{diferencial.titulo}</h3>
-                    <p className="pod-pilar__linea">{diferencial.linea}</p>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
           </section>
 
-          <section className="pod-seccion" aria-labelledby="pod-mapa">
-            <EncabezadoPodio
-              id="pod-mapa"
-              eyebrow={PODIO_MAPA.eyebrow}
-              titulo={PODIO_MAPA.titulo}
-              entrada={<p className="pod-seccion__cuerpo">{PODIO_MAPA.entrada}</p>}
-            />
-
-            <Reveal delay={0.05}>
-              <p className="pod-rotulo-lista tech-label">{PODIO_MAPA.rotulo}</p>
-            </Reveal>
-
-            <div className="pod-rejilla-dimensiones">
-              {PODIO_MAPA.dimensiones.map((dimension, indice) => (
-                <Reveal key={dimension.titulo} delay={indice * RETARDO_ENTRE_TARJETAS}>
-                  <article className="pod-dimension">
-                    <p className="pod-dimension__numero mono-num">{numeroOrdinal(indice)}</p>
-                    <h3 className="pod-dimension__titulo font-serif">{dimension.titulo}</h3>
-                    <p className="pod-dimension__linea">{dimension.linea}</p>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
-
-            <Reveal delay={0.05}>
-              <p className="pod-remate font-serif">{PODIO_MAPA.remate}</p>
-            </Reveal>
-          </section>
-
+          {/*
+            Los módulos ya traen sus seis portadas oficiales: añadir aquí un séptimo cartel
+            es exactamente saturar la escena, así que esta es una de las que no lleva imagen.
+          */}
           <section
             className="pod-seccion pod-seccion--alterna pod-seccion--destino"
             id="programa"
@@ -229,9 +245,19 @@ export function LandingPodio() {
               titulo={PODIO_MODULOS.titulo}
             />
 
-            <div className="pod-rejilla-modulos">
+            {/*
+              Los seis módulos cuelgan de un eje que se carga de oro con el scroll, uno a
+              cada lado, y cada punto se enciende cuando la carga llega a su altura. Es el
+              mismo gesto que la lista de síntomas, un escalón más arriba: el programa se
+              lee como un recorrido con principio y final, no como seis fichas sueltas.
+
+              La alternancia de lado la decide el CSS por posición y no un data-* en el
+              marcado, porque es una propiedad de la retícula y no del módulo: reordenar el
+              programa no debería obligar a reescribir de qué lado cae cada uno.
+            */}
+            <EjeDelPrograma>
               {PODIO_MODULOS.modulos.map((modulo, indice) => (
-                <ModuleSlide key={modulo.n} index={indice}>
+                <RevelaPodio key={modulo.n} className="pod-hito">
                   <article className="pod-modulo">
                     <div className="pod-modulo__portada">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -256,11 +282,16 @@ export function LandingPodio() {
                       </p>
                     </div>
                   </article>
-                </ModuleSlide>
+                </RevelaPodio>
               ))}
-            </div>
+            </EjeDelPrograma>
           </section>
 
+          {/*
+            Seis retratos con numeral dorado ya son el peso visual de la escena. Una foto de
+            escenario sobre seis fichas que dicen «Nombre por confirmar» prometería personas
+            que todavía no existen.
+          */}
           <section
             className="pod-seccion pod-seccion--destino"
             id="docentes"
@@ -280,7 +311,7 @@ export function LandingPodio() {
 
             <div className="pod-rejilla-especialistas">
               {ESPECIALISTAS.map((especialista, indice) => (
-                <Reveal key={especialista.modulo} delay={indice * RETARDO_ENTRE_TARJETAS}>
+                <RevelaPodio key={especialista.modulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
                   <article className="pod-especialista">
                     <div className="pod-especialista__retrato" aria-hidden="true">
                       <span className="pod-especialista__numero mono-num">{especialista.modulo}</span>
@@ -298,40 +329,88 @@ export function LandingPodio() {
                       <p className="pod-especialista__credencial">{especialista.credencial}</p>
                     </div>
                   </article>
-                </Reveal>
+                </RevelaPodio>
               ))}
             </div>
           </section>
 
+          {/*
+            El cartel acompaña al titular y no a la rejilla, que es la regla de las cuatro
+            secciones con media: la imagen cuelga de la fila del encabezado y la rejilla de
+            la escena va debajo a todo el ancho. Con las cinco tarjetas dentro de la columna
+            de texto, esta se estiraba al doble de la altura de la imagen y dejaba mil
+            píxeles de columna derecha vacía, que es justo el defecto que se corrige.
+          */}
           <section className="pod-seccion pod-seccion--alterna" aria-labelledby="pod-publico">
             <EncabezadoPodio
               id="pod-publico"
               eyebrow={PODIO_PUBLICO.eyebrow}
               titulo={PODIO_PUBLICO.titulo}
+              className="pod-encabezado--centrado"
             />
 
-            <div className="pod-rejilla-perfiles">
-              {PODIO_PUBLICO.perfiles.map((perfil, indice) => (
-                <Reveal key={perfil.titulo} delay={indice * RETARDO_ENTRE_TARJETAS}>
-                  <article className="pod-perfil">
-                    <h3 className="pod-perfil__titulo font-serif">{perfil.titulo}</h3>
-                    <p className="pod-perfil__linea">{perfil.linea}</p>
-                  </article>
-                </Reveal>
-              ))}
+            {/*
+              La sala de directorio se ancla en el centro y los cinco perfiles pasan por sus
+              costados, dos por la izquierda y tres por la derecha. La fotografía tiene gente
+              sentada a ambos lados de una mesa y una cabecera iluminada al fondo: puesta en
+              medio, la maqueta repite su composición en lugar de contradecirla.
+
+              El reparto es dos y tres porque los perfiles son cinco y no hay simetría
+              posible; la columna derecha arranca más abajo para que el desnivel se lea como
+              un desfase buscado y no como una fila mal cerrada.
+            */}
+            <div className="pod-rodea">
+              <div className="pod-rodea__columna">
+                {PODIO_PUBLICO.perfiles.slice(0, 2).map((perfil, indice) => (
+                  <RevelaPodio key={perfil.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
+                    <article className="pod-perfil">
+                      <h3 className="pod-perfil__titulo font-serif">{perfil.titulo}</h3>
+                      <p className="pod-perfil__linea">{perfil.linea}</p>
+                    </article>
+                  </RevelaPodio>
+                ))}
+              </div>
+
+              <div className="pod-rodea__media">
+                <MediaEscena cartel="mesa-directorio" variante="columna" />
+              </div>
+
+              <div className="pod-rodea__columna pod-rodea__columna--derecha">
+                {PODIO_PUBLICO.perfiles.slice(2).map((perfil, indice) => (
+                  <RevelaPodio key={perfil.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
+                    <article className="pod-perfil">
+                      <h3 className="pod-perfil__titulo font-serif">{perfil.titulo}</h3>
+                      <p className="pod-perfil__linea">{perfil.linea}</p>
+                    </article>
+                  </RevelaPodio>
+                ))}
+              </div>
             </div>
           </section>
 
+          {/*
+            Cruzar el umbral hacia la luz es literalmente el «después» que argumenta la
+            balanza, así que el cartel va en la fila del encabezado y las diez filas del
+            antes y el después ocupan el ancho completo debajo. Cae seguida de la escena de
+            público, que es la única adyacencia de imagen de la página, y funciona porque las
+            dos están en fondos distintos con diez filas de texto entre medias.
+          */}
           <section className="pod-seccion" aria-labelledby="pod-transformacion">
-            <EncabezadoPodio
-              id="pod-transformacion"
-              eyebrow={PODIO_TRANSFORMACION.eyebrow}
-              titulo={PODIO_TRANSFORMACION.titulo}
-            />
+            <div className="pod-escena">
+              <div className="pod-escena__texto">
+                <EncabezadoPodio
+                  id="pod-transformacion"
+                  eyebrow={PODIO_TRANSFORMACION.eyebrow}
+                  titulo={PODIO_TRANSFORMACION.titulo}
+                />
+              </div>
+
+              <MediaEscena cartel="umbral-ascensor" variante="columna" />
+            </div>
 
             <div className="pod-balanza">
               {[PODIO_TRANSFORMACION.antes, PODIO_TRANSFORMACION.despues].map((lado, indice) => (
-                <Reveal key={lado.rotulo} delay={indice * 0.08}>
+                <RevelaPodio key={lado.rotulo} retardo={indice * 0.08}>
                   <div
                     className="pod-balanza__lado"
                     data-tono={indice === 0 ? "antes" : "despues"}
@@ -345,13 +424,14 @@ export function LandingPodio() {
                       ))}
                     </ul>
                   </div>
-                </Reveal>
+                </RevelaPodio>
               ))}
             </div>
 
-            <Reveal delay={0.05}>
-              <p className="pod-remate font-serif">{PODIO_TRANSFORMACION.remate}</p>
-            </Reveal>
+            <LineaPodio
+              texto={PODIO_TRANSFORMACION.remate}
+              className="pod-remate font-serif"
+            />
           </section>
 
           <section
@@ -368,41 +448,54 @@ export function LandingPodio() {
 
             <div className="pod-rejilla-pilares">
               {PODIO_METODO.pilares.map((pilar, indice) => (
-                <Reveal key={pilar.titulo} delay={indice * RETARDO_ENTRE_TARJETAS}>
+                <RevelaPodio key={pilar.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
                   <article className="pod-pilar">
                     <p className="pod-pilar__numero mono-num">{numeroOrdinal(indice)}</p>
                     <h3 className="pod-pilar__titulo">{pilar.titulo}</h3>
                     <p className="pod-pilar__linea">{pilar.linea}</p>
                   </article>
-                </Reveal>
+                </RevelaPodio>
               ))}
             </div>
           </section>
 
+          {/*
+            El muro de certificados es el cartel más claro del lote, así que ocupa su columna
+            sin una sola palabra encima: sostener tinta plena ahí exigiría un velo que lo
+            mataría.
+          */}
           <section
             className="pod-seccion pod-seccion--destino"
             id="inversion"
             aria-labelledby="pod-datos"
           >
-            <div className="pod-columnas">
-              <EncabezadoPodio
-                id="pod-datos"
-                eyebrow={PODIO_FICHA.eyebrow}
-                titulo={PODIO_FICHA.titulo}
-              />
-              <Reveal>
-                <dl className="pod-datos">
-                  {PODIO_FICHA.datos.map((dato) => (
-                    <div key={dato.etiqueta} className="pod-dato">
-                      <dt className="pod-dato__etiqueta tech-label">{dato.etiqueta}</dt>
-                      <dd className="pod-dato__valor mono-num">{dato.valor}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </Reveal>
+            <div className="pod-escena">
+              <div className="pod-escena__texto">
+                <EncabezadoPodio
+                  id="pod-datos"
+                  eyebrow={PODIO_FICHA.eyebrow}
+                  titulo={PODIO_FICHA.titulo}
+                />
+
+                <RevelaPodio>
+                  <dl className="pod-datos">
+                    {PODIO_FICHA.datos.map((dato) => (
+                      <div key={dato.etiqueta} className="pod-dato">
+                        <dt className="pod-dato__etiqueta tech-label">{dato.etiqueta}</dt>
+                        <dd className="pod-dato__valor mono-num">{dato.valor}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </RevelaPodio>
+              </div>
+
+              <MediaEscena cartel="muro-certificados" variante="columna" tono="claro" />
             </div>
           </section>
 
+          {/*
+            Escena corta y a propósito seca: es el momento de decisión, no de contemplación.
+          */}
           <section className="pod-seccion pod-seccion--alterna" aria-labelledby="pod-urgencia">
             <EncabezadoPodio
               id="pod-urgencia"
@@ -412,20 +505,21 @@ export function LandingPodio() {
 
             <div className="pod-rejilla-pilares">
               {PODIO_URGENCIA.razones.map((razon, indice) => (
-                <Reveal key={razon.titulo} delay={indice * RETARDO_ENTRE_TARJETAS}>
+                <RevelaPodio key={razon.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
                   <article className="pod-pilar">
                     <p className="pod-pilar__numero mono-num">{numeroOrdinal(indice)}</p>
                     <h3 className="pod-pilar__titulo">{razon.titulo}</h3>
                     <p className="pod-pilar__linea">{razon.linea}</p>
                   </article>
-                </Reveal>
+                </RevelaPodio>
               ))}
             </div>
 
-            <Reveal delay={0.05}>
-              <p className="pod-remate font-serif">{PODIO_URGENCIA.remate}</p>
+            <LineaPodio texto={PODIO_URGENCIA.remate} className="pod-remate font-serif" />
+
+            <RevelaPodio retardo={0.05}>
               <p className="pod-microcopy tech-label">{PODIO_URGENCIA.microcopy}</p>
-            </Reveal>
+            </RevelaPodio>
           </section>
 
           <section
@@ -439,37 +533,57 @@ export function LandingPodio() {
                 eyebrow={PODIO_PREGUNTAS.eyebrow}
                 titulo={PODIO_PREGUNTAS.titulo}
               />
-              <Reveal>
+              <RevelaPodio>
                 <FaqPodio
                   items={PODIO_PREGUNTAS.preguntas.map((pregunta) => ({
                     q: pregunta.q,
                     a: pregunta.a,
                   }))}
                 />
-              </Reveal>
+              </RevelaPodio>
             </div>
           </section>
 
+          {/*
+            Fondo de sección a sangre: la única excepción a la regla de que ningún cartel
+            sangra, con su aritmética documentada en podio.css. El microcopy y los datos de
+            contacto viven dentro de .pod-inscripcion, que tiene fondo macizo; sobre la
+            fotografía solo va la frase de cierre, que es display y se verifica midiendo los
+            píxeles reales del fondo, no el token.
+
+            Las dos líneas se parten por LETRAS y no por palabras. Es el único sitio de la
+            página donde se justifica: suman 83 caracteres, y a 0,018 s de escalonado dan una
+            cascada de 1,5 s que es exactamente el peso que pide el último gesto.
+          */}
           <section
             className="pod-seccion pod-cierre"
             id="inscripcion"
             aria-labelledby="pod-cierre-titulo"
           >
+            <MediaEscena
+              cartel="auditorio-orador"
+              variante="fondo"
+              claseDeLaImagen="pod-cierre__fondo"
+            />
+            <span className="pod-cierre__velo" aria-hidden="true" />
+
             <h2 id="pod-cierre-titulo" className="sr-only">
               Inscripción al Diplomado en Public Speaking
             </h2>
 
             <div className="pod-cierre__frase">
               {PODIO_CIERRE.lineas.map((linea, indice) => (
-                <Reveal key={linea} delay={indice * 0.08}>
-                  <p className="pod-cierre__linea font-serif" data-peso={indice === 0 ? "fuerte" : undefined}>
-                    {linea}
-                  </p>
-                </Reveal>
+                <LineaPodio
+                  key={linea}
+                  texto={linea}
+                  className="pod-cierre__linea font-serif"
+                  corte="letras"
+                  peso={indice === 0 ? "fuerte" : undefined}
+                />
               ))}
             </div>
 
-            <Reveal delay={0.1}>
+            <RevelaPodio retardo={0.1}>
               <div className="pod-inscripcion">
                 <div className="pod-acciones">
                   <a
@@ -502,7 +616,7 @@ export function LandingPodio() {
                   </div>
                 </dl>
               </div>
-            </Reveal>
+            </RevelaPodio>
           </section>
         </main>
       </div>

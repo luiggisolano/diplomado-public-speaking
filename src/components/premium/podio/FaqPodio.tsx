@@ -51,14 +51,14 @@ export function FaqPodio({ items }: FaqPodioProps) {
                 <span>{entrada.q}</span>
                 <svg
                   className="pod-faq__icono"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
                   fill="none"
                   aria-hidden="true"
                 >
                   <path
-                    d="M9 3.5v11M3.5 9h11"
+                    d="M10 4v12M4 10h12"
                     stroke="currentColor"
                     strokeWidth="1.5"
                     strokeLinecap="round"

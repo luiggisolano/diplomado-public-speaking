@@ -1,18 +1,20 @@
 "use client";
 
 /*
-  Encabezado de sección: rótulo, titular y entradilla revelados como una sola pieza.
+  Encabezado de sección: rótulo, titular y entradilla. Es el gesto que marca capítulo en el
+  cuerpo de la página, y el contrato visual lo reparte en dos regímenes distintos.
 
-  Es el gesto tipográfico que Fusion usa en su hero y que aquí faltaba. Podio ya tenía las
-  piezas —Reveal para los bloques y RevealText para los titulares—, pero cada una montaba su
-  propio ScrollTrigger y disparaba por su cuenta: tres entradas simultáneas que compiten en
-  vez de una frase de movimiento. Aquí las tres comparten un timeline y entran encadenadas
-  con solapes negativos, de modo que el rótulo abre, el titular lo alcanza antes de que
-  termine y la entradilla cierra sobre el final del titular.
+  El rótulo y el titular son nivel T1: entran encadenados y vuelven a salir si el visitante
+  sube. Una página de 19.000 px se relee, y que el titular se rearme al volver a él es lo
+  que distingue un capítulo de un bloque que ya pasó. El titular se revela palabra a palabra
+  desde una máscara de línea: SplitText corta en líneas y palabras, .cam-line recorta y cada
+  palabra sube desde debajo de su propio renglón. Sin la máscara las palabras entrarían
+  pisando la línea de arriba.
 
-  El titular se revela palabra a palabra desde una máscara de línea: SplitText corta en
-  líneas y palabras, .cam-line recorta y cada palabra sube desde debajo de su propio renglón.
-  Sin la máscara las palabras entrarían pisando la línea de arriba.
+  La entradilla es nivel T2 y por eso no comparte el timeline: el cuerpo entra una sola vez
+  y no revierte. Reproducir 57 bloques de cuerpo en cada dirección se lee como nerviosismo y
+  estorba justamente la relectura que la reversión del titular busca facilitar. Se conserva
+  el encadenado con un retardo, no con un solape de timeline.
 
   Con movimiento reducido no se divide el texto ni se anima nada: el encabezado queda visible
   tal cual y el titular conserva su nodo de texto intacto para los lectores de pantalla.
@@ -21,6 +23,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import {
   gsap,
+  ScrollTrigger,
   SplitText,
   registerGsapPlugins,
 } from "@/components/premium/_shared/gsapSetup";
@@ -34,16 +37,34 @@ type EncabezadoPodioProps = {
   className?: string;
 };
 
-const DESPLAZAMIENTO_DE_ENTRADA_EN_PIXELES = 16;
-const ALTURA_DE_PARTIDA_DE_LA_PALABRA_EN_PORCENTAJE = 115;
-const DURACION_DEL_ROTULO = 0.7;
-const DURACION_DEL_TITULAR = 0.95;
-const DURACION_DE_LA_ENTRADILLA = 0.8;
-const RETARDO_ENTRE_PALABRAS = 0.05;
-const SOLAPE_DEL_TITULAR = "-=0.45";
-const SOLAPE_DE_LA_ENTRADILLA = "-=0.6";
-const CURVA_DE_SALIDA = "power4.out";
-const PUNTO_DE_DISPARO = "top 82%";
+const DESPLAZAMIENTO_DEL_ROTULO_EN_PIXELES = 14;
+const DESPLAZAMIENTO_DE_LA_ENTRADILLA_EN_PIXELES = 12;
+const ALTURA_DE_PARTIDA_DE_LA_PALABRA_EN_PORCENTAJE = 108;
+const DURACION_DEL_ROTULO = 0.6;
+const DURACION_DEL_TITULAR = 0.8;
+const DURACION_DE_LA_ENTRADILLA = 0.55;
+const RETARDO_ENTRE_PALABRAS = 0.045;
+const SOLAPE_DEL_TITULAR = "-=0.35";
+const RETARDO_DE_LA_ENTRADILLA = 0.35;
+const CURVA_DEL_TITULAR = "power4.out";
+const CURVA_DE_LA_ENTRADILLA = "power2.out";
+const PUNTO_DE_DISPARO_DEL_TITULAR = "top 80%";
+const PUNTO_DE_DISPARO_DE_LA_ENTRADILLA = "top 88%";
+
+/*
+  Sin esto, la barra de direcciones que aparece y desaparece en los navegadores móviles
+  cuenta como cambio de alto de ventana y obliga a ScrollTrigger a recalcular en mitad de
+  una reversión, que es cuando un titular puede quedarse con palabras a medio camino.
+*/
+let laConfiguracionDeScrollTriggerEstaAplicada = false;
+
+function configurarScrollTriggerUnaSolaVez(): void {
+  if (laConfiguracionDeScrollTriggerEstaAplicada) {
+    return;
+  }
+  ScrollTrigger.config({ ignoreMobileResize: true });
+  laConfiguracionDeScrollTriggerEstaAplicada = true;
+}
 
 export function EncabezadoPodio({
   eyebrow,
@@ -67,13 +88,12 @@ export function EncabezadoPodio({
     }
 
     registerGsapPlugins();
+    configurarScrollTriggerUnaSolaVez();
 
-    const partes: HTMLElement[] = [rotulo, titular, entradillaRef.current].filter(
-      (parte) => parte !== null,
-    );
+    const entradilla = entradillaRef.current;
 
     if (prefersReducedMotionNow()) {
-      gsap.set(partes, { opacity: 1, y: 0 });
+      gsap.set([rotulo, titular, entradilla].filter(Boolean), { opacity: 1, y: 0 });
       return;
     }
 
@@ -88,17 +108,19 @@ export function EncabezadoPodio({
       yPercent: ALTURA_DE_PARTIDA_DE_LA_PALABRA_EN_PORCENTAJE,
       opacity: 0,
     });
-    gsap.set([rotulo, entradillaRef.current].filter(Boolean), {
-      opacity: 0,
-      y: DESPLAZAMIENTO_DE_ENTRADA_EN_PIXELES,
+    gsap.set(rotulo, { opacity: 0, y: DESPLAZAMIENTO_DEL_ROTULO_EN_PIXELES });
+
+    const lineaDelTitular = gsap.timeline({
+      defaults: { ease: CURVA_DEL_TITULAR },
+      scrollTrigger: {
+        trigger: contenedor,
+        start: PUNTO_DE_DISPARO_DEL_TITULAR,
+        toggleActions: "play none none reverse",
+        invalidateOnRefresh: true,
+      },
     });
 
-    const linea = gsap.timeline({
-      defaults: { ease: CURVA_DE_SALIDA },
-      scrollTrigger: { trigger: contenedor, start: PUNTO_DE_DISPARO, once: true },
-    });
-
-    linea
+    lineaDelTitular
       .to(rotulo, { opacity: 1, y: 0, duration: DURACION_DEL_ROTULO })
       .to(
         corte.words,
@@ -107,21 +129,39 @@ export function EncabezadoPodio({
           opacity: 1,
           duration: DURACION_DEL_TITULAR,
           stagger: RETARDO_ENTRE_PALABRAS,
+          overwrite: "auto",
         },
         SOLAPE_DEL_TITULAR,
       );
 
-    if (entradillaRef.current) {
-      linea.to(
-        entradillaRef.current,
-        { opacity: 1, y: 0, duration: DURACION_DE_LA_ENTRADILLA },
-        SOLAPE_DE_LA_ENTRADILLA,
-      );
+    let entradaDeLaEntradilla: gsap.core.Tween | null = null;
+
+    if (entradilla) {
+      gsap.set(entradilla, {
+        opacity: 0,
+        y: DESPLAZAMIENTO_DE_LA_ENTRADILLA_EN_PIXELES,
+      });
+
+      entradaDeLaEntradilla = gsap.to(entradilla, {
+        opacity: 1,
+        y: 0,
+        duration: DURACION_DE_LA_ENTRADILLA,
+        ease: CURVA_DE_LA_ENTRADILLA,
+        delay: RETARDO_DE_LA_ENTRADILLA,
+        scrollTrigger: {
+          trigger: contenedor,
+          start: PUNTO_DE_DISPARO_DE_LA_ENTRADILLA,
+          once: true,
+          invalidateOnRefresh: true,
+        },
+      });
     }
 
     return () => {
-      linea.scrollTrigger?.kill();
-      linea.kill();
+      lineaDelTitular.scrollTrigger?.kill();
+      lineaDelTitular.kill();
+      entradaDeLaEntradilla?.scrollTrigger?.kill();
+      entradaDeLaEntradilla?.kill();
       corte.revert();
     };
   }, [eyebrow, titulo]);

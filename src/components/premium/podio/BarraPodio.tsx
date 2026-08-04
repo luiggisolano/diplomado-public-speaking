@@ -15,6 +15,13 @@
       el caso de movimiento reducido, donde no hay ScrollTrigger, el progreso nunca sube de
       cero y la primera señal no llega nunca.
 
+  Y se retira una tercera vez sobre la sección de cierre. Ahí abajo el botón de inscripción
+  vive en la propia página, macizo y a tamaño completo; con la barra encima coincidían dos
+  rellenos oro en la misma pantalla y el ojo dejaba de saber cuál es LA acción. Mientras
+  #inscripcion interseca el viewport la barra se repliega, y vuelve al salir de ella hacia
+  arriba. El margen de histéresis del observador evita el parpadeo cuando la sección es más
+  alta que la ventana y el borde queda rebotando.
+
   Se lee del DOM y no por props porque quien compone la página es un Server Component y no
   puede sostener el estado que haría de puente entre las dos piezas.
 
@@ -28,6 +35,8 @@ import { SHARED_CONTACT } from "@/lib/variants-content";
 
 const SELECTOR_DE_LA_SECUENCIA_DE_APERTURA = ".pod-secuencia";
 const ATRIBUTO_DE_RECORRIDO_TERMINADO = "data-recorrido-terminado";
+const SELECTOR_DE_LA_SECCION_DE_CIERRE = "#inscripcion";
+const HISTERESIS_DEL_CIERRE = "-10% 0px -10% 0px";
 
 /*
   Cinco destinos, no las once secciones de la página. El resto son de recorrido: se leen de
@@ -44,9 +53,28 @@ const DESTINOS = [
 const TECLA_QUE_CIERRA_EL_DESPLIEGUE = "Escape";
 
 export function BarraPodio() {
-  const [laBarraEstaVisible, setLaBarraEstaVisible] = useState(false);
+  const [laAperturaYaPaso, setLaAperturaYaPaso] = useState(false);
+  const [elCierreEstaEnPantalla, setElCierreEstaEnPantalla] = useState(false);
   const [elMenuEstaDesplegado, setElMenuEstaDesplegado] = useState(false);
   const botonDelMenuRef = useRef<HTMLButtonElement | null>(null);
+
+  const laBarraEstaVisible = laAperturaYaPaso && !elCierreEstaEnPantalla;
+
+  useEffect(() => {
+    const seccionDeCierre = document.querySelector(SELECTOR_DE_LA_SECCION_DE_CIERRE);
+
+    if (!seccionDeCierre) {
+      return;
+    }
+
+    const vigilanteDelCierre = new IntersectionObserver(
+      ([entrada]) => setElCierreEstaEnPantalla(entrada.isIntersecting),
+      { threshold: 0, rootMargin: HISTERESIS_DEL_CIERRE },
+    );
+
+    vigilanteDelCierre.observe(seccionDeCierre);
+    return () => vigilanteDelCierre.disconnect();
+  }, []);
 
   useEffect(() => {
     const seccionDeApertura = document.querySelector(
@@ -54,7 +82,7 @@ export function BarraPodio() {
     );
 
     if (!seccionDeApertura) {
-      setLaBarraEstaVisible(true);
+      setLaAperturaYaPaso(true);
       return;
     }
 
@@ -64,7 +92,7 @@ export function BarraPodio() {
     let laAperturaDejoLaPantalla = false;
 
     const resolverVisibilidad = () =>
-      setLaBarraEstaVisible(elRecorridoTermino || laAperturaDejoLaPantalla);
+      setLaAperturaYaPaso(elRecorridoTermino || laAperturaDejoLaPantalla);
 
     const vigilanteDelProgreso = new MutationObserver(() => {
       elRecorridoTermino = seccionDeApertura.hasAttribute(
