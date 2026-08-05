@@ -1,10 +1,10 @@
 "use client";
 
 /*
-  Cartel fotográfico de escena (nivel T1e del contrato visual). Cinco de los once carteles
-  entran en cinco de los catorce bloques del cuerpo, y ninguno sangra: la resolución nativa
-  no da para ello, así que todos van en la columna derecha de una escena a dos partes. La
-  única excepción es el fondo del cierre, documentada en podio.css.
+  Cartel fotográfico de escena (nivel T1e del contrato visual). Cuatro de los once carteles
+  entran en cuatro de los doce bloques del cuerpo, y los de columna no sangran: la resolución
+  nativa no da para ello. Las excepciones son la banda de umbral-ascensor y el fondo del
+  cierre, ambas documentadas con su aritmética aquí abajo y en podio.css.
 
   El presupuesto técnico de cada cartel vive aquí y no en el markup que lo invoca: medida
   intrínseca, medida servida al navegador y encuadre son propiedades del archivo, no de la
@@ -110,16 +110,6 @@ const CARTELES = {
     ],
     medida: MEDIDA_DE_COLUMNA,
     encuadre: "50% 42%",
-  },
-  "muro-certificados": {
-    anchoIntrinseco: 1122,
-    altoIntrinseco: 1402,
-    archivos: [
-      { sufijo: "800", ancho: 800 },
-      { sufijo: "1200", ancho: 1122 },
-    ],
-    medida: MEDIDA_DE_COLUMNA,
-    encuadre: "50% 50%",
   },
   "auditorio-orador": {
     anchoIntrinseco: 1856,

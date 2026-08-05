@@ -1297,7 +1297,14 @@
   Es el primer bloque de su escena y le corresponde el aire de bloque: sin él la primera
   fila arranca pegada a la línea base del titular, que en caja alta no deja descendentes.
 */
+/*
+  El max-width sustituye a la columna que antes le imponía la fotografía. Cada fila reparte
+  etiqueta y valor con space-between, así que sin tope la ficha ocuparía los 1.152 px del
+  ancho de lectura y entre «DURACIÓN TOTAL» y «160 horas académicas» quedaría medio metro de
+  vacío: dejarían de leerse como un par. A 46rem el salto sigue siendo el de una tabla.
+*/
 .pod-datos {
+  max-width: 46rem;
   margin-top: var(--pod-aire-bloque);
   border-top: 1px solid var(--color-linea);
 }
@@ -2444,46 +2451,6 @@
   .pod-pie__linea > * {
     flex: 0 0 100%;
   }
-}
-
-/* ------------------------------------------------ método: el micrófono llega al atril */
-
-/*
-  La sala de fondo y el micrófono en un mismo bloque: la fotografía es un <img> con srcset,
-  porque es contenido estático que el navegador sabe servir mejor que un lienzo, y encima va
-  el canvas donde se compone la secuencia con transparencia.
-
-  El lienzo NO lleva fondo propio: si lo tuviera, taparía la sala y el canal alfa de los
-  fotogramas no serviría de nada.
-*/
-.pod-microfono {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  margin-top: var(--pod-aire-bloque);
-  overflow: hidden;
-  background-color: var(--color-abyss);
-  border: 1px solid var(--color-linea);
-}
-
-.pod-microfono__sala {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/*
-  El micrófono viene renderizado con luces frías de violeta y azul, que son las de la
-  demostración de donde salen los fotogramas, no las de esta página. Bajarle la saturación lo
-  devuelve al metal gris que un SM58 tiene de verdad, y bajo el foco ámbar de la sala se
-  integra sin teñirse: teñirlo de oro lo habría fundido con la madera del atril.
-*/
-.pod-microfono__lienzo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  filter: saturate(0.5) hue-rotate(-12deg) brightness(1.04);
 }
 
 /* ------------------------------------------------- transformación: los cinco pares */

@@ -26,14 +26,17 @@
   vez, porque reproducir 57 bloques en las dos direcciones se lee como nerviosismo.
 
   Cuatro carteles fotográficos entran en cuatro de los doce bloques, sin que ninguno se
-  repita: mesa-directorio, equipo-nocturno y muro-certificados en la columna derecha de una
-  escena a dos partes, y auditorio-orador de fondo en el cierre. Los tres de columna no
-  sangran porque su resolución nativa no da; el del cierre sí, porque tiene un archivo propio
-  de 1.856 px reexportado para eso, y la excepción está documentada con su aritmética en
-  podio.css.
+  repita: mesa-directorio y equipo-nocturno en la columna derecha de una escena a dos partes,
+  umbral-ascensor como banda a lo ancho del cuerpo y auditorio-orador de fondo en el cierre.
+  Los de columna no sangran porque su resolución nativa no da; el del cierre sí, porque tiene
+  un archivo propio de 1.856 px reexportado para eso, y la excepción está documentada con su
+  aritmética en podio.css.
 
   Las escenas «La formación» y «Seis enfoques» se retiraron el 2026-08-03 por decisión del
-  cliente; su copy sigue en lib/podio-content por si vuelve.
+  cliente; su copy sigue en lib/podio-content por si vuelve. El 2026-08-04 se retiraron por la
+  misma vía las dos imágenes que acompañaban al método y a la ficha: el micrófono que llegaba
+  al atril, con su fotografía de sala y sus fotogramas, y el muro de certificados. Ambas
+  secciones son ahora de texto solo.
 
   Server Component: el canvas, la precarga de frames, el pinning y el motion viven en los
   componentes cliente. Copy íntegro desde lib/podio-content (fuente única) y tipografía desde
@@ -53,7 +56,6 @@ import { CifraPodio } from "@/components/premium/podio/CifraPodio";
 import { EjeDelPrograma } from "@/components/premium/podio/EjeDelPrograma";
 import { FileteCargado } from "@/components/premium/podio/FileteCargado";
 import { MediaEscena } from "@/components/premium/podio/MediaEscena";
-import { MicrofonoEnEscena } from "@/components/premium/podio/MicrofonoEnEscena";
 import { PasoDeTransformacion } from "@/components/premium/podio/PasoDeTransformacion";
 import { CLASES_TIPOGRAFIA_DIPTICO } from "@/lib/fonts-diptico";
 import { SHARED_CONTACT } from "@/lib/variants-content";
@@ -466,13 +468,6 @@ export function LandingPodio() {
               entrada={<p className="pod-seccion__cuerpo">{PODIO_METODO.entrada}</p>}
             />
 
-            {/*
-              El micrófono llega al atril mientras se recorre la sección. La sala está vacía
-              en la fotografía y los 96 fotogramas del micrófono traen canal alfa, así que se
-              componen encima en lugar de tapar el fondo con el suyo.
-            */}
-            <MicrofonoEnEscena />
-
             <div className="pod-rejilla-pilares">
               {PODIO_METODO.pilares.map((pilar, indice) => (
                 <RevelaPodio key={pilar.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
@@ -487,37 +482,33 @@ export function LandingPodio() {
           </section>
 
           {/*
-            El muro de certificados es el cartel más claro del lote, así que ocupa su columna
-            sin una sola palabra encima: sostener tinta plena ahí exigiría un velo que lo
-            mataría.
+            Sin fotografía por decisión del cliente el 2026-08-04. La ficha dejó de ser una
+            escena a dos partes y el texto pasó a mandar solo, así que aquí no hay retícula de
+            columnas: la lista se limita por su propia medida en podio.css, porque una fila de
+            etiqueta contra valor separada por el ancho entero de lectura deja de leerse como
+            un par.
           */}
           <section
             className="pod-seccion pod-seccion--destino"
             id="inversion"
             aria-labelledby="pod-datos"
           >
-            <div className="pod-escena">
-              <div className="pod-escena__texto">
-                <EncabezadoPodio
-                  id="pod-datos"
-                  eyebrow={PODIO_FICHA.eyebrow}
-                  titulo={PODIO_FICHA.titulo}
-                />
+            <EncabezadoPodio
+              id="pod-datos"
+              eyebrow={PODIO_FICHA.eyebrow}
+              titulo={PODIO_FICHA.titulo}
+            />
 
-                <RevelaPodio>
-                  <dl className="pod-datos">
-                    {PODIO_FICHA.datos.map((dato) => (
-                      <div key={dato.etiqueta} className="pod-dato">
-                        <dt className="pod-dato__etiqueta tech-label">{dato.etiqueta}</dt>
-                        <dd className="pod-dato__valor mono-num">{dato.valor}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </RevelaPodio>
-              </div>
-
-              <MediaEscena cartel="muro-certificados" variante="columna" tono="claro" />
-            </div>
+            <RevelaPodio>
+              <dl className="pod-datos">
+                {PODIO_FICHA.datos.map((dato) => (
+                  <div key={dato.etiqueta} className="pod-dato">
+                    <dt className="pod-dato__etiqueta tech-label">{dato.etiqueta}</dt>
+                    <dd className="pod-dato__valor mono-num">{dato.valor}</dd>
+                  </div>
+                ))}
+              </dl>
+            </RevelaPodio>
           </section>
 
           {/*
