@@ -2453,6 +2453,44 @@
   }
 }
 
+/*
+  La firma del autor cierra la página. Va debajo del pie de imprenta y separada por un aire
+  mayor que el que hay entre los propios créditos: es de otra voz, no un dato más de la línea.
+*/
+.pod-firma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pod-space-2);
+  margin-top: var(--pod-space-6);
+}
+
+.pod-firma__rotulo {
+  font-size: var(--pod-etiqueta);
+  letter-spacing: var(--tracking-etiqueta);
+  color: var(--pod-tinta-4);
+}
+
+/*
+  190 px, y no menos, porque el trazo trae aire lateral dentro del archivo: a 150 px el dibujo
+  visible medía 137 y quedaba por debajo de los 187 de su propio rótulo, de modo que la
+  etiqueta pesaba más que la firma que venía a presentar. El alto va en auto porque el archivo
+  ya trae su proporción, y fijarlo aquí sería una segunda fuente de verdad que se desincroniza
+  en cuanto se reexporte la firma.
+
+  Este ancho debe seguir al `sizes` que declara LandingPodio: es lo que decide cuál de los dos
+  archivos pide el navegador.
+
+  La opacidad rebaja el hueso pleno del archivo al peso de un pie de página. No se hace
+  aclarando el WebP porque este es el mismo trazo que puede querer usarse a plena tinta en
+  otro sitio: el archivo guarda el dibujo y el CSS decide cuánto pesa.
+*/
+.pod-firma__trazo {
+  width: 190px;
+  height: auto;
+  opacity: 0.7;
+}
+
 /* ------------------------------------------------- transformación: los cinco pares */
 
 /*

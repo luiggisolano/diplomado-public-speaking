@@ -121,6 +121,14 @@ const PIE_DE_PAGINA = [
 ] as const;
 const ANIO_DEL_PIE = "2026";
 
+/*
+  La firma manuscrita del autor. Se sirve en dos anchos para que una pantalla de densidad
+  doble reciba el trazo a resolución nativa: una curva escalada desde un archivo justo se
+  delata en los remates finos mucho antes que una fotografía.
+*/
+const RUTA_DE_LA_FIRMA = "/podio/firma-luiggi";
+const ANCHO_SERVIDO_DE_LA_FIRMA = 190;
+
 function numeroOrdinal(indice: number): string {
   return String(indice + 1).padStart(2, "0");
 }
@@ -640,6 +648,29 @@ export function LandingPodio() {
               </span>
             ))}
           </p>
+
+          {/*
+            La firma del autor, al final de todo y en su propio trazo, como quien firma un
+            cuadro en la esquina. El archivo ya viene en el hueso de la página en lugar de
+            invertirse por CSS: un filtro sobre la imagen entera obliga al navegador a
+            componer una capa aparte, y aquí no hace falta pagar eso por un color que no
+            cambia nunca.
+          */}
+          <div className="pod-firma">
+            <p className="pod-firma__rotulo tech-label">Diseño y desarrollo</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`${RUTA_DE_LA_FIRMA}-640.webp`}
+              srcSet={`${RUTA_DE_LA_FIRMA}-320.webp 320w, ${RUTA_DE_LA_FIRMA}-640.webp 640w`}
+              sizes={`${ANCHO_SERVIDO_DE_LA_FIRMA}px`}
+              alt="Luiggi"
+              width={640}
+              height={265}
+              loading="lazy"
+              decoding="async"
+              className="pod-firma__trazo"
+            />
+          </div>
         </footer>
       </div>
     </SmoothScroll>
