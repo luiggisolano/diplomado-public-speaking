@@ -1348,6 +1348,7 @@
 .pod-datos {
   max-width: 40rem;
   margin-top: var(--pod-aire-bloque);
+  margin-inline: auto;
   border-top: 1px solid var(--color-linea);
 }
 
