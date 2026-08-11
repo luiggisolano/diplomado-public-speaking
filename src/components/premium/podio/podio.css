@@ -413,19 +413,15 @@
 }
 
 /*
-  Los registros en oro necesitan más halo que los titulares en hueso: el tramo medio del
-  recorrido es el del humo iluminado, y ahí el oro claro y el fondo caen en la misma franja
-  de luminancia. A ese cuerpo pequeño una sombra difusa engorda el trazo, así que el borde lo
-  pone un contorno de sombras de 1 px, el mismo recurso que la barra de progreso y el aviso
-  de scroll, y la proyectada solo asienta el conjunto.
+  Aquí vivía el contorno de cuatro sombras de 1 px con el que se perfilaban los registros en
+  oro de los dos capítulos de apertura. Ese recurso está pensado para rótulos de 11-12 px,
+  donde una sombra difusa engorda el trazo y cierra los ojales de la letra. Las dos frases
+  que lo llevaban pasaron a caja baja y a cuerpo de display (ver más abajo), y a ese tamaño
+  el contorno se invierte: deja de perfilar y se lee como mancha alrededor de la palabra.
+  Su halo se declara ahora junto a su tipografía, en la regla que las trata como una unidad.
+
+  El contorno sigue vivo donde su cuerpo lo justifica: el aviso de scroll de la portada.
 */
-.pod-capitulo__antetitulo,
-.pod-capitulo:not([data-destacado="true"]) .pod-capitulo__subtitulo {
-  text-shadow:
-    1px 1px 1px rgba(8, 6, 3, 0.75), -1px 1px 1px rgba(8, 6, 3, 0.75),
-    1px -1px 1px rgba(8, 6, 3, 0.75), -1px -1px 1px rgba(8, 6, 3, 0.75),
-    0 2px 16px rgba(8, 6, 3, 0.65);
-}
 
 /*
   Los rótulos de 11-12 px piden otro tratamiento: a ese cuerpo una sombra difusa se
@@ -561,18 +557,42 @@
 }
 
 /*
-  En los dos capítulos de apertura el registro pequeño es media frase, no un genérico de tres
-  palabras: con los 0,42em del lockup la línea se estiraba tanto que dejaba de leerse como
-  una unidad. Baja al tracking del díptico y ambos registros comparten cuerpo, para que el
-  espejo entre los dos capítulos —uno con la línea pequeña arriba y el otro abajo— se
-  reconozca como la misma pieza girada.
+  «En lo que haces» y «Si no sabes comunicarlo» son media frase, no un genérico de tres
+  palabras, y juntas forman una sola oración repartida entre dos capítulos. Por eso se
+  componen aquí como una única pieza y no como el rótulo que eran: caja baja, tracking de
+  lectura y cuerpo de display. En versalita y con los 0,28em del kicker se leían como una
+  etiqueta de sistema pegada al titular, que es exactamente lo que no son.
+
+  Quitar la caja alta no es cosmético: en caja baja el español acentuado conserva la tilde
+  a su altura y el ojo recupera la silueta de la palabra, que es lo que sostiene la lectura
+  a esta distancia. El tracking baja de 0,28em a 0,02em porque el espaciado ancho es un
+  recurso de rótulo corto y aquí estorba la unidad de la frase.
+
+  El cuerpo lo fija un clamp con suelo alto y techo contenido: 17,3 px a 390 px de ventana y
+  24 px a partir de 1.360. El suelo se calcula contra el ancho útil del móvil, 342 px con el
+  margen lateral de 24 px: la más larga de las dos frases son 23 caracteres, que a 0,54em de
+  avance medio miden 215 px de trazo. Quedan 127 px de holgura, así que la frase entra en un
+  renglón sin acercarse al margen. El techo se queda en 24 px para no rozar el subtítulo del
+  capítulo que nombra el programa, que es el registro que debe seguir mandando.
+
+  El halo pasa del contorno de 1 px al halo de display, el mismo del titular: a partir de
+  16 px el trazo ya tiene cuerpo para sostener una sombra difusa, y el contorno se vería
+  como reborde sucio. Va algo más cerrado y más opaco que el del titular porque estas dos
+  frases van en oro sobre el tramo de humo iluminado, donde el fondo y la letra caen en la
+  misma franja de luminancia.
 */
 .pod-capitulo:not([data-destacado="true"]) .pod-capitulo__antetitulo,
 .pod-capitulo:not([data-destacado="true"]) .pod-capitulo__subtitulo {
-  font-size: clamp(0.78rem, 1.35vw, 1.1rem);
-  letter-spacing: var(--tracking-kicker);
-  text-indent: var(--tracking-kicker);
+  font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
   color: var(--color-oro-brillo);
+  text-shadow:
+    0 0 2px rgba(8, 6, 3, 0.82), 0 2px 18px rgba(8, 6, 3, 0.7);
+  text-wrap: balance;
 }
 
 .pod-capitulo[data-destacado="true"] .pod-capitulo__titulo {
@@ -600,6 +620,15 @@
   precede es el que separa los dos registros, el trabajo que antes hacía el destello: marca
   el corte entre el nombre del programa y su explicación sin añadir nada sobre la letra.
 */
+/*
+  El centrado es explícito y no heredado. La bajada ya se centraba porque la escena centra
+  todo su contenido, pero era una propiedad prestada: cualquier reubicación del bloque fuera
+  de esa caja lo habría perdido en silencio. Declarado aquí, el centrado viaja con la pieza.
+
+  El reparto pasa de «pretty» a «balance» porque el texto nuevo es una frase larga con
+  enumeración: centrada y sin equilibrar, dejaba un último renglón de dos palabras colgando
+  bajo tres renglones llenos.
+*/
 .pod-capitulo__bajada {
   position: relative;
   max-width: min(56ch, 100%);
@@ -609,8 +638,9 @@
   font-size: clamp(0.92rem, 0.86rem + 0.3vw, 1.1rem);
   line-height: 1.62;
   color: var(--color-texto);
+  text-align: center;
   text-shadow: var(--halo-sobre-imagen);
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 
 /*
@@ -757,6 +787,29 @@
   text-indent: var(--tracking-kicker);
   color: var(--pod-oro-tinta);
   max-width: 30ch;
+}
+
+/*
+  Rótulo mayor. Es la misma pieza tipográfica que abre la secuencia —caja baja, tracking de
+  lectura y cuerpo de display— traída al cuerpo de la página, y por eso comparte clamp con
+  ella: el visitante debe reconocer las dos como la misma voz, no como dos plantillas.
+
+  Va como modificador y no en la clase base a propósito. El rótulo de sección lo comparten
+  las diez escenas de la página, y subirlas todas a este cuerpo aplanaría la jerarquía que
+  sostiene el resto: el rótulo dejaría de ser la entrada al capítulo para competir con el
+  titular al que anuncia. Aquí se aplica a una sola escena porque es la que el cliente pidió
+  reordenar, y el peso ganado es justamente lo que la reordena.
+
+  El selector se ancla en .pod-root porque .tech-label también se redefine bajo ese ancla:
+  sin él las dos reglas empatan en especificidad y el resultado dependería del orden.
+*/
+.pod-root .pod-encabezado--rotulo-mayor .pod-encabezado__rotulo {
+  margin-bottom: var(--pod-space-5);
+  font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
 }
 
 /*
@@ -1303,30 +1356,57 @@
   ancho de lectura y entre «DURACIÓN TOTAL» y «160 horas académicas» quedaría medio metro de
   vacío: dejarían de leerse como un par. A 46rem el salto sigue siendo el de una tabla.
 */
+/*
+  La medida baja de 46rem a 40rem. El ancho anterior estaba calculado para valores de 28 px,
+  y con el valor ya reducido la fila volvía a abrirse: entre «MÓDULOS» y «6 módulos
+  especializados» quedaba un vacío que rompía el par. Acercar los dos extremos es la mitad
+  del trabajo de hacer la ficha más legible; la otra mitad la hace el cuerpo del valor.
+*/
 .pod-datos {
-  max-width: 46rem;
+  max-width: 40rem;
   margin-top: var(--pod-aire-bloque);
   border-top: 1px solid var(--color-linea);
 }
 
+/*
+  El alto de fila baja un escalón de la escala. Con nueve filas de 1 rem de aire arriba y
+  abajo la ficha medía más que la escena que la contiene y obligaba a recorrerla en dos
+  pantallas: es literalmente el «muy grande» del que se quejó el cliente. A 0,75 rem las
+  filas siguen despegadas del filete y la tabla entra de una vez.
+*/
 .pod-dato {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--pod-space-5);
-  padding-block: var(--pod-space-4);
+  padding-block: var(--pod-space-3);
   border-bottom: 1px solid var(--color-linea);
 }
 
 /*
   Con el valor a 24 px, etiqueta y valor se pelean por los 342 px de un móvil y la fila
   parte por donde le da la gana. Apilados cada uno manda en su renglón.
+
+  Al apilarse, el valor deja de tener un borde derecho contra el que alinearse: la fila pasa
+  a leerse de izquierda a derecha como cualquier párrafo, así que se le devuelve la
+  alineación a la izquierda que la composición en columna sí pide.
+
+  El selector del valor baja por la lista y no por el elemento porque la regla que fija la
+  alineación a la derecha se declara más adelante en esta misma hoja. Una consulta de medios
+  no suma especificidad, así que con .pod-dato__valor a secas ganaría la de abajo por orden
+  y el valor seguiría cerrando a la derecha en móvil, que es justo lo contrario de lo que
+  esta consulta existe para arreglar.
 */
 @media (max-width: 40rem) {
   .pod-dato {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--pod-space-1);
+  }
+
+  .pod-datos .pod-dato__valor {
+    max-width: 100%;
+    text-align: left;
   }
 }
 
@@ -1338,16 +1418,35 @@
 }
 
 /*
-  «Inicio julio», «100 % en línea», «Sábados»: son los datos con los que se decide comprar,
-  y esta es la sección a la que apunta un enlace de la barra. Va en oro de numeral porque
-  es una columna de cifras y no un énfasis de display.
+  «100 % en línea», «Sábados», «10 créditos universitarios»: son los datos con los que se
+  decide comprar, y esta es la sección a la que apunta un enlace de la barra. Va en oro de
+  numeral porque es una columna de cifras y no un énfasis de display.
+
+  El cuerpo baja de 22-28 px a 18-22 px. A 28 px los valores largos —la certificación y los
+  cupos— caían en dos renglones cada uno y la columna dejaba de leerse como una tabla para
+  parecer una lista de titulares: era el «no tan grande» del cliente y también el origen del
+  «poco organizado», porque lo que desordenaba la ficha eran esos dobles renglones, no las
+  filas. A este cuerpo la certificación sigue partiendo en dos y los cupos entran de una,
+  y ninguna fila compite ya con el titular de la escena.
+
+  La alineación a la derecha es la otra mitad del arreglo. Cada valor cierra contra el mismo
+  borde que el de arriba y el de abajo, así que la columna tiene un canto recto en vez del
+  perfil dentado que dejaban los valores de dos renglones alineados a la izquierda. En una
+  tabla de pares es el canto lo que hace de guía para el ojo, y la ficha no lo tenía.
+
+  Sin equilibrado de líneas, y esto sí importa: el valor de la certificación lleva un
+  interpunto separando universidad y centro. Con «text-wrap: balance» el reparto igualaba
+  los dos renglones y dejaba el interpunto abriendo el segundo, donde deja de leerse como
+  separador y pasa por viñeta. El reparto codicioso lo mantiene cerrando el primero, que es
+  donde un separador significa lo que significa.
 */
 .pod-dato__valor {
-  max-width: 30ch;
-  font-size: clamp(1.375rem, 1.25rem + 0.5vw, 1.75rem);
+  max-width: 34ch;
+  font-size: clamp(1.125rem, 1.05rem + 0.36vw, 1.375rem);
   font-weight: 400;
-  line-height: 1.25;
+  line-height: 1.35;
   letter-spacing: 0.01em;
+  text-align: right;
   color: var(--pod-oro-numeral);
 }
 
@@ -2194,9 +2293,14 @@
 
 /*
   El giro y la sentencia son las dos frases con las que el documento cierra la agitación.
-  Van en display sobre el cuerpo y se separan entre sí por peso, no por color: la escena ya
-  gasta su cuota de oro de display en el remate, y un tercer oro convertiría el acento en
-  decoración.
+  Van en display sobre el cuerpo y se separan entre sí por peso, no por color.
+
+  Esta regla decía además que la escena no admitía un tercer oro porque ya gastaba su cuota
+  en el remate. El cliente pidió expresamente lo contrario: que «saber y comunicar» vaya en
+  el oro de la landing dentro de esta frase. Se aplica, y la razón de la norma se conserva
+  en la excepción: el oro entra en dos palabras de una sola frase y no en la frase entera,
+  así que sigue siendo acento y no un segundo cuerpo de texto en color. Queda anotado para
+  que quien lea esta hoja no lo trate como una desviación por descuido.
 */
 .pod-seccion__giro {
   max-width: 30ch;
@@ -2215,6 +2319,21 @@
   line-height: 1.22;
   color: var(--pod-tinta-1);
   text-wrap: balance;
+}
+
+/*
+  Realce de color dentro de una línea de display. Solo cambia la tinta: ni el cuerpo, ni el
+  peso, ni la familia, porque el fragmento tiene que seguir leyéndose como parte de la misma
+  frase y no como una cita incrustada. Es un span sin valor semántico a propósito: la palabra
+  no cambia de significado ni de énfasis para quien escucha la página, solo de color para
+  quien la ve, y marcarlo con <strong> o <em> anunciaría un énfasis que el texto no tiene.
+
+  Hereda el display-l del giro, así que el oro va sobre 28-44 px: es el escalón donde este
+  oro da 10,8:1 contra el negro de la página y sostiene el mínimo AA con holgura. No debe
+  reutilizarse en texto de lectura sin volver a medirlo.
+*/
+.pod-acento {
+  color: var(--pod-oro-tinta);
 }
 
 /*
@@ -2313,12 +2432,19 @@
 
 /*
   Los seis síntomas son el espejo en el que el visitante se reconoce: es la lista que decide
-  si sigue leyendo o cierra la pestaña, y por eso comparte cuerpo con el texto de lectura.
+  si sigue leyendo o cierra la pestaña. Por eso sube medio escalón por encima del texto de
+  lectura con el que compartía cuerpo, en lugar de seguir tratándose como párrafo corriente.
+
+  El techo de la subida no es de gusto: por encima de esta lista manda el remate que la
+  cierra, y la distancia entre ambos tiene que seguir leyéndose. Medido en los tres puntos
+  de la escala, el síntoma queda en 19,0 px contra 28,0 del remate a 390 px de ventana, en
+  20,5 contra 32,8 a 1.152 y en 21,0 contra 36,0 a 1.440. El remate manda por entre 1,47 y
+  1,71 veces en todo el recorrido, así que la jerarquía nunca se aplana ni se invierte.
 */
 .pod-sintoma__texto {
   max-width: 58ch;
-  font-size: var(--pod-cuerpo);
-  line-height: 1.55;
+  font-size: clamp(1.1875rem, 1.1rem + 0.25vw, 1.3125rem);
+  line-height: 1.5;
   color: var(--pod-tinta-2);
   text-wrap: pretty;
 }

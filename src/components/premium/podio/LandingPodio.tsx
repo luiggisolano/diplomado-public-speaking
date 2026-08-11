@@ -181,6 +181,7 @@ export function LandingPodio() {
           <section className="pod-seccion" aria-labelledby="pod-agitacion">
             <EncabezadoPodio
               id="pod-agitacion"
+              className="pod-encabezado--rotulo-mayor"
               eyebrow={PODIO_AGITACION.eyebrow}
               titulo={PODIO_AGITACION.titulo}
             />
@@ -194,6 +195,7 @@ export function LandingPodio() {
                 <p className="pod-seccion__cuerpo">{PODIO_AGITACION.cuerpo}</p>
                 <LineaPodio
                   texto={PODIO_AGITACION.giro}
+                  acento={PODIO_AGITACION.giroAcento}
                   className="pod-seccion__giro font-serif"
                 />
                 <LineaPodio
@@ -541,11 +543,17 @@ export function LandingPodio() {
               ))}
             </div>
 
-            <LineaPodio texto={PODIO_URGENCIA.remate} className="pod-remate font-serif" />
-
-            <RevelaPodio retardo={0.05}>
-              <p className="pod-microcopy tech-label">{PODIO_URGENCIA.microcopy}</p>
-            </RevelaPodio>
+            {/*
+              El remate cierra la escena solo y centrado. La letra pequeña con la fecha de
+              corte que iba debajo se retiró por pedido del cliente, y con ella el bloque
+              revelado que la envolvía: un RevelaPodio sin contenido es un nodo que sigue
+              animando la nada. El modificador centrado es el mismo que usa el remate de la
+              transformación, así que la página no gana una regla por esto.
+            */}
+            <LineaPodio
+              texto={PODIO_URGENCIA.remate}
+              className="pod-remate pod-remate--centrado font-serif"
+            />
           </section>
 
           <section
