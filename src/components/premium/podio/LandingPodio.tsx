@@ -676,7 +676,7 @@ export function LandingPodio() {
             cambia nunca.
           */}
           <div className="pod-firma">
-            <p className="pod-firma__rotulo tech-label">Diseño y desarrollo</p>
+            <p className="pod-firma__rotulo tech-label">Desarrollo Web y Experiencia de Usuario</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`${RUTA_DE_LA_FIRMA}-640.webp`}
