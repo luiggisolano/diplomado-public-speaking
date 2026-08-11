@@ -49,6 +49,7 @@ import { SmoothScroll } from "@/components/premium/_shared/SmoothScroll";
 import { BarraPodio } from "@/components/premium/podio/BarraPodio";
 import { PodioEscena } from "@/components/premium/podio/PodioEscena";
 import { FaqPodio } from "@/components/premium/podio/FaqPodio";
+import { FormularioInscripcion } from "@/components/premium/podio/FormularioInscripcion";
 import { EncabezadoPodio } from "@/components/premium/podio/EncabezadoPodio";
 import { RevelaPodio } from "@/components/premium/podio/RevelaPodio";
 import { LineaPodio } from "@/components/premium/podio/LineaPodio";
@@ -58,7 +59,7 @@ import { FileteCargado } from "@/components/premium/podio/FileteCargado";
 import { MediaEscena } from "@/components/premium/podio/MediaEscena";
 import { PasoDeTransformacion } from "@/components/premium/podio/PasoDeTransformacion";
 import { CLASES_TIPOGRAFIA_DIPTICO } from "@/lib/fonts-diptico";
-import { SHARED_CONTACT } from "@/lib/variants-content";
+import { SHARED_CONTACT, SHARED_CTA } from "@/lib/variants-content";
 import {
   PODIO_AGITACION,
   PODIO_AVAL,
@@ -607,18 +608,49 @@ export function LandingPodio() {
 
             <RevelaPodio retardo={0.1}>
               <div className="pod-inscripcion">
-                <div className="pod-acciones">
-                  <a
-                    className="pod-boton"
-                    href={SHARED_CONTACT.whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {PODIO_CIERRE.cta}
-                  </a>
-                  <a className="pod-boton pod-boton--secundario" href={`mailto:${SHARED_CONTACT.email}`}>
-                    Escribir por correo
-                  </a>
+                <h3 id="pod-inscripcion-titulo" className="pod-inscripcion__titulo font-serif">
+                  {PODIO_CIERRE.rotuloFormulario}
+                </h3>
+                <p className="pod-inscripcion__entrada">{PODIO_CIERRE.entradaFormulario}</p>
+
+                <FormularioInscripcion
+                  textoDeEnvio={PODIO_CIERRE.cta}
+                  idDelTitulo="pod-inscripcion-titulo"
+                />
+
+                {/*
+                  Las dos vías directas siguen aquí y no se retiran, pero bajan de rango. La
+                  investigación de este proyecto midió que en LATAM un CTA de WhatsApp
+                  convierte entre cuatro y cinco veces más que un formulario, así que quitarlo
+                  sería tirar la vía que factura; lo que cambia es cuál de las dos manda. El
+                  formulario se queda con el único relleno oro de la pantalla y estas dos pasan
+                  a contorno y cuerpo pequeño.
+
+                  Y el botón deja de decir «Asegurar mi cupo». Ese texto es ahora la acción del
+                  formulario, y en el aval habrá otro botón con esas mismas palabras apuntando
+                  a esta sección: tres rótulos idénticos con tres destinos distintos no son un
+                  sistema, son una adivinanza. Cada botón dice lo que hace.
+                */}
+                <div className="pod-alternativas">
+                  <p className="pod-alternativas__rotulo tech-label">
+                    {PODIO_CIERRE.rotuloAlternativas}
+                  </p>
+                  <div className="pod-alternativas__acciones">
+                    <a
+                      className="pod-boton pod-boton--secundario pod-boton--compacto"
+                      href={SHARED_CONTACT.whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {SHARED_CTA.whatsapp}
+                    </a>
+                    <a
+                      className="pod-boton pod-boton--secundario pod-boton--compacto"
+                      href={`mailto:${SHARED_CONTACT.email}`}
+                    >
+                      Escribir por correo
+                    </a>
+                  </div>
                 </div>
 
                 <p className="pod-microcopy tech-label">{PODIO_CIERRE.microcopy}</p>

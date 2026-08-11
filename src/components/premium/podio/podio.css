@@ -55,6 +55,17 @@
   --pod-oro-adorno: rgb(180 130 45 / 0.22);
 
   /*
+    ALERTA. La única tinta de la página que no es oro ni hueso, y existe por una razón que no
+    es estética: un error de formulario tiene que distinguirse de un énfasis, y en una paleta
+    de un solo acento el oro ya significa «esto se puede tocar». Es una terracota de la misma
+    familia cálida, a 15° de tono frente a los 40° del oro, así que separa sin romper la gama.
+    Da 9,76:1 sobre el negro cálido de la tarjeta y 10,00:1 sobre el abismo de los campos.
+
+    Nunca es el único portador del error: el campo lleva además aria-invalid y su propio texto.
+  */
+  --pod-alerta: #f2a48c;
+
+  /*
     ESCALA TIPOGRÁFICA. Cinco escalones y una etiqueta: xl → l → s → cuerpo → cuerpo-s →
     etiqueta. No hay un tamaño intermedio más justamente porque antes había cuatro registros
     compitiendo dentro de una misma escena. Los tres valores del comentario son los
@@ -154,6 +165,14 @@
   color: var(--color-hueso);
   font-family: var(--fuente-sans);
   overflow-x: clip;
+
+  /*
+    La página es negra de arriba abajo, así que los controles que dibuja el navegador tienen
+    que saberlo. Sin esta línea la casilla del consentimiento sale como un cuadro blanco de
+    esquema claro sobre el negro de la tarjeta. Va en .pod-root y no en :root para no alcanzar
+    a las otras siete rutas del repositorio, que siguen en la gama Aula Futura.
+  */
+  color-scheme: dark;
 }
 
 /* ---------------------------------------------------------------- tipografía */
@@ -1563,9 +1582,22 @@
   box-shadow: var(--pod-sombra-halo);
 }
 
-.pod-inscripcion .pod-acciones {
-  flex-direction: column;
-  margin-top: var(--pod-space-6);
+/*
+  Todo botón de la página vive ya dentro de esta tarjeta, y aquí la columna es estrecha: la
+  fila de acciones que había antes (.pod-acciones) desapareció con el reparto nuevo, en el que
+  el formulario es la acción principal y las dos vías directas bajan a una rejilla propia.
+*/
+.pod-inscripcion__titulo {
+  font-size: var(--pod-display-s);
+  line-height: 1.15;
+  color: var(--pod-tinta-1);
+}
+
+.pod-inscripcion__entrada {
+  margin-top: var(--pod-space-3);
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.55;
+  color: var(--pod-tinta-2);
 }
 
 .pod-inscripcion .pod-boton {
@@ -1615,18 +1647,12 @@
   text-align: center;
 }
 
-.pod-acciones {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--pod-space-4);
-  margin-top: var(--pod-aire-bloque);
-}
-
 /*
   Es la acción que factura, y es uno de los dos únicos elementos de la página con relleno
-  oro. La altura mínima no es decorativa: por debajo de 48 px un botón deja de acertarse con
-  el pulgar a la primera.
+  oro. Desde que el formulario existe, el relleno oro es SUYO: las dos vías directas que lo
+  acompañan pasaron a contorno para que en esta pantalla haya una sola cosa que se lea como
+  la acción. La altura mínima no es decorativa: por debajo de 48 px un botón deja de
+  acertarse con el pulgar a la primera.
 */
 .pod-boton {
   display: inline-flex;
@@ -1667,8 +1693,13 @@
   Anillo de foco único para toda la ruta. El navegador dibuja el suyo sobre fondos claros;
   sobre este negro y con los botones ya en oro macizo, el contorno por defecto se pierde y
   la navegación por teclado se queda sin saber dónde está.
+
+  Los campos del formulario entran en la misma regla en vez de traerse un anillo propio: el
+  recorrido por teclado de la sección de cierre pasa por enlaces, botones, cajas de texto y
+  una casilla, y que el indicador cambie de forma a mitad de camino es exactamente lo que
+  hace dudar de si el foco sigue donde uno cree.
 */
-.pod-root :is(a, button):focus-visible {
+.pod-root :is(a, button, input, select, textarea):focus-visible {
   outline: 2px solid var(--pod-oro-accion);
   outline-offset: 3px;
 }
@@ -1689,6 +1720,291 @@
 
 .pod-root .pod-secuencia__indicacion {
   letter-spacing: 0.16em;
+}
+
+/* ------------------------------------------------- formulario de inscripción */
+
+/*
+  El formulario es la acción principal de la sección de cierre y vive dentro de
+  .pod-inscripcion, que tiene fondo macizo. NUNCA directamente sobre la fotografía del cierre:
+  ahí el contraste depende del velo y de qué píxel caiga detrás de cada línea, y un campo de
+  formulario no puede sostenerse sobre esa incertidumbre.
+
+  Contraste medido sobre ese fondo macizo (#100b06), y el de los campos sobre el abismo
+  (#080603) que llevan dentro:
+
+    · texto que se teclea, --pod-tinta-1 ............ 16,91:1  (mínimo 4,5)
+    · etiquetas de campo, --pod-tinta-2 ............. 10,35:1  (mínimo 4,5)
+    · texto del consentimiento, --pod-tinta-2 ....... 10,35:1  (mínimo 4,5)
+    · ayuda del teléfono, --pod-tinta-3 .............. 6,82:1  (mínimo 4,5)
+    · mensajes de error, --pod-alerta ................ 9,76:1  (mínimo 4,5)
+    · confirmación en oro, --pod-oro-tinta .......... 10,46:1  (mínimo 4,5)
+    · borde del campo, --pod-tinta-4 ................. 4,04:1  (mínimo 3, regla 1.4.11)
+    · borde del campo inválido, --pod-alerta ......... 9,76:1  (mínimo 3, regla 1.4.11)
+    · borde de los botones de contorno, --pod-oro-numeral  5,75:1  (mínimo 3)
+    · rótulo del botón oro, --color-abyss sobre #e7b655   10,81:1  (mínimo 4,5)
+    · rótulo del botón mientras envía, sobre #b4822d ..... 5,95:1  (mínimo 4,5)
+*/
+.pod-formulario {
+  margin-top: var(--pod-space-6);
+}
+
+.pod-formulario__cuerpo {
+  display: grid;
+  gap: var(--pod-space-5);
+}
+
+.pod-campo {
+  display: grid;
+  gap: var(--pod-space-2);
+}
+
+/*
+  La etiqueta es un rótulo de una o dos palabras y hereda de .tech-label la caja alta y la
+  familia, pero con los 0,24 em de la etiqueta de sección «CORREO ELECTRÓNICO» se separa
+  tanto que deja de leerse como una unidad con su campo. Aquí baja a 0,14.
+*/
+.pod-root .pod-campo__etiqueta {
+  font-size: var(--pod-etiqueta);
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  color: var(--pod-tinta-2);
+}
+
+.pod-campo__control {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--pod-space-3) var(--pod-space-4);
+  font-family: var(--fuente-sans);
+  font-size: var(--pod-cuerpo);
+  line-height: 1.4;
+  color: var(--pod-tinta-1);
+  background-color: var(--color-abyss);
+  border: 1px solid var(--pod-tinta-4);
+  border-radius: var(--pod-radio);
+  transition: border-color 200ms ease-out;
+}
+
+.pod-campo__control:hover {
+  border-color: var(--pod-tinta-3);
+}
+
+.pod-campo__control[aria-invalid="true"] {
+  border-color: var(--pod-alerta);
+}
+
+.pod-campo__control:disabled {
+  color: var(--pod-tinta-3);
+  cursor: progress;
+}
+
+.pod-campo__ayuda {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.45;
+  color: var(--pod-tinta-3);
+}
+
+/*
+  El error no se apoya solo en el color. Además de la terracota lleva su propio texto bajo el
+  campo, el borde cambia y el control lleva aria-invalid, así que un lector de pantalla lo
+  anuncia como inválido aunque quien mira no distinga la terracota del oro.
+*/
+.pod-campo__error {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.45;
+  color: var(--pod-alerta);
+}
+
+.pod-consentimiento {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pod-space-3);
+}
+
+/*
+  Casilla NATIVA, no una reconstrucción con span y pseudoelementos. El control del navegador
+  ya trae el estado marcado, su anuncio en el lector de pantalla y la barra espaciadora, y
+  ninguna reconstrucción los devuelve los tres enteros. Solo se le da tamaño de dedo y el oro
+  de la marca; de que se dibuje oscura se encarga el color-scheme declarado en .pod-root.
+*/
+.pod-consentimiento__marca {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  accent-color: var(--pod-oro-accion);
+}
+
+.pod-consentimiento__texto {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.5;
+  color: var(--pod-tinta-2);
+  cursor: pointer;
+}
+
+/*
+  Campo trampa. Sale del lienzo y se recorta a un píxel en vez de esconderse con display:none,
+  porque un campo que el navegador no dibuja lo descartan los rellenadores automáticos y deja
+  de ser una trampa. El markup lo saca además del árbol de accesibilidad con aria-hidden y del
+  recorrido de tabulación con tabIndex -1, de modo que nadie que use lector de pantalla o
+  teclado se lo encuentra.
+*/
+.pod-trampa {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+  El recorte del envoltorio esconde el campo, pero no le quita su caja: un input conserva su
+  ancho por defecto de unos 173 px, y a 390 px eso es una caja que se sale de la tarjeta. No
+  produce barra de desplazamiento porque el envoltorio recorta y .pod-root lleva overflow-x
+  clip, pero cualquier auditoría que mida cajas lo señala, con razón. Se le da el ancho del
+  envoltorio y deja de existir también para la medida. Al bot le da igual: lee el DOM, no la
+  composición.
+*/
+.pod-trampa > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.pod-formulario__envio {
+  margin-top: var(--pod-space-2);
+}
+
+/*
+  Mientras el envío está en vuelo el botón NO baja de opacidad, que es justo lo que suele
+  romper el contraste en el instante en que el botón está diciendo algo. Pasa al oro profundo,
+  que con el rótulo en negro abismo sigue dando 5,95:1, y el cursor pasa a progreso.
+*/
+.pod-boton:disabled,
+.pod-boton:disabled:hover {
+  background-color: var(--pod-oro-numeral);
+  border-color: var(--pod-oro-numeral);
+  cursor: progress;
+  transform: none;
+}
+
+/*
+  Rango secundario dentro de la tarjeta. El contorno pasa del filete decorativo (1,86:1, que
+  vale para separar bloques pero no para dibujar el límite de un control) al oro numeral, que
+  da 5,75:1 sobre el fondo de la tarjeta.
+*/
+.pod-boton--compacto {
+  padding: var(--pod-space-3) var(--pod-space-4);
+  font-size: var(--pod-cuerpo-s);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  border-color: var(--pod-oro-numeral);
+}
+
+/*
+  Región viva del éxito: se anuncia pero no se dibuja. La confirmación visual es el panel de
+  abajo, y decir la misma frase dos veces en pantalla es ruido. Tiene que existir en el DOM
+  ANTES de tener contenido, porque un lector de pantalla anuncia lo que aparece dentro de una
+  región viva que ya estaba, no la región que aparece con su mensaje puesto.
+*/
+.pod-anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+  El aviso de fallo sí se dibuja, y vacío no debe ocupar sitio ni pintar su marco. :empty es
+  exactamente eso: la región sigue existiendo para la tecnología asistiva y desaparece de la
+  composición.
+*/
+.pod-aviso {
+  padding: var(--pod-space-4);
+  margin-bottom: var(--pod-space-5);
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.5;
+  color: var(--pod-alerta);
+  border: 1px solid var(--pod-alerta);
+  background-color: rgb(242 164 140 / 0.08);
+}
+
+.pod-aviso:empty {
+  display: none;
+}
+
+.pod-confirmacion {
+  display: grid;
+  justify-items: start;
+  gap: var(--pod-space-4);
+  padding: var(--pod-space-5);
+  border: 1px solid var(--pod-oro-numeral);
+  background-color: rgb(180 130 45 / 0.08);
+}
+
+/*
+  El panel recibe el foco al confirmarse el envío, así que necesita decir dónde está el foco.
+  No es tabulable: sale del recorrido en cuanto se sigue tabulando.
+*/
+.pod-confirmacion:focus-visible {
+  outline: 2px solid var(--pod-oro-accion);
+  outline-offset: 3px;
+}
+
+.pod-confirmacion__titulo {
+  font-size: var(--pod-display-s);
+  line-height: 1.2;
+  color: var(--pod-oro-tinta);
+}
+
+.pod-confirmacion__linea {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.55;
+  color: var(--pod-tinta-2);
+}
+
+/*
+  Dentro del panel de confirmación el botón no se estira a lo ancho de la tarjeta como los
+  demás: ahí ya no hay nada que decidir, es la puerta de vuelta para quien inscribe a una
+  segunda persona, y a ancho completo se leería como la acción principal de la sección.
+*/
+.pod-inscripcion .pod-confirmacion .pod-boton {
+  width: auto;
+}
+
+/*
+  Las dos vías directas. Se quedan porque en LATAM el canal de WhatsApp convierte varias veces
+  más que un formulario, y se subordinan porque solo una cosa puede ser LA acción: van después
+  del formulario, tras un filete, en contorno y a cuerpo pequeño.
+
+  La rejilla las pone en pareja cuando la tarjeta da los 11 rem por columna y las apila cuando
+  no, que es lo que ocurre en móvil: no hace falta punto de ruptura para eso.
+*/
+.pod-alternativas {
+  margin-top: var(--pod-space-6);
+  padding-top: var(--pod-space-5);
+  border-top: 1px solid var(--color-linea);
+}
+
+.pod-root .pod-alternativas__rotulo {
+  font-size: var(--pod-etiqueta);
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  color: var(--pod-tinta-3);
+}
+
+.pod-alternativas__acciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--pod-space-3);
+  margin-top: var(--pod-space-4);
 }
 
 /* -------------------------------------------------------------------- pantalla estrecha */
@@ -1775,14 +2091,6 @@
   */
   .pod-capitulo[data-destacado="true"] .pod-capitulo__titulo {
     font-size: clamp(1.9rem, 8.4vw, 3.25rem);
-  }
-
-  .pod-acciones {
-    flex-direction: column;
-  }
-
-  .pod-boton {
-    width: 100%;
   }
 }
 

@@ -369,9 +369,19 @@ export const PODIO_PREGUNTAS = {
   ],
 } as const;
 
+/*
+  «cta» es el rótulo del botón que ENVÍA el formulario, la acción principal de la sección de
+  cierre. Las dos vías directas que lo acompañan dicen cada una lo que hace, «Escribir por
+  WhatsApp» y «Escribir por correo», para que no haya dos botones llamados igual con destinos
+  distintos en la misma pantalla.
+*/
 export const PODIO_CIERRE = {
   lineas: ["Puedes ser el mejor en lo que haces.", "Si no sabes comunicarlo, nadie lo notará."],
   cta: "Asegurar mi cupo",
+  rotuloFormulario: "Reserva tu cupo",
+  entradaFormulario:
+    "Déjanos tus datos y el Centro de Educación Continua te contacta para completar la matrícula.",
+  rotuloAlternativas: "¿Prefieres hablar con alguien?",
   microcopy: "Inscripciones abiertas · Cupos limitados · Inicio en julio",
   rotuloContacto: "Contacto directo",
   firma: "Centro de Educación Continua · Universidad Técnica de Machala",
