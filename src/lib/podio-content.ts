@@ -15,6 +15,17 @@
   PodioEscena, atado al recorrido de la cámara, y no se toca desde aquí.
 */
 
+/*
+  El rótulo sigue diciendo «Aval institucional». El documento de observaciones pide cambiarlo
+  —«Titulo, en vez de "aval institucional", pongamos:»— y deja la frase de reemplazo en
+  blanco: no está en el texto del documento ni anotada en la captura que lo acompaña. Se
+  mantiene el rótulo actual en lugar de inventar uno, y queda anotado como pregunta abierta
+  para el cliente.
+
+  Las dos acciones son las que el documento pide poner «una junto al otro» debajo del cuerpo.
+  Llevan ancla y no enlace externo porque las dos secciones a las que apuntan viven en esta
+  misma página: la de inscripción al final y el programa de módulos a media altura.
+*/
 export const PODIO_AVAL = {
   rotulo: "Aval institucional",
   sellos: [
@@ -22,6 +33,12 @@ export const PODIO_AVAL = {
     "Centro de Educación Continua",
     "Certificación universitaria",
     "10 créditos académicos",
+  ],
+  cuerpo:
+    "El Diplomado en Public Speaking y Comunicación Persuasiva de Alto Impacto es una formación universitaria interdisciplinaria que integra seis campos esenciales del comunicador contemporáneo: psicología, retórica, voz, presencia escénica, imagen y liderazgo aplicado.",
+  acciones: [
+    { texto: "Asegurar mi cupo", ancla: "#inscripcion", rango: "principal" },
+    { texto: "Ver el programa completo", ancla: "#programa", rango: "secundario" },
   ],
 } as const;
 
@@ -382,7 +399,6 @@ export const PODIO_CIERRE = {
   entradaFormulario:
     "Déjanos tus datos y el Centro de Educación Continua te contacta para completar la matrícula.",
   rotuloAlternativas: "¿Prefieres hablar con alguien?",
-  microcopy: "Inscripciones abiertas · Cupos limitados · Inicio en julio",
   rotuloContacto: "Contacto directo",
   firma: "Centro de Educación Continua · Universidad Técnica de Machala",
 } as const;

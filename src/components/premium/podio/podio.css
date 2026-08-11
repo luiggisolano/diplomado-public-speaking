@@ -504,8 +504,39 @@
   margin-inline: auto;
 }
 
+/*
+  Poza de sombra bajo el bloque de texto, medida y no estimada. El velo radial de la sección
+  protege la banda central del encuadre, pero está calibrado contra el titular, que es display
+  y se le exige 3:1. Los dos registros pequeños del capítulo que nombra el programa —el
+  antetítulo y la bajada— se les exige 4,5:1 y caían en 2,00 y 2,73 sobre el tramo de humo
+  iluminado del final del recorrido, donde el peor píxel del fondo llega a rgb(135,132,121).
+
+  Va como fondo del propio capítulo y no como capa aparte: se dibuja detrás de su texto sin
+  pedir posicionamiento ni z-index, solo mancha el área que ocupa el bloque y se apaga antes
+  del borde, y desaparece con el capítulo porque es el capítulo. Oscurecer el velo entero
+  hasta este nivel habría apagado los focos y la multitud, que es justamente lo que el
+  encuadre existe para enseñar.
+
+  Una sola elipse, y de radios exactamente la mitad de la caja. Es la única forma de que la
+  mancha muera dentro del elemento: el fondo se recorta contra la caja de relleno, así que
+  cualquier alfa que siga viva en el borde se dibuja como un canto recto. Con radios al 50 %
+  el degradado llega a transparente justo en los cuatro costados y las esquinas ni se enteran.
+
+  El relleno no es aire de composición sino la distancia que necesita el degradado para
+  apagarse: el texto ocupa el centro de la caja y las tres cuartas partes de fuera son la
+  rampa. Un intento anterior puso una banda vertical para asegurar el último renglón y se vio
+  exactamente lo que se temía, un rectángulo con dos cantos verticales sobre el podio.
+*/
 .pod-capitulo {
   grid-area: 1 / 1;
+  padding: clamp(2rem, 5.5vh, 4.5rem) clamp(1.25rem, 4vw, 3.5rem);
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(8, 6, 3, 0.6) 0%,
+    rgba(8, 6, 3, 0.56) 50%,
+    rgba(8, 6, 3, 0.42) 75%,
+    transparent 100%
+  );
   opacity: 0;
   transform: translateY(1.75rem);
   transition:
@@ -648,15 +679,34 @@
   enumeración: centrada y sin equilibrar, dejaba un último renglón de dos palabras colgando
   bajo tres renglones llenos.
 */
+/*
+  La bajada lleva poza propia además de la del capítulo. Es el único registro de la secuencia
+  que cae fuera del centro del bloque —ocupa del 66 al 91 % de su alto— y ahí la elipse del
+  capítulo llega ya en su rampa de salida: medida sobre el trazo del glifo se quedaba en
+  3,33:1 contra los 4,5:1 que se le exigen por cuerpo. Su propia elipse, con los mismos radios
+  a la mitad de su caja para que muera en el borde, la sube por encima del mínimo sin oscurecer
+  un píxel más de encuadre que el que ocupan sus dos renglones.
+*/
 .pod-capitulo__bajada {
   position: relative;
   max-width: min(56ch, 100%);
   margin: 1.75rem auto 0;
-  padding-top: 1.75rem;
+  padding: 1.75rem clamp(1rem, 3vw, 2.75rem) clamp(0.9rem, 2.2vh, 1.6rem);
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(8, 6, 3, 0.38) 0%,
+    rgba(8, 6, 3, 0.32) 55%,
+    transparent 100%
+  );
   font-family: var(--fuente-sans);
   font-size: clamp(0.92rem, 0.86rem + 0.3vw, 1.1rem);
   line-height: 1.62;
-  color: var(--color-texto);
+  /*
+    Tinta maciza y no la del cuerpo de página, que lleva 0,78 de opacidad. Sobre un fondo
+    macizo esa transparencia es un matiz; sobre el metraje se come 0,67 puntos de razón de
+    contraste justo en el registro al que se le exigen 4,5:1.
+  */
+  color: var(--color-hueso);
   text-align: center;
   text-shadow: var(--halo-sobre-imagen);
   text-wrap: balance;
@@ -1064,103 +1114,6 @@
   line-height: 1.55;
 }
 
-/* ------------------------------------------------------------ especialistas */
-
-/*
-  Mismo ancho mínimo que la rejilla de módulos para que las dos caigan en tres columnas: seis
-  tarjetas en dos filas de tres, en vez de un 4+2 que deja la segunda fila coja.
-*/
-.pod-rejilla-especialistas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  gap: clamp(1rem, 2vw, 1.5rem);
-  margin-top: var(--pod-aire-bloque);
-}
-
-.pod-especialista {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: var(--color-negro-calido);
-  border: 1px solid var(--color-linea);
-}
-
-/*
-  Retrato temático mientras no haya fotografías: un halo dorado con el número del módulo
-  centrado. No se ilustra con personas inventadas ni con siluetas genéricas de banco.
-*/
-.pod-especialista__retrato {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 3;
-  border-bottom: 1px solid var(--color-linea);
-  background-image: radial-gradient(
-    62% 62% at 50% 42%,
-    rgba(180, 130, 45, 0.22),
-    transparent 70%
-  );
-}
-
-/*
-  El numeral pasa del oro sombra al oro de numeral: sobre su propio radial el anterior daba
-  2,44:1, por debajo incluso del 3:1 que se le permite a un display de 44 px.
-*/
-.pod-especialista__numero {
-  font-size: 2.75rem;
-  line-height: 1;
-  color: var(--pod-oro-numeral);
-}
-
-.pod-especialista__cuerpo {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding: clamp(1.25rem, 2.2vw, 1.6rem);
-}
-
-.pod-especialista__modulo {
-  font-size: var(--pod-etiqueta);
-  line-height: 1.3;
-  color: var(--pod-tinta-3);
-}
-
-/*
-  Mientras la ficha diga «Nombre por confirmar» el nombre va en tinta-2 y no en tinta-1: el
-  hueco tiene que verse como hueco. El día que el CEC entregue los seis nombres, sube.
-*/
-.pod-especialista__nombre {
-  max-width: 18ch;
-  margin-top: var(--pod-space-3);
-  font-size: var(--pod-display-s);
-  font-weight: 400;
-  line-height: 1.2;
-  color: var(--pod-tinta-2);
-}
-
-/*
-  Es una etiqueta, no un énfasis: deja el oro y baja a la tinta de rótulo. El oro de esta
-  escena ya está gastado en el rótulo del encabezado.
-*/
-.pod-especialista__disciplina {
-  max-width: 24ch;
-  margin-top: var(--pod-space-2);
-  font-size: var(--pod-etiqueta);
-  line-height: 1.3;
-  color: var(--pod-tinta-3);
-}
-
-/*
-  Es lo único verificable de la tarjeta mientras falten los nombres, así que cruza el piso
-  de cuerpo en lugar de quedarse en el tamaño de un pie de foto.
-*/
-.pod-especialista__credencial {
-  max-width: 34ch;
-  margin-top: var(--pod-space-3);
-  font-size: var(--pod-cuerpo-s);
-  line-height: 1.55;
-  color: var(--pod-tinta-2);
-}
-
 /* ------------------------------------------------------ maqueta a dos columnas */
 
 /*
@@ -1307,10 +1260,21 @@
   }
 }
 
+/*
+  La fila se centra en lugar de repartirse a los extremos, que es lo que pidió el cliente. El
+  reparto a todo el ancho ataba cada cifra a un borde distinto del ancho de lectura y dejaba
+  entre ellas huecos de más de cien píxeles: cuatro datos sueltos en una banda, no una banda
+  de cuatro datos.
+
+  El hueco fijo entra en el presupuesto que ya calculaba la disposición de un solo renglón: a
+  1.152 el trazo pide 829 px y los tres huecos otros 104, y quedan 63 px de holgura sobre el
+  ancho de lectura. Centrar reparte esa holgura a los dos costados en vez de inyectarla entre
+  las cifras, así que el renglón no puede desbordar por ninguno de los dos lados.
+*/
 @media (min-width: 72rem) {
   .pod-cifras {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: baseline;
     gap: clamp(1.5rem, 3vw, 3rem);
     border-bottom: 0;
@@ -1702,20 +1666,6 @@
 .pod-root :is(a, button, input, select, textarea):focus-visible {
   outline: 2px solid var(--pod-oro-accion);
   outline-offset: 3px;
-}
-
-/*
-  Estas dos líneas son frases largas, no rótulos de dos palabras: heredan de .tech-label la
-  caja alta y la familia, pero se les recorta el tracking para que no desborden en móvil.
-  Una de ellas lleva la fecha límite de inscripción, así que sube de 4,34:1 a 6,80:1.
-*/
-.pod-root .pod-microcopy {
-  max-width: 44ch;
-  margin-top: var(--pod-space-5);
-  font-size: var(--pod-etiqueta);
-  line-height: 1.5;
-  letter-spacing: 0.1em;
-  color: var(--pod-tinta-3);
 }
 
 .pod-root .pod-secuencia__indicacion {
@@ -2585,6 +2535,58 @@
 }
 
 /*
+  El párrafo que define la formación. Sí lleva medida en caracteres, al revés que la fila de
+  sellos que tiene encima: es texto corrido de sesenta y cuatro palabras y sin medida cruzaría
+  los 1.152 px del ancho de lectura de un solo renglón.
+*/
+.pod-aval__cuerpo {
+  max-width: 62ch;
+  margin: var(--pod-space-5) auto 0;
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.65;
+  text-align: center;
+  color: var(--pod-tinta-2);
+  text-wrap: pretty;
+}
+
+/*
+  Las dos acciones van en fila y centradas bajo el párrafo. En vertical se apilan y cada una
+  cruza el ancho de su caja hasta 22rem: dos botones que comparten renglón en un móvil de 390
+  px se quedan en 150 px cada uno, que es menos de lo que mide «Ver el programa completo» y
+  parte el rótulo en tres renglones.
+
+  El envoltorio se centra a sí mismo con un ancho máximo en vez de estirar los botones, para
+  que en la tableta el par no se convierta en dos barras de borde a borde.
+*/
+.pod-aval__acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--pod-space-3);
+  max-width: 22rem;
+  margin: var(--pod-space-6) auto 0;
+}
+
+@media (min-width: 40rem) {
+  .pod-aval__acciones {
+    flex-direction: row;
+    justify-content: center;
+    max-width: none;
+    gap: var(--pod-space-4);
+  }
+}
+
+/*
+  El contorno del secundario sube del filete al oro de numeral, por lo mismo que ya hace el
+  botón compacto del cierre: el filete da 1,86:1 contra el fondo, que sirve para separar
+  bloques pero no para dibujar el límite de un control. Aquí el borde es lo único que hace
+  visible dónde empieza y dónde acaba el botón.
+*/
+.pod-aval__acciones .pod-boton--secundario {
+  border-color: var(--pod-oro-numeral);
+}
+
+/*
   Es la frase que abre cada argumento. Sube de escalón y, sobre todo, deja de ocupar un
   registro propio: comparte cuerpo con el giro y la sentencia. Con esto la escena de
   agitación pasa de cuatro registros compitiendo a tres, que es el arreglo de fondo de esta
@@ -2657,13 +2659,29 @@
   }
 }
 
-.pod-rotulo-lista {
+/*
+  «Lo que sucede cuando esa habilidad no está entrenada» es la frase que abre la escena de
+  síntomas, y el cliente la pidió en caja baja y un escalón más grande, «pero no tanto como la
+  frase final»: el remate que cierra la escena, que a 1.440 mide 36 px.
+
+  Comparte clamp exacto con el rótulo mayor de la escena anterior en lugar de estrenar uno.
+  Las dos son la misma pieza —el rótulo que abre un capítulo— y el cliente pidió lo mismo para
+  las dos por separado; con cuerpos distintos se leerían como dos plantillas. El techo son
+  24 px contra los 36 del remate, así que la jerarquía entre la frase que abre y la que cierra
+  se mantiene en dos tercios.
+
+  El selector se ancla en .pod-root por lo mismo que el rótulo mayor: el marcado lleva además
+  .tech-label, que bajo ese ancla declara la caja alta y ganaría por especificidad a una clase
+  suelta. Sin el ancla, el rótulo crecería pero seguiría en mayúsculas.
+*/
+.pod-root .pod-rotulo-lista {
   max-width: 40ch;
   margin-top: var(--pod-space-7);
-  font-size: var(--pod-etiqueta);
-  line-height: 1.4;
-  letter-spacing: var(--tracking-kicker);
-  text-indent: var(--tracking-kicker);
+  font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
   color: var(--pod-oro-tinta);
 }
 
@@ -2783,6 +2801,18 @@
 }
 
 /*
+  Dos columnas fijas para la retícula de cinco diferenciales. Con auto-fit, cinco tarjetas
+  caen en 4+1 desde 1.024 px y la quinta queda sola en una fila de cuatro huecos. En pares el
+  reparto es 2-2-1 y la impar cierra el bloque, que es además la composición que el cliente
+  señaló como referencia.
+*/
+@media (min-width: 48rem) {
+  .pod-rejilla-pilares--pareja {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
   Los cuatro pilares del método y las tres razones de urgencia son el esqueleto argumental
   de la página: suben a la altura de título de tarjeta.
 */
@@ -2803,8 +2833,7 @@
   color: var(--pod-tinta-2);
 }
 
-.pod-pilar,
-.pod-especialista {
+.pod-pilar {
   height: 100%;
 }
 
@@ -2817,8 +2846,7 @@
   emitir esa clase, la regla no casaría con nada y el defecto aparecería como una fila
   desalineada, sin ningún error que lo delate.
 */
-.pod-rejilla-pilares > .cam-reveal,
-.pod-rejilla-especialistas > .cam-reveal {
+.pod-rejilla-pilares > .cam-reveal {
   height: 100%;
 }
 
@@ -3207,13 +3235,19 @@
 }
 
 /*
-  El aire entre perfiles no es decorativo: es lo que da recorrido al anclaje. Con el hueco
-  anterior, la columna más alta superaba a la fotografía en 358 px y la sala se despegaba
-  antes de que diera tiempo a leer el segundo perfil.
+  El aire entre perfiles se recorta a menos de la mitad. El hueco anterior llegaba a 115 px
+  entre tarjeta y tarjeta y estiraba la escena a más de mil píxeles de alto: los cinco
+  perfiles dejaban de leerse como una enumeración y pasaban a ser cinco bloques sueltos
+  flotando a alturas que no se corresponden entre columnas. Es el «que no se vea
+  desorganizado» del cliente, que no pide simetría sino ritmo.
+
+  Lo que NO cambia es el reparto de dos y tres alrededor de la fotografía. La asimetría es la
+  composición de la escena, y aplanarla a una rejilla de cinco iguales resolvería el desorden
+  quitando también el motivo por el que la sala está en medio.
 */
 .pod-rodea__columna {
   display: grid;
-  gap: clamp(3rem, 8vw, 9rem);
+  gap: clamp(2.25rem, 4vw, 4rem);
   align-content: start;
 }
 
@@ -3221,10 +3255,14 @@
   La columna derecha arranca más abajo. Con dos perfiles a un lado y tres al otro, empezar
   las dos a la misma altura deja la izquierda terminada mucho antes y el desnivel se lee
   como una fila mal cerrada; desfasada, se lee como composición.
+
+  El desfase baja en la misma proporción que el hueco. A 130 px el arranque de la derecha
+  caía por debajo del primer párrafo de la izquierda y las dos columnas ya no compartían
+  ninguna línea de lectura; a la mitad, el escalón sigue viéndose como escalón.
 */
 @media (min-width: 62rem) {
   .pod-rodea__columna--derecha {
-    margin-top: clamp(3rem, 9vw, 9rem);
+    margin-top: clamp(1.5rem, 3vw, 3.5rem);
   }
 }
 
@@ -3246,10 +3284,6 @@
   font-size: var(--pod-cuerpo-s);
   line-height: 1.55;
   color: var(--pod-tinta-2);
-}
-
-.pod-cierre .pod-microcopy {
-  margin-top: var(--pod-space-5);
 }
 
 /*

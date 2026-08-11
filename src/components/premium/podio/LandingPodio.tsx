@@ -70,6 +70,7 @@ import {
   PODIO_MODULOS,
   PODIO_PREGUNTAS,
   PODIO_PUBLICO,
+  PODIO_SOLUCION,
   PODIO_TRANSFORMACION,
   PODIO_URGENCIA,
 } from "@/lib/podio-content";
@@ -80,21 +81,6 @@ import {
 */
 const RUTA_PORTADAS_MODULOS = "/fusion/modulos";
 
-/*
-  Placeholders temáticos hasta que el cliente entregue los seis nombres, credenciales y
-  fotografías. Se rotulan «Nombre por confirmar» de forma explícita: no se inventan personas
-  reales, y la disciplina de cada tarjeta sí corresponde al módulo que la imparte.
-*/
-const ESPECIALISTAS = [
-  { modulo: "01", disciplina: "Psicología del orador", credencial: "Especialista en psicología de la comunicación" },
-  { modulo: "02", disciplina: "Retórica y persuasión", credencial: "Especialista en retórica y argumentación" },
-  { modulo: "03", disciplina: "Técnica vocal", credencial: "Especialista en técnica y salud vocal" },
-  { modulo: "04", disciplina: "Performance y escena", credencial: "Especialista en expresión escénica" },
-  { modulo: "05", disciplina: "Imagen y semiótica", credencial: "Especialista en imagen y comunicación no verbal" },
-  { modulo: "06", disciplina: "Oratoria de liderazgo", credencial: "Especialista en liderazgo y oratoria ejecutiva" },
-] as const;
-
-const NOMBRE_ESPECIALISTA_PENDIENTE = "Nombre por confirmar";
 const RETARDO_ENTRE_TARJETAS = 0.04;
 
 /*
@@ -155,6 +141,17 @@ export function LandingPodio() {
               ))}
             </dl>
 
+            {/*
+              El bloque del aval deja de ser solo el pie de imprenta de los cuatro sellos y
+              pasa a cerrar la apertura: debajo van el párrafo que define la formación y las
+              dos acciones que el documento pide «una junto al otro».
+
+              El relleno oro es de «Asegurar mi cupo» y el contorno de «Ver el programa
+              completo», que es la regla de la página aplicada a esta pantalla: una sola cosa
+              se lee como LA acción. No entra en conflicto con el relleno oro del formulario
+              porque las dos pantallas están a diecinueve mil píxeles la una de la otra y
+              nunca se ven juntas.
+            */}
             <RevelaPodio retardo={0.1} className="pod-aval-marco">
               <p className="pod-aval">
                 <span className="pod-aval__rotulo">{PODIO_AVAL.rotulo}</span>
@@ -164,6 +161,24 @@ export function LandingPodio() {
                   </span>
                 ))}
               </p>
+
+              <p className="pod-aval__cuerpo">{PODIO_AVAL.cuerpo}</p>
+
+              <div className="pod-aval__acciones">
+                {PODIO_AVAL.acciones.map((accion) => (
+                  <a
+                    key={accion.ancla}
+                    className={
+                      accion.rango === "principal"
+                        ? "pod-boton"
+                        : "pod-boton pod-boton--secundario"
+                    }
+                    href={accion.ancla}
+                  >
+                    {accion.texto}
+                  </a>
+                ))}
+              </div>
             </RevelaPodio>
           </section>
 
@@ -314,46 +329,32 @@ export function LandingPodio() {
           </section>
 
           {/*
-            Seis retratos con numeral dorado ya son el peso visual de la escena. Una foto de
-            escenario sobre seis fichas que dicen «Nombre por confirmar» prometería personas
-            que todavía no existen.
+            Aquí vivía «Quién te forma», seis fichas de especialista que decían «Nombre por
+            confirmar». El cliente la retiró en las observaciones del 2026-08-10 y señaló con
+            una captura qué quería en su lugar: la retícula de diferenciales que la página
+            tuvo antes de que la escena «La formación» se retirase entera el 2026-08-03. Es
+            ese bloque el que vuelve, con su copy intacto en lib/podio-content, y no los tres
+            párrafos de cuerpo que acompañaban a aquella escena y que son los que la hacían
+            pesada.
+
+            Dos columnas fijas y no la retícula elástica del método: con cinco tarjetas, el
+            auto-fit deja una sola en la última fila a partir de 1.024 px. En pares, el
+            reparto es 2-2-1 y la impar cierra el bloque en lugar de quedar suelta.
           */}
-          <section
-            className="pod-seccion pod-seccion--destino"
-            id="docentes"
-            aria-labelledby="pod-especialistas"
-          >
+          <section className="pod-seccion" aria-labelledby="pod-diferencia">
             <EncabezadoPodio
-              id="pod-especialistas"
-              eyebrow="Quién te forma"
-              titulo="Seis especialistas, una sola formación."
-              entrada={
-                <p className="pod-seccion__cuerpo">
-                  Cada disciplina la imparte quien la ejerce. No es teoría genérica: el
-                  especialista que te enseña vive de lo que enseña.
-                </p>
-              }
+              id="pod-diferencia"
+              eyebrow={PODIO_SOLUCION.eyebrow}
+              titulo={PODIO_SOLUCION.rotuloDiferencia}
             />
 
-            <div className="pod-rejilla-especialistas">
-              {ESPECIALISTAS.map((especialista, indice) => (
-                <RevelaPodio key={especialista.modulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
-                  <article className="pod-especialista">
-                    <div className="pod-especialista__retrato" aria-hidden="true">
-                      <span className="pod-especialista__numero mono-num">{especialista.modulo}</span>
-                    </div>
-                    <div className="pod-especialista__cuerpo">
-                      <p className="pod-especialista__modulo tech-label">
-                        Módulo {especialista.modulo}
-                      </p>
-                      <h3 className="pod-especialista__nombre font-serif">
-                        {NOMBRE_ESPECIALISTA_PENDIENTE}
-                      </h3>
-                      <p className="pod-especialista__disciplina tech-label">
-                        {especialista.disciplina}
-                      </p>
-                      <p className="pod-especialista__credencial">{especialista.credencial}</p>
-                    </div>
+            <div className="pod-rejilla-pilares pod-rejilla-pilares--pareja">
+              {PODIO_SOLUCION.diferenciales.map((diferencial, indice) => (
+                <RevelaPodio key={diferencial.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
+                  <article className="pod-pilar">
+                    <p className="pod-pilar__numero mono-num">{numeroOrdinal(indice)}</p>
+                    <h3 className="pod-pilar__titulo">{diferencial.titulo}</h3>
+                    <p className="pod-pilar__linea">{diferencial.linea}</p>
                   </article>
                 </RevelaPodio>
               ))}
@@ -581,7 +582,7 @@ export function LandingPodio() {
 
           {/*
             Fondo de sección a sangre: la única excepción a la regla de que ningún cartel
-            sangra, con su aritmética documentada en podio.css. El microcopy y los datos de
+            sangra, con su aritmética documentada en podio.css. El formulario y los datos de
             contacto viven dentro de .pod-inscripcion, que tiene fondo macizo; sobre la
             fotografía solo va la frase de cierre, que es display y se verifica midiendo los
             píxeles reales del fondo, no el token.
@@ -652,8 +653,6 @@ export function LandingPodio() {
                     </a>
                   </div>
                 </div>
-
-                <p className="pod-microcopy tech-label">{PODIO_CIERRE.microcopy}</p>
 
                 <dl className="pod-contacto">
                   <div className="pod-contacto__fila">
