@@ -49,6 +49,7 @@ import { SmoothScroll } from "@/components/premium/_shared/SmoothScroll";
 import { BarraPodio } from "@/components/premium/podio/BarraPodio";
 import { PodioEscena } from "@/components/premium/podio/PodioEscena";
 import { FaqPodio } from "@/components/premium/podio/FaqPodio";
+import { FormularioInscripcion } from "@/components/premium/podio/FormularioInscripcion";
 import { EncabezadoPodio } from "@/components/premium/podio/EncabezadoPodio";
 import { RevelaPodio } from "@/components/premium/podio/RevelaPodio";
 import { LineaPodio } from "@/components/premium/podio/LineaPodio";
@@ -58,7 +59,7 @@ import { FileteCargado } from "@/components/premium/podio/FileteCargado";
 import { MediaEscena } from "@/components/premium/podio/MediaEscena";
 import { PasoDeTransformacion } from "@/components/premium/podio/PasoDeTransformacion";
 import { CLASES_TIPOGRAFIA_DIPTICO } from "@/lib/fonts-diptico";
-import { SHARED_CONTACT } from "@/lib/variants-content";
+import { SHARED_CONTACT, SHARED_CTA } from "@/lib/variants-content";
 import {
   PODIO_AGITACION,
   PODIO_AVAL,
@@ -79,21 +80,6 @@ import {
 */
 const RUTA_PORTADAS_MODULOS = "/fusion/modulos";
 
-/*
-  Placeholders temáticos hasta que el cliente entregue los seis nombres, credenciales y
-  fotografías. Se rotulan «Nombre por confirmar» de forma explícita: no se inventan personas
-  reales, y la disciplina de cada tarjeta sí corresponde al módulo que la imparte.
-*/
-const ESPECIALISTAS = [
-  { modulo: "01", disciplina: "Psicología del orador", credencial: "Especialista en psicología de la comunicación" },
-  { modulo: "02", disciplina: "Retórica y persuasión", credencial: "Especialista en retórica y argumentación" },
-  { modulo: "03", disciplina: "Técnica vocal", credencial: "Especialista en técnica y salud vocal" },
-  { modulo: "04", disciplina: "Performance y escena", credencial: "Especialista en expresión escénica" },
-  { modulo: "05", disciplina: "Imagen y semiótica", credencial: "Especialista en imagen y comunicación no verbal" },
-  { modulo: "06", disciplina: "Oratoria de liderazgo", credencial: "Especialista en liderazgo y oratoria ejecutiva" },
-] as const;
-
-const NOMBRE_ESPECIALISTA_PENDIENTE = "Nombre por confirmar";
 const RETARDO_ENTRE_TARJETAS = 0.04;
 
 /*
@@ -154,6 +140,17 @@ export function LandingPodio() {
               ))}
             </dl>
 
+            {/*
+              El bloque del aval deja de ser solo el pie de imprenta de los cuatro sellos y
+              pasa a cerrar la apertura: debajo van el párrafo que define la formación y las
+              dos acciones que el documento pide «una junto al otro».
+
+              El relleno oro es de «Asegurar mi cupo» y el contorno de «Ver el programa
+              completo», que es la regla de la página aplicada a esta pantalla: una sola cosa
+              se lee como LA acción. No entra en conflicto con el relleno oro del formulario
+              porque las dos pantallas están a diecinueve mil píxeles la una de la otra y
+              nunca se ven juntas.
+            */}
             <RevelaPodio retardo={0.1} className="pod-aval-marco">
               <p className="pod-aval">
                 <span className="pod-aval__rotulo">{PODIO_AVAL.rotulo}</span>
@@ -163,6 +160,24 @@ export function LandingPodio() {
                   </span>
                 ))}
               </p>
+
+              <p className="pod-aval__cuerpo">{PODIO_AVAL.cuerpo}</p>
+
+              <div className="pod-aval__acciones">
+                {PODIO_AVAL.acciones.map((accion) => (
+                  <a
+                    key={accion.ancla}
+                    className={
+                      accion.rango === "principal"
+                        ? "pod-boton"
+                        : "pod-boton pod-boton--secundario"
+                    }
+                    href={accion.ancla}
+                  >
+                    {accion.texto}
+                  </a>
+                ))}
+              </div>
             </RevelaPodio>
           </section>
 
@@ -181,6 +196,7 @@ export function LandingPodio() {
           <section className="pod-seccion" aria-labelledby="pod-agitacion">
             <EncabezadoPodio
               id="pod-agitacion"
+              className="pod-encabezado--rotulo-mayor"
               eyebrow={PODIO_AGITACION.eyebrow}
               titulo={PODIO_AGITACION.titulo}
             />
@@ -194,6 +210,7 @@ export function LandingPodio() {
                 <p className="pod-seccion__cuerpo">{PODIO_AGITACION.cuerpo}</p>
                 <LineaPodio
                   texto={PODIO_AGITACION.giro}
+                  acento={PODIO_AGITACION.giroAcento}
                   className="pod-seccion__giro font-serif"
                 />
                 <LineaPodio
@@ -311,60 +328,27 @@ export function LandingPodio() {
           </section>
 
           {/*
-            Seis retratos con numeral dorado ya son el peso visual de la escena. Una foto de
-            escenario sobre seis fichas que dicen «Nombre por confirmar» prometería personas
-            que todavía no existen.
-          */}
-          <section
-            className="pod-seccion pod-seccion--destino"
-            id="docentes"
-            aria-labelledby="pod-especialistas"
-          >
-            <EncabezadoPodio
-              id="pod-especialistas"
-              eyebrow="Quién te forma"
-              titulo="Seis especialistas, una sola formación."
-              entrada={
-                <p className="pod-seccion__cuerpo">
-                  Cada disciplina la imparte quien la ejerce. No es teoría genérica: el
-                  especialista que te enseña vive de lo que enseña.
-                </p>
-              }
-            />
+            Entre el programa y el público vivía «Quién te forma», seis fichas de especialista
+            que decían «Nombre por confirmar». El cliente la retiró en las observaciones del
+            2026-08-10 y ahí se queda: no hay bloque de reemplazo.
 
-            <div className="pod-rejilla-especialistas">
-              {ESPECIALISTAS.map((especialista, indice) => (
-                <RevelaPodio key={especialista.modulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
-                  <article className="pod-especialista">
-                    <div className="pod-especialista__retrato" aria-hidden="true">
-                      <span className="pod-especialista__numero mono-num">{especialista.modulo}</span>
-                    </div>
-                    <div className="pod-especialista__cuerpo">
-                      <p className="pod-especialista__modulo tech-label">
-                        Módulo {especialista.modulo}
-                      </p>
-                      <h3 className="pod-especialista__nombre font-serif">
-                        {NOMBRE_ESPECIALISTA_PENDIENTE}
-                      </h3>
-                      <p className="pod-especialista__disciplina tech-label">
-                        {especialista.disciplina}
-                      </p>
-                      <p className="pod-especialista__credencial">{especialista.credencial}</p>
-                    </div>
-                  </article>
-                </RevelaPodio>
-              ))}
-            </div>
-          </section>
+            De ahí que esta escena pierda el fondo alterno. La página releva fondo entre
+            secciones consecutivas, y el programa que tiene encima ya lo lleva: con las dos en
+            negro cálido, el corte entre el último módulo y el primer perfil desaparecía. Pasa
+            a fondo de página y el relevo vuelve a marcarse.
 
-          {/*
-            El cartel acompaña al titular y no a la rejilla, que es la regla de las cuatro
-            secciones con media: la imagen cuelga de la fila del encabezado y la rejilla de
-            la escena va debajo a todo el ancho. Con las cinco tarjetas dentro de la columna
-            de texto, esta se estiraba al doble de la altura de la imagen y dejaba mil
-            píxeles de columna derecha vacía, que es justo el defecto que se corrige.
+            Que la transformación que va después comparta con esta el fondo de página no es el
+            mismo problema: abre con una banda de imagen a todo el ancho bajo su titular, y esa
+            banda marca el capítulo mejor que un cambio de color. Es la misma licencia que ya se
+            toman las dos escenas de agitación, donde el corte lo pone el filete.
+
+            El cartel de esta escena acompaña al titular y no a la rejilla, que es la regla de
+            las cuatro secciones con media: la imagen cuelga de la fila del encabezado y la
+            rejilla de la escena va debajo a todo el ancho. Con las cinco tarjetas dentro de la
+            columna de texto, esta se estiraba al doble de la altura de la imagen y dejaba mil
+            píxeles de columna derecha vacía.
           */}
-          <section className="pod-seccion pod-seccion--alterna" aria-labelledby="pod-publico">
+          <section className="pod-seccion" aria-labelledby="pod-publico">
             <EncabezadoPodio
               id="pod-publico"
               eyebrow={PODIO_PUBLICO.eyebrow}
@@ -541,11 +525,17 @@ export function LandingPodio() {
               ))}
             </div>
 
-            <LineaPodio texto={PODIO_URGENCIA.remate} className="pod-remate font-serif" />
-
-            <RevelaPodio retardo={0.05}>
-              <p className="pod-microcopy tech-label">{PODIO_URGENCIA.microcopy}</p>
-            </RevelaPodio>
+            {/*
+              El remate cierra la escena solo y centrado. La letra pequeña con la fecha de
+              corte que iba debajo se retiró por pedido del cliente, y con ella el bloque
+              revelado que la envolvía: un RevelaPodio sin contenido es un nodo que sigue
+              animando la nada. El modificador centrado es el mismo que usa el remate de la
+              transformación, así que la página no gana una regla por esto.
+            */}
+            <LineaPodio
+              texto={PODIO_URGENCIA.remate}
+              className="pod-remate pod-remate--centrado font-serif"
+            />
           </section>
 
           <section
@@ -572,7 +562,7 @@ export function LandingPodio() {
 
           {/*
             Fondo de sección a sangre: la única excepción a la regla de que ningún cartel
-            sangra, con su aritmética documentada en podio.css. El microcopy y los datos de
+            sangra, con su aritmética documentada en podio.css. El formulario y los datos de
             contacto viven dentro de .pod-inscripcion, que tiene fondo macizo; sobre la
             fotografía solo va la frase de cierre, que es display y se verifica midiendo los
             píxeles reales del fondo, no el token.
@@ -599,21 +589,50 @@ export function LandingPodio() {
 
             <RevelaPodio retardo={0.1}>
               <div className="pod-inscripcion">
-                <div className="pod-acciones">
-                  <a
-                    className="pod-boton"
-                    href={SHARED_CONTACT.whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {PODIO_CIERRE.cta}
-                  </a>
-                  <a className="pod-boton pod-boton--secundario" href={`mailto:${SHARED_CONTACT.email}`}>
-                    Escribir por correo
-                  </a>
-                </div>
+                <h3 id="pod-inscripcion-titulo" className="pod-inscripcion__titulo font-serif">
+                  {PODIO_CIERRE.rotuloFormulario}
+                </h3>
+                <p className="pod-inscripcion__entrada">{PODIO_CIERRE.entradaFormulario}</p>
 
-                <p className="pod-microcopy tech-label">{PODIO_CIERRE.microcopy}</p>
+                <FormularioInscripcion
+                  textoDeEnvio={PODIO_CIERRE.cta}
+                  idDelTitulo="pod-inscripcion-titulo"
+                />
+
+                {/*
+                  Las dos vías directas siguen aquí y no se retiran, pero bajan de rango. La
+                  investigación de este proyecto midió que en LATAM un CTA de WhatsApp
+                  convierte entre cuatro y cinco veces más que un formulario, así que quitarlo
+                  sería tirar la vía que factura; lo que cambia es cuál de las dos manda. El
+                  formulario se queda con el único relleno oro de la pantalla y estas dos pasan
+                  a contorno y cuerpo pequeño.
+
+                  Y el botón deja de decir «Asegurar mi cupo». Ese texto es ahora la acción del
+                  formulario, y en el aval habrá otro botón con esas mismas palabras apuntando
+                  a esta sección: tres rótulos idénticos con tres destinos distintos no son un
+                  sistema, son una adivinanza. Cada botón dice lo que hace.
+                */}
+                <div className="pod-alternativas">
+                  <p className="pod-alternativas__rotulo tech-label">
+                    {PODIO_CIERRE.rotuloAlternativas}
+                  </p>
+                  <div className="pod-alternativas__acciones">
+                    <a
+                      className="pod-boton pod-boton--secundario pod-boton--compacto"
+                      href={SHARED_CONTACT.whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {SHARED_CTA.whatsapp}
+                    </a>
+                    <a
+                      className="pod-boton pod-boton--secundario pod-boton--compacto"
+                      href={`mailto:${SHARED_CONTACT.email}`}
+                    >
+                      Escribir por correo
+                    </a>
+                  </div>
+                </div>
 
                 <dl className="pod-contacto">
                   <div className="pod-contacto__fila">

@@ -34,7 +34,7 @@
   intacto, que es lo que importa para los lectores de pantalla y para poder seleccionarlo.
 */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import {
   gsap,
   SplitText,
@@ -47,6 +47,7 @@ type LineaPodioProps = {
   className: string;
   corte?: "palabras" | "letras";
   peso?: "fuerte";
+  acento?: string;
 };
 
 const DESPLAZAMIENTO_DE_LA_PALABRA_EN_PIXELES = 22;
@@ -68,7 +69,50 @@ const DISPARO_POR_LETRAS = "top 78%";
 */
 const CLASE_DE_LA_PIEZA = "cam-word";
 
-export function LineaPodio({ texto, className, corte = "palabras", peso }: LineaPodioProps) {
+const CLASE_DEL_ACENTO = "pod-acento";
+
+/*
+  Realce de color sobre un fragmento de la línea. El fragmento llega como cadena aparte y no
+  como marcado ya resuelto porque quien compone esta línea es SplitText: el corte necesita
+  que el párrafo entre con su texto íntegro, y un envoltorio construido fuera obligaría a
+  reconstruirlo también fuera. Aquí el marcado se arma en el mismo sitio donde se anima.
+
+  SplitText desciende por los elementos anidados y parte el texto que hay dentro de cada uno
+  conservándolo, así que el span sobrevive al corte y las palabras que quedan dentro heredan
+  su tinta. Al revertir, el componente restituye el HTML original con el span incluido.
+
+  El fragmento se busca, no se asume. Si alguien reescribe la frase y el literal deja de
+  aparecer en ella, la línea se pinta entera sin realce en lugar de romperse o de recortar
+  el texto: un realce que desaparece es un defecto visible y reparable, una frase truncada
+  en producción no lo es.
+*/
+function componerLineaConAcento(texto: string, acento: string | undefined): ReactNode {
+  if (!acento) {
+    return texto;
+  }
+
+  const posicionDelAcento = texto.indexOf(acento);
+
+  if (posicionDelAcento === -1) {
+    return texto;
+  }
+
+  return (
+    <>
+      {texto.slice(0, posicionDelAcento)}
+      <span className={CLASE_DEL_ACENTO}>{acento}</span>
+      {texto.slice(posicionDelAcento + acento.length)}
+    </>
+  );
+}
+
+export function LineaPodio({
+  texto,
+  className,
+  corte = "palabras",
+  peso,
+  acento,
+}: LineaPodioProps) {
   const envoltorioRef = useRef<HTMLDivElement | null>(null);
   const lineaRef = useRef<HTMLParagraphElement | null>(null);
 
@@ -125,12 +169,12 @@ export function LineaPodio({ texto, className, corte = "palabras", peso }: Linea
       entrada.kill();
       division.revert();
     };
-  }, [texto, corte]);
+  }, [texto, corte, acento]);
 
   return (
     <div ref={envoltorioRef} className="cam-reveal">
       <p ref={lineaRef} className={className} data-peso={peso}>
-        {texto}
+        {componerLineaConAcento(texto, acento)}
       </p>
     </div>
   );

@@ -15,6 +15,17 @@
   PodioEscena, atado al recorrido de la cámara, y no se toca desde aquí.
 */
 
+/*
+  El rótulo sigue diciendo «Aval institucional». El documento de observaciones pide cambiarlo
+  —«Titulo, en vez de "aval institucional", pongamos:»— y deja la frase de reemplazo en
+  blanco: no está en el texto del documento ni anotada en la captura que lo acompaña. Se
+  mantiene el rótulo actual en lugar de inventar uno, y queda anotado como pregunta abierta
+  para el cliente.
+
+  Las dos acciones son las que el documento pide poner «una junto al otro» debajo del cuerpo.
+  Llevan ancla y no enlace externo porque las dos secciones a las que apuntan viven en esta
+  misma página: la de inscripción al final y el programa de módulos a media altura.
+*/
 export const PODIO_AVAL = {
   rotulo: "Aval institucional",
   sellos: [
@@ -22,6 +33,12 @@ export const PODIO_AVAL = {
     "Centro de Educación Continua",
     "Certificación universitaria",
     "10 créditos académicos",
+  ],
+  cuerpo:
+    "El Diplomado en Public Speaking y Comunicación Persuasiva de Alto Impacto es una formación universitaria interdisciplinaria que integra seis campos esenciales del comunicador contemporáneo: psicología, retórica, voz, presencia escénica, imagen y liderazgo aplicado.",
+  acciones: [
+    { texto: "Asegurar mi cupo", ancla: "#inscripcion", rango: "principal" },
+    { texto: "Ver el programa completo", ancla: "#programa", rango: "secundario" },
   ],
 } as const;
 
@@ -37,8 +54,16 @@ export const PODIO_AGITACION = {
   titulo: "Hay un momento en la carrera de toda persona profesional",
   entrada: "Hay un momento en el que ya no alcanza con saber del tema.",
   cuerpo:
-    "Llega el día en que tienes que defender un proyecto frente a quienes deciden. Responder en una rueda de prensa. Hablar en nombre de una institución. Sostener una idea en un debate público. Convencer a un equipo. Cerrar un negocio que se decide en cinco minutos de exposición.",
+    "Llega el día en que tienes que defender un proyecto frente a quienes deciden. Responder en una rueda de prensa. Levantar la mano en un salón para opinar. Hablar en nombre de una institución. Sostener una idea en un debate público. Convencer a un equipo. Cerrar un negocio que se decide en cinco minutos de exposición.",
   giro: "Y ahí, la diferencia entre saber y comunicar lo que sabes deja de ser un detalle.",
+  /*
+    Fragmento que el cliente pidió resaltar en el oro de la landing dentro del giro. Vive
+    aquí y no como marcado en el componente porque LineaPodio parte la frase con SplitText
+    para animarla: el texto tiene que seguir llegando como cadena, y el realce se compone
+    partiendo esa misma cadena por este fragmento. Si se edita «giro», este literal debe
+    seguir apareciendo en él o el realce deja de aplicarse sin romper nada.
+  */
+  giroAcento: "saber y comunicar",
   sentencia: "Es lo que define si avanzas o te quedas.",
   rotuloSintomas: "Lo que sucede cuando esa habilidad no está entrenada",
   sintomas: [
@@ -130,8 +155,14 @@ export const PODIO_MODULOS = {
       titulo: "Psicología del Orador y Gestión Emocional",
       promesa: "Domina lo que tu cuerpo hace cuando se enciende.",
       cuerpo:
-        "Entiende qué le pasa a tu sistema nervioso cuando vas a hablar en público. Aprende a regularlo sin pelearte con él. Construye seguridad real, no actuada, desde la base neurocientífica del comportamiento del orador.",
-      resultado: "Sostienes cualquier intervención pública sin que el nervio te gane.",
+        "Entiende qué le pasa a tu sistema nervioso cuando vas a hablar en público. Aprende a regularlo sin pelearte con él. Construye seguridad real desde la base neurocientífica del comportamiento del orador.",
+      /*
+        Único resultado de los seis en imperativo. El documento de observaciones lo entrega
+        con la etiqueta «Resultado:» delante, que es la misma convención con la que el
+        documento original de copy rotula este campo en los seis módulos, así que sustituye
+        al resultado y no a la promesa pese a compartir forma verbal con ella.
+      */
+      resultado: "Domina el miedo escénico y construye seguridad real.",
     },
     {
       n: "02",
@@ -152,7 +183,7 @@ export const PODIO_MODULOS = {
     {
       n: "04",
       titulo: "Performance Comunicativa: Cuerpo, Presencia y Escena",
-      promesa: "Habita el escenario como recurso, no como obstáculo.",
+      promesa: "Habita el escenario como un recurso de tu intervención",
       cuerpo:
         "Trabaja postura, gestos, manejo del espacio escénico y conexión con la audiencia. Integra cuerpo, voz y discurso en una sola unidad coherente. Convierte lo que ahora improvisas en recurso disponible cuando más importa.",
       resultado:
@@ -169,10 +200,10 @@ export const PODIO_MODULOS = {
     {
       n: "06",
       titulo: "Oratoria Aplicada a Liderazgo y Contextos de Alto Impacto",
-      promesa: "Pon a prueba todo lo aprendido en escenarios reales.",
+      promesa: "Convierte tu identidad comunicativa en una herramienta real de liderazgo.",
       cuerpo:
-        "Simulaciones de alta exigencia, manejo de preguntas hostiles, intervenciones en escenarios donde no hay segunda oportunidad. Construcción del proyecto integrador final como herramienta real de inserción profesional.",
-      resultado: "Llegas preparado al día en que más importa estar preparado.",
+        "Fortalece tu voz y tu capacidad de influencia mediante el análisis de casos, la comunicación en escenarios de alta exposición y la ejecución estratégica del discurso. Integra todo lo aprendido en ejercicios prácticos y en un proyecto final aplicable a tu entorno profesional.",
+      resultado: "Comunicas con identidad, liderazgo y solvencia",
     },
   ],
 } as const;
@@ -182,29 +213,29 @@ export const PODIO_PUBLICO = {
   titulo: "Si te reconoces en alguno de estos perfiles, este diplomado es para ti",
   perfiles: [
     {
-      titulo: "Profesionales y líderes",
+      titulo: "Profesionales con vocación de liderazgo",
       linea:
-        "Que sienten que su carrera ha llegado a un punto donde la próxima puerta se abre o se cierra dependiendo de cómo comuniquen lo que ya saben hacer.",
+        "Que sienten que su carrera ha llegado a un punto donde la próxima oportunidad depende de cómo comunican lo que saben, representan sus ideas y asumen nuevos desafíos.",
+    },
+    {
+      titulo: "Creadores de contenido",
+      linea:
+        "Que comunican frente a una cámara, representan marcas o construyen comunidades digitales, y necesitan conectar con autenticidad, seguridad y propósito.",
     },
     {
       titulo: "Emprendedores y ejecutivos",
       linea:
-        "Que necesitan persuadir clientes, inversionistas, equipos o socios estratégicos, y entendieron que improvisar en esos momentos cuesta caro.",
+        "Que necesitan persuadir a clientes, inversionistas, equipos o aliados estratégicos, conscientes de que improvisar en momentos decisivos puede resultar costoso.",
     },
     {
       titulo: "Figuras públicas en construcción",
       linea:
-        "Políticos en formación, candidatos, voceros institucionales y líderes de opinión que requieren sostener intervenciones en escenarios de alta exposición.",
+        "Políticos en formación, candidatos, voceros institucionales o líderes de opinión que necesitan sostener intervenciones claras en escenarios de alta exposición.",
     },
     {
       titulo: "Docentes y académicos",
       linea:
-        "Que quieren elevar su capacidad comunicativa en aulas, congresos, conferencias y publicaciones, posicionándose con autoridad real en su campo.",
-    },
-    {
-      titulo: "Profesionales técnicos con vocación de liderazgo",
-      linea:
-        "Ingenieros, médicos, abogados, arquitectos y especialistas que entendieron que ser técnicamente excelente no alcanza si no se comunica con la misma excelencia.",
+        "Que buscan elevar su capacidad comunicativa en aulas, congresos, conferencias o publicaciones, proyectando mayor claridad y autoridad en su campo.",
     },
   ],
 } as const;
@@ -225,7 +256,7 @@ export const PODIO_TRANSFORMACION = {
   despues: {
     rotulo: "Después del diplomado",
     puntos: [
-      "Entras a cualquier sala con seguridad construida, no actuada.",
+      "Entras a cualquier sala con seguridad construida.",
       "Estructuras discursos que se recuerdan después de que terminas.",
       "Manejas preguntas hostiles desde el control, no desde la defensa.",
       "Tu voz transmite autoridad antes de que las palabras sean procesadas.",
@@ -281,10 +312,6 @@ export const PODIO_FICHA = {
       etiqueta: "Cupos",
       valor: "Limitados (modalidad sincrónica con atención personalizada)",
     },
-    {
-      etiqueta: "Próxima cohorte",
-      valor: "Inicio julio · Inscripciones abiertas hasta fin de junio",
-    },
   ],
 } as const;
 
@@ -308,8 +335,12 @@ export const PODIO_URGENCIA = {
         "Un cierre de negocio. Una entrevista decisiva. Una intervención pública que te posiciona. Una defensa que se gana. Cualquiera de esos momentos paga el diplomado completo.",
     },
   ],
+  /*
+    Esta escena cierra en el remate y no lleva letra pequeña debajo. La fecha límite que
+    vivía aquí se retiró por pedido del cliente; la del cierre de página es otra frase y
+    se mantiene, porque anuncia cupos y no una fecha de corte.
+  */
   remate: "Si llegaste hasta aquí, ya sabes si esto es para ti.",
-  microcopy: "Inscripciones abiertas hasta fin de junio · Inicio en julio",
 } as const;
 
 /*
@@ -355,10 +386,19 @@ export const PODIO_PREGUNTAS = {
   ],
 } as const;
 
+/*
+  «cta» es el rótulo del botón que ENVÍA el formulario, la acción principal de la sección de
+  cierre. Las dos vías directas que lo acompañan dicen cada una lo que hace, «Escribir por
+  WhatsApp» y «Escribir por correo», para que no haya dos botones llamados igual con destinos
+  distintos en la misma pantalla.
+*/
 export const PODIO_CIERRE = {
   lineas: ["Puedes ser el mejor en lo que haces.", "Si no sabes comunicarlo, nadie lo notará."],
   cta: "Asegurar mi cupo",
-  microcopy: "Inscripciones abiertas · Cupos limitados · Inicio en julio",
+  rotuloFormulario: "Reserva tu cupo",
+  entradaFormulario:
+    "Déjanos tus datos y el Centro de Educación Continua te contacta para completar la matrícula.",
+  rotuloAlternativas: "¿Prefieres hablar con alguien?",
   rotuloContacto: "Contacto directo",
   firma: "Centro de Educación Continua · Universidad Técnica de Machala",
 } as const;

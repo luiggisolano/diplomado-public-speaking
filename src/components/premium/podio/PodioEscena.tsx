@@ -64,7 +64,7 @@ const CAPITULOS: readonly Capitulo[] = [
     lineas: ["Public Speaking"],
     subtitulo: "Comunicación Persuasiva de Alto Impacto",
     bajada:
-      "Una formación universitaria diseñada para profesionales que entendieron que su voz pública es parte de su trabajo",
+      "Potencia tu voz pública con una metodología interdisciplinaria que integra psicología, discurso, voz, cuerpo, imagen y liderazgo aplicado.",
     destacado: true,
   },
 ];

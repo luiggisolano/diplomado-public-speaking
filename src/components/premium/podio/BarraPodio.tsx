@@ -39,12 +39,15 @@ const SELECTOR_DE_LA_SECCION_DE_CIERRE = "#inscripcion";
 const HISTERESIS_DEL_CIERRE = "-10% 0px -10% 0px";
 
 /*
-  Cinco destinos, no las once secciones de la página. El resto son de recorrido: se leen de
+  Cuatro destinos, no las once secciones de la página. El resto son de recorrido: se leen de
   paso, nadie las busca. Estas son a las que un interesado vuelve.
+
+  «Docentes» cae con su sección: el cliente retiró «Quién te forma» en las observaciones del
+  2026-08-10 y un ancla que apunta a un destino que ya no existe deja el salto a mitad de
+  página sin ningún error que lo delate.
 */
 const DESTINOS = [
   { ancla: "#programa", texto: "Programa" },
-  { ancla: "#docentes", texto: "Docentes" },
   { ancla: "#metodo", texto: "Método" },
   { ancla: "#inversion", texto: "Inversión" },
   { ancla: "#preguntas", texto: "Preguntas" },

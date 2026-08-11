@@ -55,6 +55,17 @@
   --pod-oro-adorno: rgb(180 130 45 / 0.22);
 
   /*
+    ALERTA. La única tinta de la página que no es oro ni hueso, y existe por una razón que no
+    es estética: un error de formulario tiene que distinguirse de un énfasis, y en una paleta
+    de un solo acento el oro ya significa «esto se puede tocar». Es una terracota de la misma
+    familia cálida, a 15° de tono frente a los 40° del oro, así que separa sin romper la gama.
+    Da 9,76:1 sobre el negro cálido de la tarjeta y 10,00:1 sobre el abismo de los campos.
+
+    Nunca es el único portador del error: el campo lleva además aria-invalid y su propio texto.
+  */
+  --pod-alerta: #f2a48c;
+
+  /*
     ESCALA TIPOGRÁFICA. Cinco escalones y una etiqueta: xl → l → s → cuerpo → cuerpo-s →
     etiqueta. No hay un tamaño intermedio más justamente porque antes había cuatro registros
     compitiendo dentro de una misma escena. Los tres valores del comentario son los
@@ -154,6 +165,14 @@
   color: var(--color-hueso);
   font-family: var(--fuente-sans);
   overflow-x: clip;
+
+  /*
+    La página es negra de arriba abajo, así que los controles que dibuja el navegador tienen
+    que saberlo. Sin esta línea la casilla del consentimiento sale como un cuadro blanco de
+    esquema claro sobre el negro de la tarjeta. Va en .pod-root y no en :root para no alcanzar
+    a las otras siete rutas del repositorio, que siguen en la gama Aula Futura.
+  */
+  color-scheme: dark;
 }
 
 /* ---------------------------------------------------------------- tipografía */
@@ -413,19 +432,15 @@
 }
 
 /*
-  Los registros en oro necesitan más halo que los titulares en hueso: el tramo medio del
-  recorrido es el del humo iluminado, y ahí el oro claro y el fondo caen en la misma franja
-  de luminancia. A ese cuerpo pequeño una sombra difusa engorda el trazo, así que el borde lo
-  pone un contorno de sombras de 1 px, el mismo recurso que la barra de progreso y el aviso
-  de scroll, y la proyectada solo asienta el conjunto.
+  Aquí vivía el contorno de cuatro sombras de 1 px con el que se perfilaban los registros en
+  oro de los dos capítulos de apertura. Ese recurso está pensado para rótulos de 11-12 px,
+  donde una sombra difusa engorda el trazo y cierra los ojales de la letra. Las dos frases
+  que lo llevaban pasaron a caja baja y a cuerpo de display (ver más abajo), y a ese tamaño
+  el contorno se invierte: deja de perfilar y se lee como mancha alrededor de la palabra.
+  Su halo se declara ahora junto a su tipografía, en la regla que las trata como una unidad.
+
+  El contorno sigue vivo donde su cuerpo lo justifica: el aviso de scroll de la portada.
 */
-.pod-capitulo__antetitulo,
-.pod-capitulo:not([data-destacado="true"]) .pod-capitulo__subtitulo {
-  text-shadow:
-    1px 1px 1px rgba(8, 6, 3, 0.75), -1px 1px 1px rgba(8, 6, 3, 0.75),
-    1px -1px 1px rgba(8, 6, 3, 0.75), -1px -1px 1px rgba(8, 6, 3, 0.75),
-    0 2px 16px rgba(8, 6, 3, 0.65);
-}
 
 /*
   Los rótulos de 11-12 px piden otro tratamiento: a ese cuerpo una sombra difusa se
@@ -489,8 +504,39 @@
   margin-inline: auto;
 }
 
+/*
+  Poza de sombra bajo el bloque de texto, medida y no estimada. El velo radial de la sección
+  protege la banda central del encuadre, pero está calibrado contra el titular, que es display
+  y se le exige 3:1. Los dos registros pequeños del capítulo que nombra el programa —el
+  antetítulo y la bajada— se les exige 4,5:1 y caían en 2,00 y 2,73 sobre el tramo de humo
+  iluminado del final del recorrido, donde el peor píxel del fondo llega a rgb(135,132,121).
+
+  Va como fondo del propio capítulo y no como capa aparte: se dibuja detrás de su texto sin
+  pedir posicionamiento ni z-index, solo mancha el área que ocupa el bloque y se apaga antes
+  del borde, y desaparece con el capítulo porque es el capítulo. Oscurecer el velo entero
+  hasta este nivel habría apagado los focos y la multitud, que es justamente lo que el
+  encuadre existe para enseñar.
+
+  Una sola elipse, y de radios exactamente la mitad de la caja. Es la única forma de que la
+  mancha muera dentro del elemento: el fondo se recorta contra la caja de relleno, así que
+  cualquier alfa que siga viva en el borde se dibuja como un canto recto. Con radios al 50 %
+  el degradado llega a transparente justo en los cuatro costados y las esquinas ni se enteran.
+
+  El relleno no es aire de composición sino la distancia que necesita el degradado para
+  apagarse: el texto ocupa el centro de la caja y las tres cuartas partes de fuera son la
+  rampa. Un intento anterior puso una banda vertical para asegurar el último renglón y se vio
+  exactamente lo que se temía, un rectángulo con dos cantos verticales sobre el podio.
+*/
 .pod-capitulo {
   grid-area: 1 / 1;
+  padding: clamp(2rem, 5.5vh, 4.5rem) clamp(1.25rem, 4vw, 3.5rem);
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(8, 6, 3, 0.6) 0%,
+    rgba(8, 6, 3, 0.56) 50%,
+    rgba(8, 6, 3, 0.42) 75%,
+    transparent 100%
+  );
   opacity: 0;
   transform: translateY(1.75rem);
   transition:
@@ -561,18 +607,42 @@
 }
 
 /*
-  En los dos capítulos de apertura el registro pequeño es media frase, no un genérico de tres
-  palabras: con los 0,42em del lockup la línea se estiraba tanto que dejaba de leerse como
-  una unidad. Baja al tracking del díptico y ambos registros comparten cuerpo, para que el
-  espejo entre los dos capítulos —uno con la línea pequeña arriba y el otro abajo— se
-  reconozca como la misma pieza girada.
+  «En lo que haces» y «Si no sabes comunicarlo» son media frase, no un genérico de tres
+  palabras, y juntas forman una sola oración repartida entre dos capítulos. Por eso se
+  componen aquí como una única pieza y no como el rótulo que eran: caja baja, tracking de
+  lectura y cuerpo de display. En versalita y con los 0,28em del kicker se leían como una
+  etiqueta de sistema pegada al titular, que es exactamente lo que no son.
+
+  Quitar la caja alta no es cosmético: en caja baja el español acentuado conserva la tilde
+  a su altura y el ojo recupera la silueta de la palabra, que es lo que sostiene la lectura
+  a esta distancia. El tracking baja de 0,28em a 0,02em porque el espaciado ancho es un
+  recurso de rótulo corto y aquí estorba la unidad de la frase.
+
+  El cuerpo lo fija un clamp con suelo alto y techo contenido: 17,3 px a 390 px de ventana y
+  24 px a partir de 1.360. El suelo se calcula contra el ancho útil del móvil, 342 px con el
+  margen lateral de 24 px: la más larga de las dos frases son 23 caracteres, que a 0,54em de
+  avance medio miden 215 px de trazo. Quedan 127 px de holgura, así que la frase entra en un
+  renglón sin acercarse al margen. El techo se queda en 24 px para no rozar el subtítulo del
+  capítulo que nombra el programa, que es el registro que debe seguir mandando.
+
+  El halo pasa del contorno de 1 px al halo de display, el mismo del titular: a partir de
+  16 px el trazo ya tiene cuerpo para sostener una sombra difusa, y el contorno se vería
+  como reborde sucio. Va algo más cerrado y más opaco que el del titular porque estas dos
+  frases van en oro sobre el tramo de humo iluminado, donde el fondo y la letra caen en la
+  misma franja de luminancia.
 */
 .pod-capitulo:not([data-destacado="true"]) .pod-capitulo__antetitulo,
 .pod-capitulo:not([data-destacado="true"]) .pod-capitulo__subtitulo {
-  font-size: clamp(0.78rem, 1.35vw, 1.1rem);
-  letter-spacing: var(--tracking-kicker);
-  text-indent: var(--tracking-kicker);
+  font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
   color: var(--color-oro-brillo);
+  text-shadow:
+    0 0 2px rgba(8, 6, 3, 0.82), 0 2px 18px rgba(8, 6, 3, 0.7);
+  text-wrap: balance;
 }
 
 .pod-capitulo[data-destacado="true"] .pod-capitulo__titulo {
@@ -600,17 +670,46 @@
   precede es el que separa los dos registros, el trabajo que antes hacía el destello: marca
   el corte entre el nombre del programa y su explicación sin añadir nada sobre la letra.
 */
+/*
+  El centrado es explícito y no heredado. La bajada ya se centraba porque la escena centra
+  todo su contenido, pero era una propiedad prestada: cualquier reubicación del bloque fuera
+  de esa caja lo habría perdido en silencio. Declarado aquí, el centrado viaja con la pieza.
+
+  El reparto pasa de «pretty» a «balance» porque el texto nuevo es una frase larga con
+  enumeración: centrada y sin equilibrar, dejaba un último renglón de dos palabras colgando
+  bajo tres renglones llenos.
+*/
+/*
+  La bajada lleva poza propia además de la del capítulo. Es el único registro de la secuencia
+  que cae fuera del centro del bloque —ocupa del 66 al 91 % de su alto— y ahí la elipse del
+  capítulo llega ya en su rampa de salida: medida sobre el trazo del glifo se quedaba en
+  3,33:1 contra los 4,5:1 que se le exigen por cuerpo. Su propia elipse, con los mismos radios
+  a la mitad de su caja para que muera en el borde, la sube por encima del mínimo sin oscurecer
+  un píxel más de encuadre que el que ocupan sus dos renglones.
+*/
 .pod-capitulo__bajada {
   position: relative;
   max-width: min(56ch, 100%);
   margin: 1.75rem auto 0;
-  padding-top: 1.75rem;
+  padding: 1.75rem clamp(1rem, 3vw, 2.75rem) clamp(0.9rem, 2.2vh, 1.6rem);
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(8, 6, 3, 0.38) 0%,
+    rgba(8, 6, 3, 0.32) 55%,
+    transparent 100%
+  );
   font-family: var(--fuente-sans);
   font-size: clamp(0.92rem, 0.86rem + 0.3vw, 1.1rem);
   line-height: 1.62;
-  color: var(--color-texto);
+  /*
+    Tinta maciza y no la del cuerpo de página, que lleva 0,78 de opacidad. Sobre un fondo
+    macizo esa transparencia es un matiz; sobre el metraje se come 0,67 puntos de razón de
+    contraste justo en el registro al que se le exigen 4,5:1.
+  */
+  color: var(--color-hueso);
+  text-align: center;
   text-shadow: var(--halo-sobre-imagen);
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 
 /*
@@ -757,6 +856,29 @@
   text-indent: var(--tracking-kicker);
   color: var(--pod-oro-tinta);
   max-width: 30ch;
+}
+
+/*
+  Rótulo mayor. Es la misma pieza tipográfica que abre la secuencia —caja baja, tracking de
+  lectura y cuerpo de display— traída al cuerpo de la página, y por eso comparte clamp con
+  ella: el visitante debe reconocer las dos como la misma voz, no como dos plantillas.
+
+  Va como modificador y no en la clase base a propósito. El rótulo de sección lo comparten
+  las diez escenas de la página, y subirlas todas a este cuerpo aplanaría la jerarquía que
+  sostiene el resto: el rótulo dejaría de ser la entrada al capítulo para competir con el
+  titular al que anuncia. Aquí se aplica a una sola escena porque es la que el cliente pidió
+  reordenar, y el peso ganado es justamente lo que la reordena.
+
+  El selector se ancla en .pod-root porque .tech-label también se redefine bajo ese ancla:
+  sin él las dos reglas empatan en especificidad y el resultado dependería del orden.
+*/
+.pod-root .pod-encabezado--rotulo-mayor .pod-encabezado__rotulo {
+  margin-bottom: var(--pod-space-5);
+  font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
 }
 
 /*
@@ -992,103 +1114,6 @@
   line-height: 1.55;
 }
 
-/* ------------------------------------------------------------ especialistas */
-
-/*
-  Mismo ancho mínimo que la rejilla de módulos para que las dos caigan en tres columnas: seis
-  tarjetas en dos filas de tres, en vez de un 4+2 que deja la segunda fila coja.
-*/
-.pod-rejilla-especialistas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  gap: clamp(1rem, 2vw, 1.5rem);
-  margin-top: var(--pod-aire-bloque);
-}
-
-.pod-especialista {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: var(--color-negro-calido);
-  border: 1px solid var(--color-linea);
-}
-
-/*
-  Retrato temático mientras no haya fotografías: un halo dorado con el número del módulo
-  centrado. No se ilustra con personas inventadas ni con siluetas genéricas de banco.
-*/
-.pod-especialista__retrato {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 3;
-  border-bottom: 1px solid var(--color-linea);
-  background-image: radial-gradient(
-    62% 62% at 50% 42%,
-    rgba(180, 130, 45, 0.22),
-    transparent 70%
-  );
-}
-
-/*
-  El numeral pasa del oro sombra al oro de numeral: sobre su propio radial el anterior daba
-  2,44:1, por debajo incluso del 3:1 que se le permite a un display de 44 px.
-*/
-.pod-especialista__numero {
-  font-size: 2.75rem;
-  line-height: 1;
-  color: var(--pod-oro-numeral);
-}
-
-.pod-especialista__cuerpo {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding: clamp(1.25rem, 2.2vw, 1.6rem);
-}
-
-.pod-especialista__modulo {
-  font-size: var(--pod-etiqueta);
-  line-height: 1.3;
-  color: var(--pod-tinta-3);
-}
-
-/*
-  Mientras la ficha diga «Nombre por confirmar» el nombre va en tinta-2 y no en tinta-1: el
-  hueco tiene que verse como hueco. El día que el CEC entregue los seis nombres, sube.
-*/
-.pod-especialista__nombre {
-  max-width: 18ch;
-  margin-top: var(--pod-space-3);
-  font-size: var(--pod-display-s);
-  font-weight: 400;
-  line-height: 1.2;
-  color: var(--pod-tinta-2);
-}
-
-/*
-  Es una etiqueta, no un énfasis: deja el oro y baja a la tinta de rótulo. El oro de esta
-  escena ya está gastado en el rótulo del encabezado.
-*/
-.pod-especialista__disciplina {
-  max-width: 24ch;
-  margin-top: var(--pod-space-2);
-  font-size: var(--pod-etiqueta);
-  line-height: 1.3;
-  color: var(--pod-tinta-3);
-}
-
-/*
-  Es lo único verificable de la tarjeta mientras falten los nombres, así que cruza el piso
-  de cuerpo en lugar de quedarse en el tamaño de un pie de foto.
-*/
-.pod-especialista__credencial {
-  max-width: 34ch;
-  margin-top: var(--pod-space-3);
-  font-size: var(--pod-cuerpo-s);
-  line-height: 1.55;
-  color: var(--pod-tinta-2);
-}
-
 /* ------------------------------------------------------ maqueta a dos columnas */
 
 /*
@@ -1235,10 +1260,21 @@
   }
 }
 
+/*
+  La fila se centra en lugar de repartirse a los extremos, que es lo que pidió el cliente. El
+  reparto a todo el ancho ataba cada cifra a un borde distinto del ancho de lectura y dejaba
+  entre ellas huecos de más de cien píxeles: cuatro datos sueltos en una banda, no una banda
+  de cuatro datos.
+
+  El hueco fijo entra en el presupuesto que ya calculaba la disposición de un solo renglón: a
+  1.152 el trazo pide 829 px y los tres huecos otros 104, y quedan 63 px de holgura sobre el
+  ancho de lectura. Centrar reparte esa holgura a los dos costados en vez de inyectarla entre
+  las cifras, así que el renglón no puede desbordar por ninguno de los dos lados.
+*/
 @media (min-width: 72rem) {
   .pod-cifras {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: baseline;
     gap: clamp(1.5rem, 3vw, 3rem);
     border-bottom: 0;
@@ -1303,30 +1339,57 @@
   ancho de lectura y entre «DURACIÓN TOTAL» y «160 horas académicas» quedaría medio metro de
   vacío: dejarían de leerse como un par. A 46rem el salto sigue siendo el de una tabla.
 */
+/*
+  La medida baja de 46rem a 40rem. El ancho anterior estaba calculado para valores de 28 px,
+  y con el valor ya reducido la fila volvía a abrirse: entre «MÓDULOS» y «6 módulos
+  especializados» quedaba un vacío que rompía el par. Acercar los dos extremos es la mitad
+  del trabajo de hacer la ficha más legible; la otra mitad la hace el cuerpo del valor.
+*/
 .pod-datos {
-  max-width: 46rem;
+  max-width: 40rem;
   margin-top: var(--pod-aire-bloque);
   border-top: 1px solid var(--color-linea);
 }
 
+/*
+  El alto de fila baja un escalón de la escala. Con nueve filas de 1 rem de aire arriba y
+  abajo la ficha medía más que la escena que la contiene y obligaba a recorrerla en dos
+  pantallas: es literalmente el «muy grande» del que se quejó el cliente. A 0,75 rem las
+  filas siguen despegadas del filete y la tabla entra de una vez.
+*/
 .pod-dato {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--pod-space-5);
-  padding-block: var(--pod-space-4);
+  padding-block: var(--pod-space-3);
   border-bottom: 1px solid var(--color-linea);
 }
 
 /*
   Con el valor a 24 px, etiqueta y valor se pelean por los 342 px de un móvil y la fila
   parte por donde le da la gana. Apilados cada uno manda en su renglón.
+
+  Al apilarse, el valor deja de tener un borde derecho contra el que alinearse: la fila pasa
+  a leerse de izquierda a derecha como cualquier párrafo, así que se le devuelve la
+  alineación a la izquierda que la composición en columna sí pide.
+
+  El selector del valor baja por la lista y no por el elemento porque la regla que fija la
+  alineación a la derecha se declara más adelante en esta misma hoja. Una consulta de medios
+  no suma especificidad, así que con .pod-dato__valor a secas ganaría la de abajo por orden
+  y el valor seguiría cerrando a la derecha en móvil, que es justo lo contrario de lo que
+  esta consulta existe para arreglar.
 */
 @media (max-width: 40rem) {
   .pod-dato {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--pod-space-1);
+  }
+
+  .pod-datos .pod-dato__valor {
+    max-width: 100%;
+    text-align: left;
   }
 }
 
@@ -1338,16 +1401,35 @@
 }
 
 /*
-  «Inicio julio», «100 % en línea», «Sábados»: son los datos con los que se decide comprar,
-  y esta es la sección a la que apunta un enlace de la barra. Va en oro de numeral porque
-  es una columna de cifras y no un énfasis de display.
+  «100 % en línea», «Sábados», «10 créditos universitarios»: son los datos con los que se
+  decide comprar, y esta es la sección a la que apunta un enlace de la barra. Va en oro de
+  numeral porque es una columna de cifras y no un énfasis de display.
+
+  El cuerpo baja de 22-28 px a 18-22 px. A 28 px los valores largos —la certificación y los
+  cupos— caían en dos renglones cada uno y la columna dejaba de leerse como una tabla para
+  parecer una lista de titulares: era el «no tan grande» del cliente y también el origen del
+  «poco organizado», porque lo que desordenaba la ficha eran esos dobles renglones, no las
+  filas. A este cuerpo la certificación sigue partiendo en dos y los cupos entran de una,
+  y ninguna fila compite ya con el titular de la escena.
+
+  La alineación a la derecha es la otra mitad del arreglo. Cada valor cierra contra el mismo
+  borde que el de arriba y el de abajo, así que la columna tiene un canto recto en vez del
+  perfil dentado que dejaban los valores de dos renglones alineados a la izquierda. En una
+  tabla de pares es el canto lo que hace de guía para el ojo, y la ficha no lo tenía.
+
+  Sin equilibrado de líneas, y esto sí importa: el valor de la certificación lleva un
+  interpunto separando universidad y centro. Con «text-wrap: balance» el reparto igualaba
+  los dos renglones y dejaba el interpunto abriendo el segundo, donde deja de leerse como
+  separador y pasa por viñeta. El reparto codicioso lo mantiene cerrando el primero, que es
+  donde un separador significa lo que significa.
 */
 .pod-dato__valor {
-  max-width: 30ch;
-  font-size: clamp(1.375rem, 1.25rem + 0.5vw, 1.75rem);
+  max-width: 34ch;
+  font-size: clamp(1.125rem, 1.05rem + 0.36vw, 1.375rem);
   font-weight: 400;
-  line-height: 1.25;
+  line-height: 1.35;
   letter-spacing: 0.01em;
+  text-align: right;
   color: var(--pod-oro-numeral);
 }
 
@@ -1464,9 +1546,22 @@
   box-shadow: var(--pod-sombra-halo);
 }
 
-.pod-inscripcion .pod-acciones {
-  flex-direction: column;
-  margin-top: var(--pod-space-6);
+/*
+  Todo botón de la página vive ya dentro de esta tarjeta, y aquí la columna es estrecha: la
+  fila de acciones que había antes (.pod-acciones) desapareció con el reparto nuevo, en el que
+  el formulario es la acción principal y las dos vías directas bajan a una rejilla propia.
+*/
+.pod-inscripcion__titulo {
+  font-size: var(--pod-display-s);
+  line-height: 1.15;
+  color: var(--pod-tinta-1);
+}
+
+.pod-inscripcion__entrada {
+  margin-top: var(--pod-space-3);
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.55;
+  color: var(--pod-tinta-2);
 }
 
 .pod-inscripcion .pod-boton {
@@ -1516,18 +1611,12 @@
   text-align: center;
 }
 
-.pod-acciones {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--pod-space-4);
-  margin-top: var(--pod-aire-bloque);
-}
-
 /*
   Es la acción que factura, y es uno de los dos únicos elementos de la página con relleno
-  oro. La altura mínima no es decorativa: por debajo de 48 px un botón deja de acertarse con
-  el pulgar a la primera.
+  oro. Desde que el formulario existe, el relleno oro es SUYO: las dos vías directas que lo
+  acompañan pasaron a contorno para que en esta pantalla haya una sola cosa que se lea como
+  la acción. La altura mínima no es decorativa: por debajo de 48 px un botón deja de
+  acertarse con el pulgar a la primera.
 */
 .pod-boton {
   display: inline-flex;
@@ -1568,28 +1657,304 @@
   Anillo de foco único para toda la ruta. El navegador dibuja el suyo sobre fondos claros;
   sobre este negro y con los botones ya en oro macizo, el contorno por defecto se pierde y
   la navegación por teclado se queda sin saber dónde está.
+
+  Los campos del formulario entran en la misma regla en vez de traerse un anillo propio: el
+  recorrido por teclado de la sección de cierre pasa por enlaces, botones, cajas de texto y
+  una casilla, y que el indicador cambie de forma a mitad de camino es exactamente lo que
+  hace dudar de si el foco sigue donde uno cree.
 */
-.pod-root :is(a, button):focus-visible {
+.pod-root :is(a, button, input, select, textarea):focus-visible {
   outline: 2px solid var(--pod-oro-accion);
   outline-offset: 3px;
 }
 
+.pod-root .pod-secuencia__indicacion {
+  letter-spacing: 0.16em;
+}
+
+/* ------------------------------------------------- formulario de inscripción */
+
 /*
-  Estas dos líneas son frases largas, no rótulos de dos palabras: heredan de .tech-label la
-  caja alta y la familia, pero se les recorta el tracking para que no desborden en móvil.
-  Una de ellas lleva la fecha límite de inscripción, así que sube de 4,34:1 a 6,80:1.
+  El formulario es la acción principal de la sección de cierre y vive dentro de
+  .pod-inscripcion, que tiene fondo macizo. NUNCA directamente sobre la fotografía del cierre:
+  ahí el contraste depende del velo y de qué píxel caiga detrás de cada línea, y un campo de
+  formulario no puede sostenerse sobre esa incertidumbre.
+
+  Contraste medido sobre ese fondo macizo (#100b06), y el de los campos sobre el abismo
+  (#080603) que llevan dentro:
+
+    · texto que se teclea, --pod-tinta-1 ............ 16,91:1  (mínimo 4,5)
+    · etiquetas de campo, --pod-tinta-2 ............. 10,35:1  (mínimo 4,5)
+    · texto del consentimiento, --pod-tinta-2 ....... 10,35:1  (mínimo 4,5)
+    · ayuda del teléfono, --pod-tinta-3 .............. 6,82:1  (mínimo 4,5)
+    · mensajes de error, --pod-alerta ................ 9,76:1  (mínimo 4,5)
+    · confirmación en oro, --pod-oro-tinta .......... 10,46:1  (mínimo 4,5)
+    · borde del campo, --pod-tinta-4 ................. 4,04:1  (mínimo 3, regla 1.4.11)
+    · borde del campo inválido, --pod-alerta ......... 9,76:1  (mínimo 3, regla 1.4.11)
+    · borde de los botones de contorno, --pod-oro-numeral  5,75:1  (mínimo 3)
+    · rótulo del botón oro, --color-abyss sobre #e7b655   10,81:1  (mínimo 4,5)
+    · rótulo del botón mientras envía, sobre #b4822d ..... 5,95:1  (mínimo 4,5)
 */
-.pod-root .pod-microcopy {
-  max-width: 44ch;
-  margin-top: var(--pod-space-5);
+.pod-formulario {
+  margin-top: var(--pod-space-6);
+}
+
+.pod-formulario__cuerpo {
+  display: grid;
+  gap: var(--pod-space-5);
+}
+
+.pod-campo {
+  display: grid;
+  gap: var(--pod-space-2);
+}
+
+/*
+  La etiqueta es un rótulo de una o dos palabras y hereda de .tech-label la caja alta y la
+  familia, pero con los 0,24 em de la etiqueta de sección «CORREO ELECTRÓNICO» se separa
+  tanto que deja de leerse como una unidad con su campo. Aquí baja a 0,14.
+*/
+.pod-root .pod-campo__etiqueta {
   font-size: var(--pod-etiqueta);
-  line-height: 1.5;
-  letter-spacing: 0.1em;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  color: var(--pod-tinta-2);
+}
+
+.pod-campo__control {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--pod-space-3) var(--pod-space-4);
+  font-family: var(--fuente-sans);
+  font-size: var(--pod-cuerpo);
+  line-height: 1.4;
+  color: var(--pod-tinta-1);
+  background-color: var(--color-abyss);
+  border: 1px solid var(--pod-tinta-4);
+  border-radius: var(--pod-radio);
+  transition: border-color 200ms ease-out;
+}
+
+.pod-campo__control:hover {
+  border-color: var(--pod-tinta-3);
+}
+
+.pod-campo__control[aria-invalid="true"] {
+  border-color: var(--pod-alerta);
+}
+
+.pod-campo__control:disabled {
+  color: var(--pod-tinta-3);
+  cursor: progress;
+}
+
+.pod-campo__ayuda {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.45;
   color: var(--pod-tinta-3);
 }
 
-.pod-root .pod-secuencia__indicacion {
-  letter-spacing: 0.16em;
+/*
+  El error no se apoya solo en el color. Además de la terracota lleva su propio texto bajo el
+  campo, el borde cambia y el control lleva aria-invalid, así que un lector de pantalla lo
+  anuncia como inválido aunque quien mira no distinga la terracota del oro.
+*/
+.pod-campo__error {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.45;
+  color: var(--pod-alerta);
+}
+
+.pod-consentimiento {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pod-space-3);
+}
+
+/*
+  Casilla NATIVA, no una reconstrucción con span y pseudoelementos. El control del navegador
+  ya trae el estado marcado, su anuncio en el lector de pantalla y la barra espaciadora, y
+  ninguna reconstrucción los devuelve los tres enteros. Solo se le da tamaño de dedo y el oro
+  de la marca; de que se dibuje oscura se encarga el color-scheme declarado en .pod-root.
+*/
+.pod-consentimiento__marca {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  accent-color: var(--pod-oro-accion);
+}
+
+.pod-consentimiento__texto {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.5;
+  color: var(--pod-tinta-2);
+  cursor: pointer;
+}
+
+/*
+  Campo trampa. Sale del lienzo y se recorta a un píxel en vez de esconderse con display:none,
+  porque un campo que el navegador no dibuja lo descartan los rellenadores automáticos y deja
+  de ser una trampa. El markup lo saca además del árbol de accesibilidad con aria-hidden y del
+  recorrido de tabulación con tabIndex -1, de modo que nadie que use lector de pantalla o
+  teclado se lo encuentra.
+*/
+.pod-trampa {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+  El recorte del envoltorio esconde el campo, pero no le quita su caja: un input conserva su
+  ancho por defecto de unos 173 px, y a 390 px eso es una caja que se sale de la tarjeta. No
+  produce barra de desplazamiento porque el envoltorio recorta y .pod-root lleva overflow-x
+  clip, pero cualquier auditoría que mida cajas lo señala, con razón. Se le da el ancho del
+  envoltorio y deja de existir también para la medida. Al bot le da igual: lee el DOM, no la
+  composición.
+*/
+.pod-trampa > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.pod-formulario__envio {
+  margin-top: var(--pod-space-2);
+}
+
+/*
+  Mientras el envío está en vuelo el botón NO baja de opacidad, que es justo lo que suele
+  romper el contraste en el instante en que el botón está diciendo algo. Pasa al oro profundo,
+  que con el rótulo en negro abismo sigue dando 5,95:1, y el cursor pasa a progreso.
+*/
+.pod-boton:disabled,
+.pod-boton:disabled:hover {
+  background-color: var(--pod-oro-numeral);
+  border-color: var(--pod-oro-numeral);
+  cursor: progress;
+  transform: none;
+}
+
+/*
+  Rango secundario dentro de la tarjeta. El contorno pasa del filete decorativo (1,86:1, que
+  vale para separar bloques pero no para dibujar el límite de un control) al oro numeral, que
+  da 5,75:1 sobre el fondo de la tarjeta.
+*/
+.pod-boton--compacto {
+  padding: var(--pod-space-3) var(--pod-space-4);
+  font-size: var(--pod-cuerpo-s);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  border-color: var(--pod-oro-numeral);
+}
+
+/*
+  Región viva del éxito: se anuncia pero no se dibuja. La confirmación visual es el panel de
+  abajo, y decir la misma frase dos veces en pantalla es ruido. Tiene que existir en el DOM
+  ANTES de tener contenido, porque un lector de pantalla anuncia lo que aparece dentro de una
+  región viva que ya estaba, no la región que aparece con su mensaje puesto.
+*/
+.pod-anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+  El aviso de fallo sí se dibuja, y vacío no debe ocupar sitio ni pintar su marco. :empty es
+  exactamente eso: la región sigue existiendo para la tecnología asistiva y desaparece de la
+  composición.
+*/
+.pod-aviso {
+  padding: var(--pod-space-4);
+  margin-bottom: var(--pod-space-5);
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.5;
+  color: var(--pod-alerta);
+  border: 1px solid var(--pod-alerta);
+  background-color: rgb(242 164 140 / 0.08);
+}
+
+.pod-aviso:empty {
+  display: none;
+}
+
+.pod-confirmacion {
+  display: grid;
+  justify-items: start;
+  gap: var(--pod-space-4);
+  padding: var(--pod-space-5);
+  border: 1px solid var(--pod-oro-numeral);
+  background-color: rgb(180 130 45 / 0.08);
+}
+
+/*
+  El panel recibe el foco al confirmarse el envío, así que necesita decir dónde está el foco.
+  No es tabulable: sale del recorrido en cuanto se sigue tabulando.
+*/
+.pod-confirmacion:focus-visible {
+  outline: 2px solid var(--pod-oro-accion);
+  outline-offset: 3px;
+}
+
+.pod-confirmacion__titulo {
+  font-size: var(--pod-display-s);
+  line-height: 1.2;
+  color: var(--pod-oro-tinta);
+}
+
+.pod-confirmacion__linea {
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.55;
+  color: var(--pod-tinta-2);
+}
+
+/*
+  Dentro del panel de confirmación el botón no se estira a lo ancho de la tarjeta como los
+  demás: ahí ya no hay nada que decidir, es la puerta de vuelta para quien inscribe a una
+  segunda persona, y a ancho completo se leería como la acción principal de la sección.
+*/
+.pod-inscripcion .pod-confirmacion .pod-boton {
+  width: auto;
+}
+
+/*
+  Las dos vías directas. Se quedan porque en LATAM el canal de WhatsApp convierte varias veces
+  más que un formulario, y se subordinan porque solo una cosa puede ser LA acción: van después
+  del formulario, tras un filete, en contorno y a cuerpo pequeño.
+
+  La rejilla las pone en pareja cuando la tarjeta da los 11 rem por columna y las apila cuando
+  no, que es lo que ocurre en móvil: no hace falta punto de ruptura para eso.
+*/
+.pod-alternativas {
+  margin-top: var(--pod-space-6);
+  padding-top: var(--pod-space-5);
+  border-top: 1px solid var(--color-linea);
+}
+
+.pod-root .pod-alternativas__rotulo {
+  font-size: var(--pod-etiqueta);
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  color: var(--pod-tinta-3);
+}
+
+.pod-alternativas__acciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--pod-space-3);
+  margin-top: var(--pod-space-4);
 }
 
 /* -------------------------------------------------------------------- pantalla estrecha */
@@ -1676,14 +2041,6 @@
   */
   .pod-capitulo[data-destacado="true"] .pod-capitulo__titulo {
     font-size: clamp(1.9rem, 8.4vw, 3.25rem);
-  }
-
-  .pod-acciones {
-    flex-direction: column;
-  }
-
-  .pod-boton {
-    width: 100%;
   }
 }
 
@@ -1821,9 +2178,16 @@
   transition-delay: 0s;
 }
 
+/*
+  Altura mínima de dedo. El enlace se ceñía al isotipo y en móvil, donde el nombre se oculta,
+  quedaba en 34 x 34 px: por debajo de los 44 px con los que se acierta un objetivo táctil a la
+  primera. La caja crece sin mover el isotipo porque el contenido sigue centrado en ella.
+*/
 .pod-barra__marca {
   display: flex;
   align-items: center;
+  min-width: 44px;
+  min-height: 44px;
   gap: var(--pod-space-3);
   margin-right: auto;
   color: var(--color-hueso);
@@ -2178,6 +2542,58 @@
 }
 
 /*
+  El párrafo que define la formación. Sí lleva medida en caracteres, al revés que la fila de
+  sellos que tiene encima: es texto corrido de sesenta y cuatro palabras y sin medida cruzaría
+  los 1.152 px del ancho de lectura de un solo renglón.
+*/
+.pod-aval__cuerpo {
+  max-width: 62ch;
+  margin: var(--pod-space-5) auto 0;
+  font-size: var(--pod-cuerpo-s);
+  line-height: 1.65;
+  text-align: center;
+  color: var(--pod-tinta-2);
+  text-wrap: pretty;
+}
+
+/*
+  Las dos acciones van en fila y centradas bajo el párrafo. En vertical se apilan y cada una
+  cruza el ancho de su caja hasta 22rem: dos botones que comparten renglón en un móvil de 390
+  px se quedan en 150 px cada uno, que es menos de lo que mide «Ver el programa completo» y
+  parte el rótulo en tres renglones.
+
+  El envoltorio se centra a sí mismo con un ancho máximo en vez de estirar los botones, para
+  que en la tableta el par no se convierta en dos barras de borde a borde.
+*/
+.pod-aval__acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--pod-space-3);
+  max-width: 22rem;
+  margin: var(--pod-space-6) auto 0;
+}
+
+@media (min-width: 40rem) {
+  .pod-aval__acciones {
+    flex-direction: row;
+    justify-content: center;
+    max-width: none;
+    gap: var(--pod-space-4);
+  }
+}
+
+/*
+  El contorno del secundario sube del filete al oro de numeral, por lo mismo que ya hace el
+  botón compacto del cierre: el filete da 1,86:1 contra el fondo, que sirve para separar
+  bloques pero no para dibujar el límite de un control. Aquí el borde es lo único que hace
+  visible dónde empieza y dónde acaba el botón.
+*/
+.pod-aval__acciones .pod-boton--secundario {
+  border-color: var(--pod-oro-numeral);
+}
+
+/*
   Es la frase que abre cada argumento. Sube de escalón y, sobre todo, deja de ocupar un
   registro propio: comparte cuerpo con el giro y la sentencia. Con esto la escena de
   agitación pasa de cuatro registros compitiendo a tres, que es el arreglo de fondo de esta
@@ -2194,9 +2610,14 @@
 
 /*
   El giro y la sentencia son las dos frases con las que el documento cierra la agitación.
-  Van en display sobre el cuerpo y se separan entre sí por peso, no por color: la escena ya
-  gasta su cuota de oro de display en el remate, y un tercer oro convertiría el acento en
-  decoración.
+  Van en display sobre el cuerpo y se separan entre sí por peso, no por color.
+
+  Esta regla decía además que la escena no admitía un tercer oro porque ya gastaba su cuota
+  en el remate. El cliente pidió expresamente lo contrario: que «saber y comunicar» vaya en
+  el oro de la landing dentro de esta frase. Se aplica, y la razón de la norma se conserva
+  en la excepción: el oro entra en dos palabras de una sola frase y no en la frase entera,
+  así que sigue siendo acento y no un segundo cuerpo de texto en color. Queda anotado para
+  que quien lea esta hoja no lo trate como una desviación por descuido.
 */
 .pod-seccion__giro {
   max-width: 30ch;
@@ -2218,6 +2639,21 @@
 }
 
 /*
+  Realce de color dentro de una línea de display. Solo cambia la tinta: ni el cuerpo, ni el
+  peso, ni la familia, porque el fragmento tiene que seguir leyéndose como parte de la misma
+  frase y no como una cita incrustada. Es un span sin valor semántico a propósito: la palabra
+  no cambia de significado ni de énfasis para quien escucha la página, solo de color para
+  quien la ve, y marcarlo con <strong> o <em> anunciaría un énfasis que el texto no tiene.
+
+  Hereda el display-l del giro, así que el oro va sobre 28-44 px: es el escalón donde este
+  oro da 10,8:1 contra el negro de la página y sostiene el mínimo AA con holgura. No debe
+  reutilizarse en texto de lectura sin volver a medirlo.
+*/
+.pod-acento {
+  color: var(--pod-oro-tinta);
+}
+
+/*
   El tracking negativo se reserva al display de caja baja de 40 px para arriba. Por debajo
   de ese cuerpo, y en caja alta siempre, el español acentuado se degrada: las tildes se
   pegan a la letra siguiente.
@@ -2230,13 +2666,29 @@
   }
 }
 
-.pod-rotulo-lista {
+/*
+  «Lo que sucede cuando esa habilidad no está entrenada» es la frase que abre la escena de
+  síntomas, y el cliente la pidió en caja baja y un escalón más grande, «pero no tanto como la
+  frase final»: el remate que cierra la escena, que a 1.440 mide 36 px.
+
+  Comparte clamp exacto con el rótulo mayor de la escena anterior en lugar de estrenar uno.
+  Las dos son la misma pieza —el rótulo que abre un capítulo— y el cliente pidió lo mismo para
+  las dos por separado; con cuerpos distintos se leerían como dos plantillas. El techo son
+  24 px contra los 36 del remate, así que la jerarquía entre la frase que abre y la que cierra
+  se mantiene en dos tercios.
+
+  El selector se ancla en .pod-root por lo mismo que el rótulo mayor: el marcado lleva además
+  .tech-label, que bajo ese ancla declara la caja alta y ganaría por especificidad a una clase
+  suelta. Sin el ancla, el rótulo crecería pero seguiría en mayúsculas.
+*/
+.pod-root .pod-rotulo-lista {
   max-width: 40ch;
   margin-top: var(--pod-space-7);
-  font-size: var(--pod-etiqueta);
-  line-height: 1.4;
-  letter-spacing: var(--tracking-kicker);
-  text-indent: var(--tracking-kicker);
+  font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
   color: var(--pod-oro-tinta);
 }
 
@@ -2313,12 +2765,19 @@
 
 /*
   Los seis síntomas son el espejo en el que el visitante se reconoce: es la lista que decide
-  si sigue leyendo o cierra la pestaña, y por eso comparte cuerpo con el texto de lectura.
+  si sigue leyendo o cierra la pestaña. Por eso sube medio escalón por encima del texto de
+  lectura con el que compartía cuerpo, en lugar de seguir tratándose como párrafo corriente.
+
+  El techo de la subida no es de gusto: por encima de esta lista manda el remate que la
+  cierra, y la distancia entre ambos tiene que seguir leyéndose. Medido en los tres puntos
+  de la escala, el síntoma queda en 19,0 px contra 28,0 del remate a 390 px de ventana, en
+  20,5 contra 32,8 a 1.152 y en 21,0 contra 36,0 a 1.440. El remate manda por entre 1,47 y
+  1,71 veces en todo el recorrido, así que la jerarquía nunca se aplana ni se invierte.
 */
 .pod-sintoma__texto {
   max-width: 58ch;
-  font-size: var(--pod-cuerpo);
-  line-height: 1.55;
+  font-size: clamp(1.1875rem, 1.1rem + 0.25vw, 1.3125rem);
+  line-height: 1.5;
   color: var(--pod-tinta-2);
   text-wrap: pretty;
 }
@@ -2369,8 +2828,7 @@
   color: var(--pod-tinta-2);
 }
 
-.pod-pilar,
-.pod-especialista {
+.pod-pilar {
   height: 100%;
 }
 
@@ -2383,8 +2841,7 @@
   emitir esa clase, la regla no casaría con nada y el defecto aparecería como una fila
   desalineada, sin ningún error que lo delate.
 */
-.pod-rejilla-pilares > .cam-reveal,
-.pod-rejilla-especialistas > .cam-reveal {
+.pod-rejilla-pilares > .cam-reveal {
   height: 100%;
 }
 
@@ -2773,13 +3230,19 @@
 }
 
 /*
-  El aire entre perfiles no es decorativo: es lo que da recorrido al anclaje. Con el hueco
-  anterior, la columna más alta superaba a la fotografía en 358 px y la sala se despegaba
-  antes de que diera tiempo a leer el segundo perfil.
+  El aire entre perfiles se recorta a menos de la mitad. El hueco anterior llegaba a 115 px
+  entre tarjeta y tarjeta y estiraba la escena a más de mil píxeles de alto: los cinco
+  perfiles dejaban de leerse como una enumeración y pasaban a ser cinco bloques sueltos
+  flotando a alturas que no se corresponden entre columnas. Es el «que no se vea
+  desorganizado» del cliente, que no pide simetría sino ritmo.
+
+  Lo que NO cambia es el reparto de dos y tres alrededor de la fotografía. La asimetría es la
+  composición de la escena, y aplanarla a una rejilla de cinco iguales resolvería el desorden
+  quitando también el motivo por el que la sala está en medio.
 */
 .pod-rodea__columna {
   display: grid;
-  gap: clamp(3rem, 8vw, 9rem);
+  gap: clamp(2.25rem, 4vw, 4rem);
   align-content: start;
 }
 
@@ -2787,10 +3250,14 @@
   La columna derecha arranca más abajo. Con dos perfiles a un lado y tres al otro, empezar
   las dos a la misma altura deja la izquierda terminada mucho antes y el desnivel se lee
   como una fila mal cerrada; desfasada, se lee como composición.
+
+  El desfase baja en la misma proporción que el hueco. A 130 px el arranque de la derecha
+  caía por debajo del primer párrafo de la izquierda y las dos columnas ya no compartían
+  ninguna línea de lectura; a la mitad, el escalón sigue viéndose como escalón.
 */
 @media (min-width: 62rem) {
   .pod-rodea__columna--derecha {
-    margin-top: clamp(3rem, 9vw, 9rem);
+    margin-top: clamp(1.5rem, 3vw, 3.5rem);
   }
 }
 
@@ -2812,10 +3279,6 @@
   font-size: var(--pod-cuerpo-s);
   line-height: 1.55;
   color: var(--pod-tinta-2);
-}
-
-.pod-cierre .pod-microcopy {
-  margin-top: var(--pod-space-5);
 }
 
 /*
