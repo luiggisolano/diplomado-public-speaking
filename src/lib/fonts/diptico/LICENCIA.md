@@ -5,11 +5,12 @@ Tipografía tomada del material oficial del diplomado:
 (generado en Canva el 11 de julio de 2026). Las familias se identificaron leyendo las
 fuentes embebidas del PDF con `pdffonts`, no por apreciación visual.
 
-Las tres se distribuyen bajo **SIL Open Font License 1.1**, cuyo texto completo está en
-`OFL-1.1.txt`. La OFL permite el uso comercial y la incrustación en un sitio web; exige
-conservar el aviso de copyright y prohíbe vender las fuentes por separado. Ninguna de
-las tres se ha modificado, de modo que los nombres reservados de familia se mantienen
-tal cual y no se incurre en la cláusula 3 de la licencia.
+Este documento afirmaba que las tres se distribuyen bajo **SIL Open Font License 1.1**,
+con su texto en `OFL-1.1.txt`. **Esa afirmación está sin verificar y hay indicios en
+contra** (ver «Licencia por confirmar» al final). Los nombres de familia se mantienen tal
+cual en los tres archivos. `GlacialIndifference-Bold.woff2` lleva una corrección
+tipográfica puntual documentada más abajo; las otras dos conservan el contorno con el que
+salieron del subconjunto original.
 
 | Archivo | Familia | Autoría | Uso en la landing |
 |---|---|---|---|
@@ -32,6 +33,66 @@ abre cuatro preguntas con `¿`. Antes que dejar esos signos en manos del sans de
 sistema, se sirve un subconjunto de Jost recortado a esos tres caracteres: misma
 geometría monolineal de linaje Futura y 752 bytes de coste.
 
+## Corrección del glifo «é» en el peso Bold
+
+`GlacialIndifference-Bold.woff2` traía el glifo `eacute` (`é`, U+00E9) con nueve
+contornos en lugar de tres: el cuerpo de la «e» y su ojo aparecían dibujados cuatro
+veces, superpuestos punto por punto sobre sí mismos, mientras que el acento figuraba una
+sola vez. Con relleno de bordes distintos de cero la silueta resultante sigue siendo la
+correcta, de modo que el defecto no se ve en el contorno vectorial sino en el
+rasterizado: los motores que acumulan la cobertura contorno a contorno antes de
+recortarla asignan a cada píxel del borde hasta cuatro veces la cobertura que le toca y
+lo saturan a tinta plena. La «é» salía entonces más pesada que las letras vecinas y con
+el ojo estrangulado, que es como el cliente lo describió.
+
+El efecto depende del motor, y conviene dejarlo escrito para no repetir la medición. En
+Firefox el glifo original gasta un 29 % más de tinta que el corregido a 16 px, un 15 % a
+34 px —el cuerpo de los títulos de módulo— y un 3,6 % a 150 px: el exceso decrece con el
+tamaño porque es proporcional al perímetro, no al área. En Chromium, en cambio, ambos
+binarios rasterizan idénticos píxel a píxel de 16 a 150 px, porque Skia resuelve la
+cobertura por regla de giro global y la superposición no le afecta. La corrección, por
+tanto, arregla Firefox y los rasterizadores basados en FreeType, y en Chromium no cambia
+nada ni para bien ni para mal.
+
+El defecto era exclusivo de ese glifo: los otros 184 del Bold, los 187 del Regular y los
+4 de DipticoSignos no tienen contornos duplicados.
+
+La corrección elimina del *charstring* CFF las tres pasadas redundantes y conserva la
+primera. No se redibujó nada: los tres contornos que quedan son los originales, punto
+por punto, y el acento no se tocó.
+
+Se mantienen sin variación el ancho de avance (572 unidades), el *left side bearing*
+(35), la caja del glifo (35, −10, 537, 704), las tablas `hmtx`, `head`, `hhea`, `OS/2`,
+`cmap` y `name`, la retícula de 1000 unidades por em y los 184 glifos restantes, que
+siguen siendo idénticos punto por punto. La página no sufre por tanto ningún
+desplazamiento de maquetación: el texto ocupa exactamente lo mismo que antes.
+
+## Licencia por confirmar (pendiente de decisión, 2026-08-11)
+
+La atribución OFL de este documento no se sostiene sobre lo que dicen los propios
+binarios. Leída la tabla `name` de los dos archivos con fontTools:
+
+| Archivo | nameID 0 (copyright) | nameID 13 (licencia) | nameID 14 (URL de licencia) |
+|---|---|---|---|
+| `GlacialIndifference-Regular.woff2` | `Copyright (c) 2015 by Alfredo Marco Padil. All rights reserved.` | ausente | ausente |
+| `GlacialIndifference-Bold.woff2` | `Glacial Indifference is a trademark of Alfredo Marco Pradil` | ausente | ausente |
+
+«All rights reserved» es lo contrario de lo que declara una fuente publicada bajo OFL, que
+lleva su licencia escrita en el nameID 13. Además, el `OFL-1.1.txt` que acompaña a estos
+archivos es la **plantilla sin rellenar** del texto legal: conserva los marcadores
+`<dates>`, `<Copyright Holder>` y `<Reserved Font Name>` en su cabecera, así que no
+concede nada a nadie.
+
+Importa más desde que se corrigió el glifo: parchear un binario lo convierte en obra
+derivada, y una landing institucional de una universidad pública es el peor sitio para
+sostener una obra derivada sobre una licencia que no se ha comprobado.
+
+Esto no se resuelve aquí porque no es una decisión técnica. Las salidas razonables son
+conseguir del autor la licencia real, sustituir la familia por una equivalente de licencia
+verificada, o confirmar que el material del que salió el díptico ya traía los derechos de
+uso. Hasta entonces, ni este documento ni el repositorio deben afirmar que la fuente es
+OFL.
+
 ## Reproducir los archivos
 
 ```sh
@@ -43,4 +104,26 @@ pyftsubset GlacialIndifference-Regular.otf \
 # DipticoSignos: woff2 de Jost latin → solo los tres signos que faltan
 pyftsubset jost-latin.woff2 --unicodes="U+00B7,U+00BF,U+00A1" \
   --flavor=woff2 --output-file=DipticoSignos.woff2
+```
+
+La deduplicación del glifo `eacute` en el Bold se rehace con fontTools recortando la
+cola redundante del *charstring*. Las banderas `recalcBBoxes` y `recalcTimestamp` van
+desactivadas para que el único cambio del binario sea el propio glifo:
+
+```python
+from fontTools.ttLib import TTFont
+
+fuente = TTFont("GlacialIndifference-Bold.woff2", recalcBBoxes=False, recalcTimestamp=False)
+cff = fuente["CFF "].cff
+charstring = cff[cff.fontNames[0]].CharStrings["eacute"]
+charstring.decompile()
+
+# El programa repite cuatro veces el par ojo+cuerpo; se conservan el acento y la
+# primera pasada, y se corta desde la segunda hasta el final.
+corte = charstring.program.index("callsubr", charstring.program.index(-89)) + 1
+charstring.program = charstring.program[:corte] + ["endchar"]
+charstring.bytecode = None
+
+fuente.flavor = "woff2"
+fuente.save("GlacialIndifference-Bold.woff2")
 ```
