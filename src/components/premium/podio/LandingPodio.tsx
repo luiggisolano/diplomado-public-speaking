@@ -70,7 +70,6 @@ import {
   PODIO_MODULOS,
   PODIO_PREGUNTAS,
   PODIO_PUBLICO,
-  PODIO_SOLUCION,
   PODIO_TRANSFORMACION,
   PODIO_URGENCIA,
 } from "@/lib/podio-content";
@@ -329,46 +328,27 @@ export function LandingPodio() {
           </section>
 
           {/*
-            Aquí vivía «Quién te forma», seis fichas de especialista que decían «Nombre por
-            confirmar». El cliente la retiró en las observaciones del 2026-08-10 y señaló con
-            una captura qué quería en su lugar: la retícula de diferenciales que la página
-            tuvo antes de que la escena «La formación» se retirase entera el 2026-08-03. Es
-            ese bloque el que vuelve, con su copy intacto en lib/podio-content, y no los tres
-            párrafos de cuerpo que acompañaban a aquella escena y que son los que la hacían
-            pesada.
+            Entre el programa y el público vivía «Quién te forma», seis fichas de especialista
+            que decían «Nombre por confirmar». El cliente la retiró en las observaciones del
+            2026-08-10 y ahí se queda: no hay bloque de reemplazo.
 
-            Dos columnas fijas y no la retícula elástica del método: con cinco tarjetas, el
-            auto-fit deja una sola en la última fila a partir de 1.024 px. En pares, el
-            reparto es 2-2-1 y la impar cierra el bloque en lugar de quedar suelta.
+            De ahí que esta escena pierda el fondo alterno. La página releva fondo entre
+            secciones consecutivas, y el programa que tiene encima ya lo lleva: con las dos en
+            negro cálido, el corte entre el último módulo y el primer perfil desaparecía. Pasa
+            a fondo de página y el relevo vuelve a marcarse.
+
+            Que la transformación que va después comparta con esta el fondo de página no es el
+            mismo problema: abre con una banda de imagen a todo el ancho bajo su titular, y esa
+            banda marca el capítulo mejor que un cambio de color. Es la misma licencia que ya se
+            toman las dos escenas de agitación, donde el corte lo pone el filete.
+
+            El cartel de esta escena acompaña al titular y no a la rejilla, que es la regla de
+            las cuatro secciones con media: la imagen cuelga de la fila del encabezado y la
+            rejilla de la escena va debajo a todo el ancho. Con las cinco tarjetas dentro de la
+            columna de texto, esta se estiraba al doble de la altura de la imagen y dejaba mil
+            píxeles de columna derecha vacía.
           */}
-          <section className="pod-seccion" aria-labelledby="pod-diferencia">
-            <EncabezadoPodio
-              id="pod-diferencia"
-              eyebrow={PODIO_SOLUCION.eyebrow}
-              titulo={PODIO_SOLUCION.rotuloDiferencia}
-            />
-
-            <div className="pod-rejilla-pilares pod-rejilla-pilares--pareja">
-              {PODIO_SOLUCION.diferenciales.map((diferencial, indice) => (
-                <RevelaPodio key={diferencial.titulo} retardo={indice * RETARDO_ENTRE_TARJETAS}>
-                  <article className="pod-pilar">
-                    <p className="pod-pilar__numero mono-num">{numeroOrdinal(indice)}</p>
-                    <h3 className="pod-pilar__titulo">{diferencial.titulo}</h3>
-                    <p className="pod-pilar__linea">{diferencial.linea}</p>
-                  </article>
-                </RevelaPodio>
-              ))}
-            </div>
-          </section>
-
-          {/*
-            El cartel acompaña al titular y no a la rejilla, que es la regla de las cuatro
-            secciones con media: la imagen cuelga de la fila del encabezado y la rejilla de
-            la escena va debajo a todo el ancho. Con las cinco tarjetas dentro de la columna
-            de texto, esta se estiraba al doble de la altura de la imagen y dejaba mil
-            píxeles de columna derecha vacía, que es justo el defecto que se corrige.
-          */}
-          <section className="pod-seccion pod-seccion--alterna" aria-labelledby="pod-publico">
+          <section className="pod-seccion" aria-labelledby="pod-publico">
             <EncabezadoPodio
               id="pod-publico"
               eyebrow={PODIO_PUBLICO.eyebrow}

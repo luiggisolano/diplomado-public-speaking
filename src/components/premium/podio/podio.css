@@ -2808,18 +2808,6 @@
 }
 
 /*
-  Dos columnas fijas para la retícula de cinco diferenciales. Con auto-fit, cinco tarjetas
-  caen en 4+1 desde 1.024 px y la quinta queda sola en una fila de cuatro huecos. En pares el
-  reparto es 2-2-1 y la impar cierra el bloque, que es además la composición que el cliente
-  señaló como referencia.
-*/
-@media (min-width: 48rem) {
-  .pod-rejilla-pilares--pareja {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/*
   Los cuatro pilares del método y las tres razones de urgencia son el esqueleto argumental
   de la página: suben a la altura de título de tarjeta.
 */
