@@ -2178,9 +2178,16 @@
   transition-delay: 0s;
 }
 
+/*
+  Altura mínima de dedo. El enlace se ceñía al isotipo y en móvil, donde el nombre se oculta,
+  quedaba en 34 x 34 px: por debajo de los 44 px con los que se acierta un objetivo táctil a la
+  primera. La caja crece sin mover el isotipo porque el contenido sigue centrado en ella.
+*/
 .pod-barra__marca {
   display: flex;
   align-items: center;
+  min-width: 44px;
+  min-height: 44px;
   gap: var(--pod-space-3);
   margin-right: auto;
   color: var(--color-hueso);
