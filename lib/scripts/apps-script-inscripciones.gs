@@ -62,3 +62,22 @@ function doPost(peticion) {
     ).setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+/*
+  Utilidad de limpieza, no parte del contrato con route.ts. Se ejecuta a mano desde el editor
+  de Apps Script (seleccionar esta función en el desplegable de arriba → botón Ejecutar) y
+  borra las filas cuyo Nombre empieza por «PRUEBA», que es como se marcaron todas las pruebas
+  de conexión del webhook. Recorre de abajo hacia arriba porque borrar una fila corre las de
+  abajo un puesto hacia arriba, y hacerlo de arriba hacia abajo saltaría filas por accidente.
+*/
+function purgarFilasDePrueba() {
+  const hoja = obtenerOCrearLaHoja();
+  const totalDeFilas = hoja.getLastRow();
+
+  for (let fila = totalDeFilas; fila >= 2; fila--) {
+    const nombre = hoja.getRange(fila, 2).getValue();
+    if (typeof nombre === "string" && nombre.indexOf("PRUEBA") === 0) {
+      hoja.deleteRow(fila);
+    }
+  }
+}
