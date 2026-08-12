@@ -47,13 +47,13 @@ const CAPITULOS: readonly Capitulo[] = [
     inicio: 0,
     fin: 0.34,
     lineas: ["Puedes ser el mejor"],
-    subtitulo: "En lo que haces",
+    subtitulo: "en lo que haces",
   },
   {
     clave: "avance",
     inicio: 0.34,
     fin: 0.67,
-    antetitulo: "Si no sabes comunicarlo",
+    antetitulo: "si no sabes comunicarlo",
     lineas: ["Nadie lo notará"],
   },
   {
